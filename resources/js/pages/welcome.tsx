@@ -344,7 +344,7 @@ export default function Welcome() {
                         <div className="testimonials-grid grid grid-cols-1 md:grid-cols-3 gap-8">
                             <div className="testimonial-card bg-gray-50 rounded-xl p-6 dark:bg-gray-800">
                                 <div className="flex items-center mb-4">
-                                    <img className="w-12 h-12 rounded-full mr-4" src="https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=687&q=80" alt="Sarah Johnson" />
+                                    <img className="w-12 h-12 rounded-full mr-4" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=80" alt="Sarah Johnson" />
                                     <div>
                                         <h4 className="font-semibold text-gray-900 dark:text-white">Sarah Johnson</h4>
                                         <p className="text-sm text-gray-600 dark:text-gray-400">Marketing Director, TechStart Inc.</p>
