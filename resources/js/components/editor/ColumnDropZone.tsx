@@ -1,7 +1,9 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { useDrop } from 'react-dnd';
 import { ContentBlock } from './ContentBlockLibrary';
 import { LayoutColumn } from './LayoutBuilder';
+import { canAddChild, ContentBlockType, getAllowedChildren } from './validation/ContentValidation';
+import { AlertCircle, Plus } from 'lucide-react';
 
 interface DropZoneProps {
     column: LayoutColumn;
@@ -211,39 +213,73 @@ export default function ColumnDropZone({
     onSelect,
 }: DropZoneProps) {
     const dropRef = useRef<HTMLDivElement>(null);
+    const [validationError, setValidationError] = useState<string | null>(null);
+    
+    const blocks = (column.blocks as unknown) as ContentBlock[];
+    const currentBlockTypes = blocks.map(block => block.type as ContentBlockType);
+
     const [{ isOver, canDrop }, drop] = useDrop(() => ({
         accept: ItemTypes.CONTENT_BLOCK,
+        canDrop: (item: { type: string; defaultContent: Record<string, unknown> }) => {
+            const childType = item.type as ContentBlockType;
+            const validation = canAddChild('column', childType, currentBlockTypes);
+            
+            if (!validation.allowed) {
+                setValidationError(validation.reason || 'Cannot add this content here');
+                setTimeout(() => setValidationError(null), 3000);
+                return false;
+            }
+            
+            return true;
+        },
         drop: (item: { type: string; defaultContent: Record<string, unknown> }) => {
             const newBlock = createBlockFromDrop(item);
             onBlockAdd(column.id, newBlock);
+            return { columnId: column.id };
         },
         collect: (monitor) => ({
             isOver: monitor.isOver(),
             canDrop: monitor.canDrop(),
         }),
-    }));
+    }), [column.id, currentBlockTypes]);
 
     drop(dropRef);
 
-    const blocks = (column.blocks as unknown) as ContentBlock[];
+    const allowedChildren = getAllowedChildren('column');
 
     return (
         <div
             ref={dropRef}
-            className={`min-h-[100px] p-2 transition-colors ${
+            className={`min-h-[100px] p-2 transition-colors relative ${
                 isSelected ? 'bg-blue-50 border-blue-300' : ''
             } ${
-                isOver && canDrop ? 'bg-green-50 border-green-300' : 'border-gray-200'
+                isOver && canDrop ? 'bg-green-50 border-green-300' : 
+                isOver && !canDrop ? 'bg-red-50 border-red-300' : 'border-gray-200'
             } border-2 border-dashed`}
             onClick={onSelect}
         >
+            {/* Validation error message */}
+            {validationError && (
+                <div className="absolute top-2 right-2 bg-red-100 text-red-700 px-2 py-1 rounded text-xs flex items-center z-10">
+                    <AlertCircle className="w-3 h-3 mr-1" />
+                    {validationError}
+                </div>
+            )}
+
             {blocks.length === 0 ? (
                 <div className="flex items-center justify-center h-24 text-gray-400">
                     <div className="text-center">
-                        <div className="text-2xl mb-2">📦</div>
-                        <p className="text-sm">Drop content blocks here</p>
+                        <Plus className="w-8 h-8 mx-auto mb-2" />
+                        <p className="text-sm">
+                            Drop {allowedChildren.length > 3 
+                                ? `${allowedChildren.slice(0, 3).join(', ')}...` 
+                                : allowedChildren.join(', ')} blocks here
+                        </p>
                         {isOver && canDrop && (
                             <p className="text-xs text-green-600 mt-1">Release to add block</p>
+                        )}
+                        {isOver && !canDrop && (
+                            <p className="text-xs text-red-600 mt-1">This content is not allowed here</p>
                         )}
                     </div>
                 </div>

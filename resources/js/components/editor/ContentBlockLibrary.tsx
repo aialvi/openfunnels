@@ -21,7 +21,7 @@ import {
 
 export interface ContentBlock {
     id: string;
-    type: 'text' | 'image' | 'button' | 'form' | 'video' | 'code' | 'map' | 'testimonial' | 'calendar' | 'ecommerce' | 'team' | 'chart' | 'audio' | 'countdown' | 'social' | 'spacer';
+    type: 'text' | 'image' | 'button' | 'form' | 'video' | 'code' | 'map' | 'testimonial' | 'calendar' | 'ecommerce' | 'team' | 'chart' | 'audio' | 'countdown' | 'social' | 'spacer' | 'container' | 'grid' | 'tabs' | 'accordion';
     content: Record<string, unknown>;
     settings: {
         padding: string;

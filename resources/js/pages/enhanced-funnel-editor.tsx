@@ -1,4 +1,4 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { useState, useRef, useCallback } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -8,15 +8,13 @@ import {
     Undo,
     Redo,
     Layout,
-    Blocks,
     Palette,
     ArrowLeft
 } from 'lucide-react';
 import LayoutBuilder, { LayoutSection, LayoutColumn } from '@/components/editor/LayoutBuilder';
 import ContentBlockLibrary, { ContentBlock } from '@/components/editor/ContentBlockLibrary';
-import PropertiesPanel from '@/components/editor/PropertiesPanel';
 import { useFunnelStore, type Funnel } from '@/stores/funnelStore';
-import { useFunnelPersistence } from '@/hooks/useFunnelPersistence';
+import { useLayoutPersistence } from '@/hooks/useLayoutPersistence';
 
 interface EnhancedFunnelEditorProps {
     funnel?: {
@@ -31,12 +29,11 @@ interface EnhancedFunnelEditorProps {
     };
 }
 
-type EditorMode = 'layout' | 'content' | 'design';
+type EditorMode = 'editor' | 'design';
 
 export default function EnhancedFunnelEditor({ funnel: initialFunnel }: EnhancedFunnelEditorProps) {
     // Editor state
-    const [editorMode, setEditorMode] = useState<EditorMode>('layout');
-    const [selectedDevice, setSelectedDevice] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
+    const [editorMode, setEditorMode] = useState<EditorMode>('editor');
     
     // Layout builder state
     const [sections, setSections] = useState<LayoutSection[]>([]);
@@ -49,6 +46,8 @@ export default function EnhancedFunnelEditor({ funnel: initialFunnel }: Enhanced
     const [blockCategory, setBlockCategory] = useState('All');
     
     // Funnel store
+    // Get store references
+    const funnelStore = useFunnelStore();
     const {
         funnel,
         isDirty,
@@ -58,10 +57,18 @@ export default function EnhancedFunnelEditor({ funnel: initialFunnel }: Enhanced
         redo,
         canUndo,
         canRedo,
-    } = useFunnelStore();
+        markClean,
+        setSaving,
+    } = funnelStore;
 
-    // Auto-save functionality
-    const { saveFunnel, isSaving } = useFunnelPersistence(initialFunnel?.id);
+    // Auto-save functionality (disabled since we handle saving manually)
+    const { 
+        lastSaved
+    } = useLayoutPersistence({
+        funnelId: initialFunnel?.id,
+        sections,
+        isDirty: false // Disable auto-save, handle saving manually
+    });
     
     // Name editing state
     const [isEditingName, setIsEditingName] = useState(false);
@@ -71,48 +78,88 @@ export default function EnhancedFunnelEditor({ funnel: initialFunnel }: Enhanced
     // Initialize funnel from props
     useState(() => {
         if (initialFunnel) {
+            // Parse content object from JSON if needed
+            let contentObj;
+            try {
+                contentObj = typeof initialFunnel.content === 'string' 
+                    ? JSON.parse(initialFunnel.content as string) 
+                    : initialFunnel.content;
+            } catch (e) {
+                console.error('Error parsing content JSON:', e);
+                contentObj = { sections: [] };
+            }
+            
+            // Ensure we have a proper sections array
+            const sectionsArray = contentObj?.sections || [];
+            
+            // Set in funnel store
             setFunnel({
                 id: initialFunnel.id,
                 name: initialFunnel.name,
                 description: initialFunnel.description || '',
-                content: Array.isArray(initialFunnel.content) ? initialFunnel.content : [],
+                content: {
+                    sections: sectionsArray
+                },
                 settings: initialFunnel.settings,
                 status: initialFunnel.status as 'draft' | 'published' | 'archived',
                 is_published: initialFunnel.is_published,
             });
             
-            // Convert existing content to sections if needed
-            if (initialFunnel.content && Array.isArray(initialFunnel.content)) {
-                // This would convert old block-based content to new section-based layout
-                // For now, start with empty sections
-                setSections([]);
-            }
+            // Also set in local state
+            setSections(sectionsArray);
         }
     });
 
-    // Update handlers
-    const handleSectionUpdate = useCallback((sectionId: string, updates: Partial<LayoutSection>) => {
-        setSections(prev => prev.map(section => 
-            section.id === sectionId ? { ...section, ...updates } : section
-        ));
+    // Update handlers only for block operations (sections are updated via onSectionsChange)
+
+    const handleBlockUpdate = useCallback((blockId: string, updates: Partial<ContentBlock>) => {
+        // Handle block updates
+        setSelectedBlock(prev => prev ? { ...prev, ...updates } : null);
+        // Layout persistence hook will handle auto-save
     }, []);
 
-    const handleColumnUpdate = useCallback((sectionId: string, columnId: string, updates: Partial<LayoutColumn>) => {
+    const handleBlockAdd = useCallback((sectionId: string, columnId: string, block: ContentBlock, index?: number) => {
         setSections(prev => prev.map(section => 
             section.id === sectionId 
                 ? {
                     ...section,
                     columns: section.columns.map(column =>
-                        column.id === columnId ? { ...column, ...updates } : column
+                        column.id === columnId 
+                            ? { 
+                                ...column, 
+                                blocks: index !== undefined 
+                                    ? [
+                                        ...column.blocks.slice(0, index),
+                                        block,
+                                        ...column.blocks.slice(index)
+                                    ]
+                                    : [...column.blocks, block]
+                            } 
+                            : column
                     )
                 }
                 : section
         ));
     }, []);
 
-    const handleBlockUpdate = useCallback((blockId: string, updates: Partial<ContentBlock>) => {
-        // Handle block updates
-        setSelectedBlock(prev => prev ? { ...prev, ...updates } : null);
+    const handleBlockDelete = useCallback((sectionId: string, columnId: string, blockId: string) => {
+        setSections(prev => prev.map(section => 
+            section.id === sectionId 
+                ? {
+                    ...section,
+                    columns: section.columns.map(column =>
+                        column.id === columnId 
+                            ? { 
+                                ...column, 
+                                blocks: column.blocks.filter(block => block.id !== blockId)
+                            } 
+                            : column
+                    )
+                }
+                : section
+        ));
+        // Clear selection if the deleted block was selected
+        setSelectedBlock(prev => prev?.id === blockId ? null : prev);
     }, []);
 
     // Name editing handlers
@@ -145,105 +192,36 @@ export default function EnhancedFunnelEditor({ funnel: initialFunnel }: Enhanced
         }
     };
 
-    // Device width helper
-    const getDeviceWidth = () => {
-        switch (selectedDevice) {
-            case 'mobile':
-                return '375px';
-            case 'tablet':
-                return '768px';
-            case 'desktop':
-            default:
-                return '100%';
-        }
-    };
-
     // Render editor mode content
     const renderEditorContent = () => {
         switch (editorMode) {
-            case 'layout':
-                return (
-                    <LayoutBuilder
-                        sections={sections}
-                        onSectionsChange={setSections}
-                        selectedSection={selectedSection}
-                        onSelectSection={setSelectedSection}
-                    />
-                );
-            
-            case 'content':
+            case 'editor':
                 return (
                     <div className="flex h-full">
-                        {/* Canvas with sections */}
-                        <div className="flex-1 p-4">
-                            <div 
-                                className="bg-white shadow-lg mx-auto"
-                                style={{ 
-                                    width: getDeviceWidth(),
-                                    maxWidth: funnel.settings.maxWidth,
-                                    backgroundColor: funnel.settings.backgroundColor 
+                        {/* Main Canvas with LayoutBuilder */}
+                        <div className="flex-1">
+                            <LayoutBuilder
+                                sections={sections}
+                                onSectionsChange={(updatedSections) => {
+                                    // Update local state
+                                    setSections(updatedSections);
+                                    
+                                    // Update store state by using the setSections action
+                                    funnelStore.setSections?.(updatedSections);
                                 }}
-                            >
-                                {sections.length === 0 ? (
-                                    <div className="flex items-center justify-center h-96 text-gray-500">
-                                        <div className="text-center">
-                                            <Layout className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-                                            <h3 className="text-xl font-medium mb-2">No Layout Yet</h3>
-                                            <p className="text-sm mb-4">Switch to Layout mode to create your page structure first</p>
-                                            <button
-                                                onClick={() => setEditorMode('layout')}
-                                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                                            >
-                                                Go to Layout Mode
-                                            </button>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className="space-y-4">
-                                        {sections.map((section) => (
-                                            <div
-                                                key={section.id}
-                                                className="border border-gray-200"
-                                                style={{
-                                                    backgroundColor: section.settings.backgroundColor,
-                                                    padding: section.settings.padding,
-                                                    margin: section.settings.margin,
-                                                    minHeight: section.settings.minHeight,
-                                                }}
-                                            >
-                                                <div className="flex h-full">
-                                                    {section.columns.map((column) => (
-                                                        <div
-                                                            key={column.id}
-                                                            className="border border-dashed border-gray-300 min-h-[100px] relative"
-                                                            style={{
-                                                                width: `${column.width}%`,
-                                                                padding: column.settings.padding,
-                                                                backgroundColor: column.settings.backgroundColor,
-                                                            }}
-                                                            onClick={() => setSelectedColumn(column)}
-                                                        >
-                                                            {column.blocks.length === 0 ? (
-                                                                <div className="text-gray-400 text-center p-8">
-                                                                    <Blocks className="w-8 h-8 mx-auto mb-2" />
-                                                                    <p className="text-sm">Drop content blocks here</p>
-                                                                </div>
-                                                            ) : (
-                                                                <div>
-                                                                    {/* Render actual blocks here */}
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
+                                selectedSection={selectedSection}
+                                onSelectSection={setSelectedSection}
+                                selectedColumn={selectedColumn}
+                                onSelectColumn={setSelectedColumn}
+                                selectedBlock={selectedBlock}
+                                onSelectBlock={setSelectedBlock}
+                                onBlockAdd={handleBlockAdd}
+                                onBlockUpdate={handleBlockUpdate}
+                                onBlockDelete={handleBlockDelete}
+                            />
                         </div>
 
-                        {/* Content Block Library */}
+                        {/* Content Block Library Sidebar */}
                         <ContentBlockLibrary
                             searchQuery={blockSearchQuery}
                             onSearchChange={setBlockSearchQuery}
@@ -313,26 +291,15 @@ export default function EnhancedFunnelEditor({ funnel: initialFunnel }: Enhanced
                             {/* Editor Mode Tabs */}
                             <div className="flex items-center bg-gray-100 rounded-lg p-1">
                                 <button
-                                    onClick={() => setEditorMode('layout')}
+                                    onClick={() => setEditorMode('editor')}
                                     className={`flex items-center space-x-2 px-3 py-2 rounded text-sm font-medium transition-colors ${
-                                        editorMode === 'layout' 
+                                        editorMode === 'editor' 
                                             ? 'bg-white text-blue-600 shadow' 
                                             : 'text-gray-600 hover:text-gray-900'
                                     }`}
                                 >
                                     <Layout className="w-4 h-4" />
-                                    <span>Layout</span>
-                                </button>
-                                <button
-                                    onClick={() => setEditorMode('content')}
-                                    className={`flex items-center space-x-2 px-3 py-2 rounded text-sm font-medium transition-colors ${
-                                        editorMode === 'content' 
-                                            ? 'bg-white text-blue-600 shadow' 
-                                            : 'text-gray-600 hover:text-gray-900'
-                                    }`}
-                                >
-                                    <Blocks className="w-4 h-4" />
-                                    <span>Content</span>
+                                    <span>Editor</span>
                                 </button>
                                 <button
                                     onClick={() => setEditorMode('design')}
@@ -383,30 +350,78 @@ export default function EnhancedFunnelEditor({ funnel: initialFunnel }: Enhanced
                                 <button 
                                     onClick={async () => {
                                         try {
-                                            await saveFunnel();
+                                            setSaving(true);
+                                            
+                                            // Create a unified save that combines funnel data and layout
+                                            if (initialFunnel?.id) {
+                                                await new Promise<void>((resolve, reject) => {
+                                                    router.patch(`/funnels/${initialFunnel.id}`, {
+                                                        name: funnel.name,
+                                                        description: funnel.description,
+                                                        content: JSON.stringify({
+                                                            sections: sections.map(section => ({
+                                                                id: section.id,
+                                                                type: section.type,
+                                                                layout: section.layout,
+                                                                settings: section.settings,
+                                                                columns: section.columns.map(column => ({
+                                                                    id: column.id,
+                                                                    type: column.type,
+                                                                    width: column.width,
+                                                                    settings: column.settings,
+                                                                    blocks: column.blocks.map(block => ({
+                                                                        id: block.id,
+                                                                        type: block.type,
+                                                                        content: block.content,
+                                                                        settings: block.settings
+                                                                    }))
+                                                                }))
+                                                            }))
+                                                        }),
+                                                        settings: JSON.stringify(funnel.settings)
+                                                    }, {
+                                                        preserveScroll: true,
+                                                        preserveState: true,
+                                                        onSuccess: () => {
+                                                            console.log('Funnel and layout saved successfully');
+                                                            markClean(); // Mark store as clean
+                                                            resolve();
+                                                        },
+                                                        onError: (errors) => {
+                                                            console.error('Failed to save:', errors);
+                                                            reject(new Error('Failed to save funnel and layout'));
+                                                        }
+                                                    });
+                                                });
+                                            }
                                         } catch (error) {
-                                            console.error('Failed to save funnel:', error);
+                                            console.error('Failed to save:', error);
+                                        } finally {
+                                            setSaving(false);
                                         }
                                     }}
-                                    disabled={isSaving}
+                                    disabled={funnelStore.isSaving}
                                     className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
-                                        isSaving 
+                                        funnelStore.isSaving
                                             ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
                                             : isDirty
                                                 ? 'bg-orange-600 text-white hover:bg-orange-700'
-                                                : 'bg-blue-600 text-white hover:bg-blue-700'
+                                                : 'bg-green-600 text-white hover:bg-green-700'
                                     }`}
+                                    title={isDirty ? "Save changes" : "All changes saved"}
                                 >
                                     <Save className="w-4 h-4" />
                                     <span>
-                                        {isSaving 
-                                            ? 'Saving...' 
-                                            : isDirty 
-                                                ? 'Save Changes' 
-                                                : 'Save'
-                                        }
+                                        {funnelStore.isSaving ? 'Saving...' : isDirty ? 'Save' : 'Saved'}
                                     </span>
                                 </button>
+                                
+                                {/* Save Status */}
+                                {lastSaved && (
+                                    <div className="text-xs text-gray-500">
+                                        Last saved: {lastSaved.toLocaleTimeString()}
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -420,7 +435,7 @@ export default function EnhancedFunnelEditor({ funnel: initialFunnel }: Enhanced
                     </div>
 
                     {/* Properties Panel */}
-                    <PropertiesPanel
+                    {/* <PropertiesPanel
                         selectedSection={selectedSection}
                         selectedColumn={selectedColumn}
                         selectedBlock={selectedBlock}
@@ -429,7 +444,7 @@ export default function EnhancedFunnelEditor({ funnel: initialFunnel }: Enhanced
                         onColumnUpdate={handleColumnUpdate}
                         onBlockUpdate={handleBlockUpdate}
                         onDeviceChange={setSelectedDevice}
-                    />
+                    /> */}
                 </div>
             </div>
         </DndProvider>
