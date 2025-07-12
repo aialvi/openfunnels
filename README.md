@@ -18,7 +18,7 @@ An open-source funnel builder with drag-and-drop functionality and interactive l
 ## 🚀 Tech Stack
 
 ### Backend
-- **Laravel 11**: Modern PHP framework
+- **Laravel 12**: Modern PHP framework
 - **Inertia.js**: SPA experience with server-side routing
 - **SQLite**: Lightweight database for development
 - **Pest**: Testing framework
