@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { useFunnelStore, type Block, type Funnel } from '@/stores/funnelStore';
 import { useFunnelPersistence } from '@/hooks/useFunnelPersistence';
+import PreviewModal from '@/components/PreviewModal';
 
 gsap.registerPlugin(Draggable);
 
@@ -65,6 +66,9 @@ export default function FunnelEditor({ funnel: initialFunnel }: FunnelEditorProp
     const [tempName, setTempName] = useState(funnel.name);
     const nameInputRef = useRef<HTMLInputElement>(null);
     
+    // Preview modal state
+    const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+    
     const canvasRef = useRef<HTMLDivElement>(null);
     const sidebarRef = useRef<HTMLDivElement>(null);
     const draggableInstancesRef = useRef<Draggable[]>([]);
@@ -88,6 +92,29 @@ export default function FunnelEditor({ funnel: initialFunnel }: FunnelEditorProp
     useEffect(() => {
         setTempName(funnel.name);
     }, [funnel.name]);
+
+    // Global keyboard shortcuts
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            // Cmd/Ctrl + P to open preview
+            if ((e.metaKey || e.ctrlKey) && e.key === 'p') {
+                e.preventDefault();
+                setIsPreviewOpen(true);
+            }
+            // Cmd/Ctrl + S to save
+            if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+                e.preventDefault();
+                saveFunnel();
+            }
+            // Escape to close preview
+            if (e.key === 'Escape' && isPreviewOpen) {
+                setIsPreviewOpen(false);
+            }
+        };
+
+        document.addEventListener('keydown', handleKeyDown);
+        return () => document.removeEventListener('keydown', handleKeyDown);
+    }, [isPreviewOpen, saveFunnel]);
 
     // Initialize GSAP Draggable for blocks
     useEffect(() => {
@@ -398,7 +425,11 @@ export default function FunnelEditor({ funnel: initialFunnel }: FunnelEditorProp
                                     >
                                         <Redo className="w-4 h-4" />
                                     </button>
-                                    <button className="flex items-center space-x-2 px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200">
+                                    <button 
+                                        onClick={() => setIsPreviewOpen(true)}
+                                        className="flex items-center space-x-2 px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200"
+                                        title="Preview funnel (Cmd/Ctrl + P)"
+                                    >
                                         <Eye className="w-4 h-4" />
                                         <span>Preview</span>
                                     </button>
@@ -455,7 +486,17 @@ export default function FunnelEditor({ funnel: initialFunnel }: FunnelEditorProp
                                         <div className="text-center">
                                             <Plus className="w-12 h-12 mx-auto mb-4 text-gray-400" />
                                             <p className="text-lg font-medium">Start building your funnel</p>
-                                            <p className="text-sm">Drag blocks from the left panel to get started</p>
+                                            <p className="text-sm mb-4">Drag blocks from the left panel to get started</p>
+                                            <div className="flex items-center justify-center space-x-2">
+                                                <button 
+                                                    onClick={() => setIsPreviewOpen(true)}
+                                                    className="text-sm text-blue-600 hover:text-blue-800 underline"
+                                                >
+                                                    Preview empty funnel
+                                                </button>
+                                                <span className="text-xs text-gray-400">•</span>
+                                                <span className="text-xs text-gray-400">Press Cmd/Ctrl + P</span>
+                                            </div>
                                         </div>
                                     </div>
                                 )}
@@ -580,6 +621,13 @@ export default function FunnelEditor({ funnel: initialFunnel }: FunnelEditorProp
                     </div>
                 </div>
             </div>
+            
+            {/* Preview Modal */}
+            <PreviewModal 
+                isOpen={isPreviewOpen}
+                onClose={() => setIsPreviewOpen(false)}
+                funnel={funnel}
+            />
         </>
     );
 }

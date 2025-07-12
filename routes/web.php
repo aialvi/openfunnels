@@ -16,6 +16,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('funnels', FunnelController::class);
     Route::get('funnel-editor', [FunnelController::class, 'create'])->name('funnel-editor');
     Route::get('funnel-editor/{funnel}', [FunnelController::class, 'edit'])->name('funnel-editor.edit');
+    Route::get('funnel/{funnel}/preview', [FunnelController::class, 'preview'])->name('funnel.preview');
     Route::post('funnels/{funnel}/publish', [FunnelController::class, 'publish'])->name('funnels.publish');
     Route::post('funnels/{funnel}/unpublish', [FunnelController::class, 'unpublish'])->name('funnels.unpublish');
 });

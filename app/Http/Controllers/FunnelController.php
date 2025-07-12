@@ -114,6 +114,27 @@ class FunnelController extends Controller
     }
 
     /**
+     * Preview the funnel in a clean layout.
+     */
+    public function preview(Funnel $funnel)
+    {
+        $this->authorize('view', $funnel);
+
+        return Inertia::render('funnel-preview', [
+            'funnel' => [
+                'id' => $funnel->id,
+                'name' => $funnel->name,
+                'slug' => $funnel->slug,
+                'description' => $funnel->description,
+                'content' => $funnel->content,
+                'settings' => $funnel->settings,
+                'status' => $funnel->status,
+                'is_published' => $funnel->is_published,
+            ],
+        ]);
+    }
+
+    /**
      * Update the specified resource in storage.
      */
     public function update(Request $request, Funnel $funnel)
