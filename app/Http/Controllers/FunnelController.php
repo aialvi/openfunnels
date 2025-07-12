@@ -53,7 +53,7 @@ class FunnelController extends Controller
      */
     public function create()
     {
-        return Inertia::render('funnel-editor');
+        return Inertia::render('enhanced-funnel-editor');
     }
 
     /**
@@ -68,9 +68,19 @@ class FunnelController extends Controller
             'settings' => 'nullable|json',
         ]);
 
+        // Generate unique slug
+        $baseSlug = Str::slug($request->name);
+        $slug = $baseSlug;
+        $counter = 1;
+        
+        while (auth()->user()->funnels()->where('slug', $slug)->exists()) {
+            $slug = $baseSlug . '-' . $counter;
+            $counter++;
+        }
+
         $funnel = auth()->user()->funnels()->create([
             'name' => $request->name,
-            'slug' => Str::slug($request->name),
+            'slug' => $slug,
             'description' => $request->description,
             'content' => $request->content ? json_decode($request->content, true) : [],
             'settings' => $request->settings ? json_decode($request->settings, true) : [],
@@ -99,7 +109,7 @@ class FunnelController extends Controller
     {
         $this->authorize('update', $funnel);
 
-        return Inertia::render('funnel-editor', [
+        return Inertia::render('enhanced-funnel-editor', [
             'funnel' => [
                 'id' => $funnel->id,
                 'name' => $funnel->name,
@@ -148,8 +158,22 @@ class FunnelController extends Controller
             'settings' => 'nullable|json',
         ]);
 
+        // Generate unique slug if name changed
+        $slug = $funnel->slug;
+        if ($request->name !== $funnel->name) {
+            $baseSlug = Str::slug($request->name);
+            $slug = $baseSlug;
+            $counter = 1;
+            
+            while (auth()->user()->funnels()->where('slug', $slug)->where('id', '!=', $funnel->id)->exists()) {
+                $slug = $baseSlug . '-' . $counter;
+                $counter++;
+            }
+        }
+
         $funnel->update([
             'name' => $request->name,
+            'slug' => $slug,
             'description' => $request->description,
             'content' => $request->content ? json_decode($request->content, true) : $funnel->content,
             'settings' => $request->settings ? json_decode($request->settings, true) : $funnel->settings,
@@ -167,7 +191,7 @@ class FunnelController extends Controller
 
         $funnel->delete();
 
-        return redirect()->route('funnels')
+        return redirect()->route('funnels.index')
             ->with('success', 'Funnel deleted successfully!');
     }
 
