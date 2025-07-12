@@ -19,171 +19,142 @@ import {
     Redo,
     Trash2
 } from 'lucide-react';
+import { useFunnelStore, type Block, type Funnel } from '@/stores/funnelStore';
+import { useFunnelPersistence } from '@/hooks/useFunnelPersistence';
 
 gsap.registerPlugin(Draggable);
 
-interface Block {
-    id: string;
-    type: 'text' | 'image' | 'button' | 'form';
-    content: string;
-    styles: {
-        fontSize?: string;
-        color?: string;
-        backgroundColor?: string;
-        padding?: string;
-        margin?: string;
-        borderRadius?: string;
-        textAlign?: 'left' | 'center' | 'right';
-    };
-    position: {
-        x: number;
-        y: number;
+interface FunnelEditorProps {
+    funnel?: {
+        id: number;
+        name: string;
+        slug: string;
+        description?: string;
+        content: Block[];
+        settings: Funnel['settings'];
+        status: string;
+        is_published: boolean;
     };
 }
 
-interface Funnel {
-    id: string;
-    name: string;
-    blocks: Block[];
-    settings: {
-        backgroundColor: string;
-        maxWidth: string;
-    };
-}
+export default function FunnelEditor({ funnel: initialFunnel }: FunnelEditorProps) {
+    const {
+        funnel,
+        selectedBlock,
+        selectedDevice,
+        isDirty,
+        setFunnel,
+        setSelectedBlock,
+        setSelectedDevice,
+        addBlock,
+        updateBlockContent,
+        updateBlockPosition,
+        deleteBlock,
+        updateFunnelName,
+        undo,
+        redo,
+        canUndo,
+        canRedo,
+    } = useFunnelStore();
 
-export default function FunnelEditor() {
-    const [selectedDevice, setSelectedDevice] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
-    const [selectedBlock, setSelectedBlock] = useState<Block | null>(null);
-    const [funnel, setFunnel] = useState<Funnel>({
-        id: '1',
-        name: 'My First Funnel',
-        blocks: [],
-        settings: {
-            backgroundColor: '#ffffff',
-            maxWidth: '1200px'
-        }
-    });
+    // Auto-save functionality 
+    const { saveFunnel, isSaving } = useFunnelPersistence(initialFunnel?.id);
+    
+    // Local state for inline name editing
+    const [isEditingName, setIsEditingName] = useState(false);
+    const [tempName, setTempName] = useState(funnel.name);
+    const nameInputRef = useRef<HTMLInputElement>(null);
     
     const canvasRef = useRef<HTMLDivElement>(null);
     const sidebarRef = useRef<HTMLDivElement>(null);
+    const draggableInstancesRef = useRef<Draggable[]>([]);
 
+    // Initialize funnel from props if editing existing funnel
     useEffect(() => {
-        // Initialize GSAP Draggable for blocks
+        if (initialFunnel) {
+            setFunnel({
+                id: initialFunnel.id,
+                name: initialFunnel.name,
+                description: initialFunnel.description || '',
+                content: initialFunnel.content,
+                settings: initialFunnel.settings,
+                status: initialFunnel.status as 'draft' | 'published' | 'archived',
+                is_published: initialFunnel.is_published,
+            });
+        }
+    }, [initialFunnel, setFunnel]);
+
+    // Sync temp name when funnel name changes
+    useEffect(() => {
+        setTempName(funnel.name);
+    }, [funnel.name]);
+
+    // Initialize GSAP Draggable for blocks
+    useEffect(() => {
         if (canvasRef.current) {
+            // Clean up existing draggable instances
+            draggableInstancesRef.current.forEach(instance => instance.kill());
+            draggableInstancesRef.current = [];
+
             const blocks = canvasRef.current.querySelectorAll('.draggable-block');
-            Draggable.create(blocks, {
+            const instances = Draggable.create(blocks, {
                 bounds: canvasRef.current,
                 edgeResistance: 0.65,
                 type: 'x,y',
                 onDrag: function() {
-                    // Update block position in state
                     const blockId = this.target.dataset.blockId;
                     if (blockId) {
-                        setFunnel(prev => ({
-                            ...prev,
-                            blocks: prev.blocks.map(block => 
-                                block.id === blockId 
-                                    ? { ...block, position: { x: this.x, y: this.y } }
-                                    : block
-                            )
-                        }));
+                        updateBlockPosition(blockId, { x: this.x, y: this.y });
                     }
+                },
+                onDragEnd: function() {
+                    // Add to history after drag is complete
+                    useFunnelStore.getState().addToHistory();
                 }
             });
+            
+            draggableInstancesRef.current = instances;
         }
-    }, [funnel.blocks]);
-
-    const addBlock = (type: Block['type']) => {
-        const newBlock: Block = {
-            id: `block-${Date.now()}`,
-            type,
-            content: getDefaultContent(type),
-            styles: getDefaultStyles(type),
-            position: {
-                x: Math.random() * 300,
-                y: Math.random() * 200
-            }
+        
+        return () => {
+            draggableInstancesRef.current.forEach(instance => instance.kill());
         };
+    }, [funnel.content, updateBlockPosition]);
 
-        setFunnel(prev => ({
-            ...prev,
-            blocks: [...prev.blocks, newBlock]
-        }));
+    const handleNameEdit = () => {
+        setIsEditingName(true);
+        setTempName(funnel.name);
+        // Focus the input after state update
+        setTimeout(() => {
+            nameInputRef.current?.focus();
+            nameInputRef.current?.select();
+        }, 0);
     };
 
-    const getDefaultContent = (type: Block['type']): string => {
-        switch (type) {
-            case 'text':
-                return 'Enter your text here';
-            case 'image':
-                return 'https://via.placeholder.com/300x200';
-            case 'button':
-                return 'Click Me';
-            case 'form':
-                return 'Email Form';
-            default:
-                return '';
+    const handleNameSave = async () => {
+        if (tempName.trim() && tempName !== funnel.name) {
+            console.log('Updating funnel name to:', tempName.trim());
+            
+            // Update the funnel name in the store
+            updateFunnelName(tempName.trim());
+            
+            // The auto-save will handle saving to backend
+            // or user can click Save button manually
         }
+        setIsEditingName(false);
     };
 
-    const getDefaultStyles = (type: Block['type']) => {
-        switch (type) {
-            case 'text':
-                return {
-                    fontSize: '16px',
-                    color: '#333333',
-                    padding: '16px',
-                    textAlign: 'left' as const
-                };
-            case 'button':
-                return {
-                    backgroundColor: '#3b82f6',
-                    color: '#ffffff',
-                    padding: '12px 24px',
-                    borderRadius: '8px',
-                    textAlign: 'center' as const
-                };
-            case 'image':
-                return {
-                    borderRadius: '8px'
-                };
-            case 'form':
-                return {
-                    backgroundColor: '#f9fafb',
-                    padding: '24px',
-                    borderRadius: '8px'
-                };
-            default:
-                return {};
+    const handleNameCancel = () => {
+        setTempName(funnel.name);
+        setIsEditingName(false);
+    };
+
+    const handleNameKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter') {
+            handleNameSave();
+        } else if (e.key === 'Escape') {
+            handleNameCancel();
         }
-    };
-
-    const updateBlockContent = (blockId: string, content: string) => {
-        setFunnel(prev => ({
-            ...prev,
-            blocks: prev.blocks.map(block => 
-                block.id === blockId ? { ...block, content } : block
-            )
-        }));
-    };
-
-    const updateBlockStyles = (blockId: string, styles: Partial<Block['styles']>) => {
-        setFunnel(prev => ({
-            ...prev,
-            blocks: prev.blocks.map(block => 
-                block.id === blockId 
-                    ? { ...block, styles: { ...block.styles, ...styles } }
-                    : block
-            )
-        }));
-    };
-
-    const deleteBlock = (blockId: string) => {
-        setFunnel(prev => ({
-            ...prev,
-            blocks: prev.blocks.filter(block => block.id !== blockId)
-        }));
-        setSelectedBlock(null);
     };
 
     const getDeviceWidth = () => {
@@ -200,15 +171,18 @@ export default function FunnelEditor() {
 
     const renderBlock = (block: Block) => {
         const commonProps = {
-            key: block.id,
             'data-block-id': block.id,
-            className: `draggable-block absolute cursor-move border-2 ${
+            className: `draggable-block absolute cursor-move border-2 min-w-[100px] min-h-[40px] ${
                 selectedBlock?.id === block.id ? 'border-blue-500' : 'border-transparent hover:border-gray-300'
             }`,
             style: {
                 left: block.position.x,
                 top: block.position.y,
-                ...block.styles
+                fontSize: (block.content.fontSize as string) || '16px',
+                color: (block.content.color as string) || '#000000',
+                backgroundColor: (block.content.backgroundColor as string) || 'transparent',
+                padding: (block.content.padding as string) || '8px',
+                borderRadius: (block.content.borderRadius as string) || '0px',
             },
             onClick: () => setSelectedBlock(block)
         };
@@ -216,46 +190,50 @@ export default function FunnelEditor() {
         switch (block.type) {
             case 'text':
                 return (
-                    <div {...commonProps}>
+                    <div key={block.id} {...commonProps}>
                         <div 
                             contentEditable
                             suppressContentEditableWarning
-                            onBlur={(e) => updateBlockContent(block.id, e.target.textContent || '')}
+                            onBlur={(e) => updateBlockContent(block.id, { text: e.target.textContent || '' })}
                             style={{ outline: 'none' }}
                         >
-                            {block.content}
+                            {(block.content.text as string) || 'Enter text here'}
                         </div>
                     </div>
                 );
             case 'image':
                 return (
-                    <div {...commonProps}>
+                    <div key={block.id} {...commonProps}>
                         <img 
-                            src={block.content} 
-                            alt="Block content" 
+                            src={block.content.src as string || 'https://via.placeholder.com/300x200?text=Image'} 
+                            alt={block.content.alt as string || 'Image'} 
                             className="max-w-full h-auto"
-                            style={{ borderRadius: block.styles.borderRadius }}
+                            style={{ 
+                                borderRadius: (block.content.borderRadius as string) || '8px',
+                                width: (block.content.width as string) || '300px',
+                                height: (block.content.height as string) || '200px'
+                            }}
                         />
                     </div>
                 );
             case 'button':
                 return (
-                    <button {...commonProps} className={`${commonProps.className} px-4 py-2 font-medium`}>
-                        {block.content}
+                    <button key={block.id} {...commonProps} className={`${commonProps.className} px-4 py-2 font-medium`}>
+                        {(block.content.text as string) || 'Click Me'}
                     </button>
                 );
             case 'form':
                 return (
-                    <div {...commonProps} className={`${commonProps.className} min-w-64`}>
+                    <div key={block.id} {...commonProps} className={`${commonProps.className} min-w-64`}>
                         <div className="space-y-4">
-                            <h3 className="font-semibold">Subscribe to our newsletter</h3>
+                            <h3 className="font-semibold">{(block.content.title as string) || 'Subscribe to our newsletter'}</h3>
                             <input 
                                 type="email" 
-                                placeholder="Enter your email" 
+                                placeholder={(block.content.placeholder as string) || 'Enter your email'}
                                 className="w-full p-2 border border-gray-300 rounded"
                             />
                             <button className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700">
-                                Subscribe
+                                {(block.content.buttonText as string) || 'Subscribe'}
                             </button>
                         </div>
                     </div>
@@ -313,7 +291,7 @@ export default function FunnelEditor() {
                             Layers
                         </h3>
                         <div className="space-y-1">
-                            {funnel.blocks.map(block => (
+                            {funnel.content.map((block: Block) => (
                                 <div 
                                     key={block.id}
                                     className={`p-2 text-sm rounded cursor-pointer flex items-center justify-between ${
@@ -335,7 +313,7 @@ export default function FunnelEditor() {
                                     </button>
                                 </div>
                             ))}
-                            {funnel.blocks.length === 0 && (
+                            {funnel.content.length === 0 && (
                                 <p className="text-xs text-gray-500">No blocks added yet</p>
                             )}
                         </div>
@@ -351,7 +329,26 @@ export default function FunnelEditor() {
                                 <Link href={route('dashboard')} className="text-gray-600 hover:text-gray-900">
                                     ← Back to Dashboard
                                 </Link>
-                                <div className="text-lg font-semibold">{funnel.name}</div>
+                                {isEditingName ? (
+                                    <input
+                                        ref={nameInputRef}
+                                        type="text"
+                                        value={tempName}
+                                        onChange={(e) => setTempName(e.target.value)}
+                                        onBlur={handleNameSave}
+                                        onKeyDown={handleNameKeyDown}
+                                        className="text-lg font-semibold bg-transparent border-none outline-none focus:bg-white focus:border focus:border-blue-500 focus:px-2 focus:py-1 focus:rounded"
+                                        autoFocus
+                                    />
+                                ) : (
+                                    <div 
+                                        className="text-lg font-semibold cursor-pointer hover:bg-gray-100 px-2 py-1 rounded transition-colors"
+                                        onClick={handleNameEdit}
+                                        title="Click to edit funnel name"
+                                    >
+                                        {funnel.name}
+                                    </div>
+                                )}
                             </div>
                             
                             <div className="flex items-center space-x-4">
@@ -379,19 +376,59 @@ export default function FunnelEditor() {
 
                                 {/* Action Buttons */}
                                 <div className="flex items-center space-x-2">
-                                    <button className="p-2 text-gray-600 hover:text-gray-900">
+                                    <button 
+                                        onClick={undo}
+                                        disabled={!canUndo()}
+                                        className={`p-2 transition-colors ${
+                                            canUndo() 
+                                                ? 'text-gray-600 hover:text-gray-900' 
+                                                : 'text-gray-300 cursor-not-allowed'
+                                        }`}
+                                    >
                                         <Undo className="w-4 h-4" />
                                     </button>
-                                    <button className="p-2 text-gray-600 hover:text-gray-900">
+                                    <button 
+                                        onClick={redo}
+                                        disabled={!canRedo()}
+                                        className={`p-2 transition-colors ${
+                                            canRedo() 
+                                                ? 'text-gray-600 hover:text-gray-900' 
+                                                : 'text-gray-300 cursor-not-allowed'
+                                        }`}
+                                    >
                                         <Redo className="w-4 h-4" />
                                     </button>
                                     <button className="flex items-center space-x-2 px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200">
                                         <Eye className="w-4 h-4" />
                                         <span>Preview</span>
                                     </button>
-                                    <button className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                                    <button 
+                                        onClick={async () => {
+                                            try {
+                                                await saveFunnel();
+                                                console.log('Funnel saved successfully!');
+                                            } catch (error) {
+                                                console.error('Failed to save funnel:', error);
+                                            }
+                                        }}
+                                        disabled={isSaving}
+                                        className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
+                                            isSaving 
+                                                ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                                                : isDirty
+                                                    ? 'bg-orange-600 text-white hover:bg-orange-700'
+                                                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                                        }`}
+                                    >
                                         <Save className="w-4 h-4" />
-                                        <span>Save</span>
+                                        <span>
+                                            {isSaving 
+                                                ? 'Saving...' 
+                                                : isDirty 
+                                                    ? 'Save Changes' 
+                                                    : 'Save'
+                                            }
+                                        </span>
                                     </button>
                                 </div>
                             </div>
@@ -410,10 +447,10 @@ export default function FunnelEditor() {
                                     backgroundColor: funnel.settings.backgroundColor 
                                 }}
                             >
-                                {funnel.blocks.map(renderBlock)}
+                                {funnel.content.map(renderBlock)}
                                 
                                 {/* Empty State */}
-                                {funnel.blocks.length === 0 && (
+                                {funnel.content.length === 0 && (
                                     <div className="flex items-center justify-center h-96 text-gray-500">
                                         <div className="text-center">
                                             <Plus className="w-12 h-12 mx-auto mb-4 text-gray-400" />
@@ -444,8 +481,8 @@ export default function FunnelEditor() {
                                     {selectedBlock.type === 'image' ? (
                                         <input 
                                             type="url"
-                                            value={selectedBlock.content}
-                                            onChange={(e) => updateBlockContent(selectedBlock.id, e.target.value)}
+                                            value={(selectedBlock.content.src as string) || ''}
+                                            onChange={(e) => updateBlockContent(selectedBlock.id, { src: e.target.value })}
                                             placeholder="Image URL"
                                             className="w-full p-2 border border-gray-300 rounded-lg"
                                         />
@@ -453,8 +490,8 @@ export default function FunnelEditor() {
                                         <div className="text-sm text-gray-500">Form configuration coming soon</div>
                                     ) : (
                                         <textarea 
-                                            value={selectedBlock.content}
-                                            onChange={(e) => updateBlockContent(selectedBlock.id, e.target.value)}
+                                            value={(selectedBlock.content.text as string) || ''}
+                                            onChange={(e) => updateBlockContent(selectedBlock.id, { text: e.target.value })}
                                             className="w-full p-2 border border-gray-300 rounded-lg"
                                             rows={3}
                                         />
@@ -467,8 +504,8 @@ export default function FunnelEditor() {
                                     </label>
                                     <input 
                                         type="color"
-                                        value={selectedBlock.styles.backgroundColor || '#ffffff'}
-                                        onChange={(e) => updateBlockStyles(selectedBlock.id, { backgroundColor: e.target.value })}
+                                        value={(selectedBlock.content.backgroundColor as string) || '#ffffff'}
+                                        onChange={(e) => updateBlockContent(selectedBlock.id, { backgroundColor: e.target.value })}
                                         className="w-full h-10 border border-gray-300 rounded-lg"
                                     />
                                 </div>
@@ -479,8 +516,8 @@ export default function FunnelEditor() {
                                     </label>
                                     <input 
                                         type="color"
-                                        value={selectedBlock.styles.color || '#000000'}
-                                        onChange={(e) => updateBlockStyles(selectedBlock.id, { color: e.target.value })}
+                                        value={(selectedBlock.content.color as string) || '#000000'}
+                                        onChange={(e) => updateBlockContent(selectedBlock.id, { color: e.target.value })}
                                         className="w-full h-10 border border-gray-300 rounded-lg"
                                     />
                                 </div>
@@ -491,8 +528,8 @@ export default function FunnelEditor() {
                                     </label>
                                     <input 
                                         type="text"
-                                        value={selectedBlock.styles.fontSize || '16px'}
-                                        onChange={(e) => updateBlockStyles(selectedBlock.id, { fontSize: e.target.value })}
+                                        value={(selectedBlock.content.fontSize as string) || '16px'}
+                                        onChange={(e) => updateBlockContent(selectedBlock.id, { fontSize: e.target.value })}
                                         placeholder="16px"
                                         className="w-full p-2 border border-gray-300 rounded-lg"
                                     />
@@ -504,8 +541,8 @@ export default function FunnelEditor() {
                                     </label>
                                     <input 
                                         type="text"
-                                        value={selectedBlock.styles.padding || '16px'}
-                                        onChange={(e) => updateBlockStyles(selectedBlock.id, { padding: e.target.value })}
+                                        value={(selectedBlock.content.padding as string) || '16px'}
+                                        onChange={(e) => updateBlockContent(selectedBlock.id, { padding: e.target.value })}
                                         placeholder="16px"
                                         className="w-full p-2 border border-gray-300 rounded-lg"
                                     />
@@ -517,8 +554,8 @@ export default function FunnelEditor() {
                                     </label>
                                     <input 
                                         type="text"
-                                        value={selectedBlock.styles.borderRadius || '0px'}
-                                        onChange={(e) => updateBlockStyles(selectedBlock.id, { borderRadius: e.target.value })}
+                                        value={(selectedBlock.content.borderRadius as string) || '0px'}
+                                        onChange={(e) => updateBlockContent(selectedBlock.id, { borderRadius: e.target.value })}
                                         placeholder="8px"
                                         className="w-full p-2 border border-gray-300 rounded-lg"
                                     />

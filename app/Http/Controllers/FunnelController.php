@@ -64,16 +64,16 @@ class FunnelController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
-            'content' => 'nullable|array',
-            'settings' => 'nullable|array',
+            'content' => 'nullable|json',
+            'settings' => 'nullable|json',
         ]);
 
         $funnel = auth()->user()->funnels()->create([
             'name' => $request->name,
             'slug' => Str::slug($request->name),
             'description' => $request->description,
-            'content' => $request->content ?? [],
-            'settings' => $request->settings ?? [],
+            'content' => $request->content ? json_decode($request->content, true) : [],
+            'settings' => $request->settings ? json_decode($request->settings, true) : [],
         ]);
 
         return redirect()->route('funnel-editor.edit', $funnel->id)
@@ -123,15 +123,15 @@ class FunnelController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
-            'content' => 'nullable|array',
-            'settings' => 'nullable|array',
+            'content' => 'nullable|json',
+            'settings' => 'nullable|json',
         ]);
 
         $funnel->update([
             'name' => $request->name,
             'description' => $request->description,
-            'content' => $request->content,
-            'settings' => $request->settings,
+            'content' => $request->content ? json_decode($request->content, true) : $funnel->content,
+            'settings' => $request->settings ? json_decode($request->settings, true) : $funnel->settings,
         ]);
 
         return back()->with('success', 'Funnel updated successfully!');
