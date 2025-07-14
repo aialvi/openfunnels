@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { NestedContentBlock } from './NestedContentBlock';
@@ -210,13 +210,6 @@ export default function ContentHierarchyDemo() {
     errors: string[];
     warnings: string[];
   } | null>(null);
-
-  // Simulate handling a drop - in a real app this would be used with react-dnd
-  interface DroppedItem {
-    id?: string;
-    type: ContentBlockType;
-    defaultContent?: Record<string, unknown>;
-  }
 
   // Handle adding a demo block
   const handleAddDemoBlock = (type: ContentBlockType) => {

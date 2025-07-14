@@ -35,7 +35,6 @@ const ItemTypes = {
 
 export function NestedContentBlock({
   block,
-  onUpdate,
   onDelete,
   onDuplicate,
   onSelect,
@@ -48,7 +47,6 @@ export function NestedContentBlock({
   const [showControls, setShowControls] = useState(false);
   
   // Check if block has children and if it can have children based on validation rules
-  const childCount = block.children?.length || 0;
   const canHaveChildren = getAllowedChildren(block.type as ContentBlockType).length > 0;
   
   // Set up drag functionality
