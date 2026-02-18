@@ -1,14 +1,14 @@
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
-import { 
-    Plus, 
-    Edit3, 
-    Eye, 
-    Copy, 
-    Trash2, 
+import {
+    Plus,
+    Edit3,
+    Eye,
+    Copy,
+    Trash2,
     BarChart3,
     Users,
     TrendingUp
@@ -50,23 +50,23 @@ export default function Funnels({ funnels, stats }: FunnelsPageProps) {
 
     useEffect(() => {
         const ctx = gsap.context(() => {
-            gsap.fromTo('.funnel-card', 
+            gsap.fromTo('.funnel-card',
                 { opacity: 0, y: 30 },
-                { 
-                    opacity: 1, 
-                    y: 0, 
-                    duration: 0.6, 
+                {
+                    opacity: 1,
+                    y: 0,
+                    duration: 0.6,
                     stagger: 0.1,
                     ease: 'power3.out'
                 }
             );
 
-            gsap.fromTo('.stats-card', 
+            gsap.fromTo('.stats-card',
                 { opacity: 0, scale: 0.9 },
-                { 
-                    opacity: 1, 
-                    scale: 1, 
-                    duration: 0.5, 
+                {
+                    opacity: 1,
+                    scale: 1,
+                    duration: 0.5,
                     stagger: 0.1,
                     ease: 'power3.out'
                 }
@@ -78,10 +78,10 @@ export default function Funnels({ funnels, stats }: FunnelsPageProps) {
 
     const getStatusColor = (status: string) => {
         switch (status) {
-            case 'published': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-            case 'draft': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
-            case 'archived': return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
-            default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+            case 'published': return 'bg-green-500/10 text-green-500 border border-green-500/20';
+            case 'draft': return 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20';
+            case 'archived': return 'bg-muted text-muted-foreground border border-border';
+            default: return 'bg-muted text-muted-foreground border border-border';
         }
     };
 
@@ -101,12 +101,12 @@ export default function Funnels({ funnels, stats }: FunnelsPageProps) {
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Your Funnels</h1>
-                        <p className="text-gray-600 dark:text-gray-400">Create and manage your marketing funnels</p>
+                        <h1 className="text-2xl font-bold text-foreground">Your Funnels</h1>
+                        <p className="text-muted-foreground">Create and manage your marketing funnels</p>
                     </div>
-                    <Link 
-                        href="/funnel-editor" 
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
+                    <Link
+                        href="/funnel-editor"
+                        className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
                     >
                         <Plus className="h-4 w-4" />
                         Create Funnel
@@ -115,43 +115,47 @@ export default function Funnels({ funnels, stats }: FunnelsPageProps) {
 
                 {/* Stats Overview */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div className="stats-card bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-                        <div className="flex items-center justify-between">
+                    <div className="stats-card bg-card rounded-xl p-6 border border-border relative overflow-hidden">
+                        <div className="absolute inset-0 bg-chart-3/5"></div>
+                        <div className="relative flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Funnels</p>
-                                <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total_funnels}</p>
+                                <p className="text-sm font-medium text-muted-foreground">Total Funnels</p>
+                                <p className="text-2xl font-bold text-foreground">{stats.total_funnels}</p>
                             </div>
-                            <BarChart3 className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+                            <BarChart3 className="h-8 w-8 text-chart-3" />
                         </div>
                     </div>
 
-                    <div className="stats-card bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-                        <div className="flex items-center justify-between">
+                    <div className="stats-card bg-card rounded-xl p-6 border border-border relative overflow-hidden">
+                        <div className="absolute inset-0 bg-chart-2/5"></div>
+                        <div className="relative flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Views</p>
-                                <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatNumber(stats.total_views)}</p>
+                                <p className="text-sm font-medium text-muted-foreground">Total Views</p>
+                                <p className="text-2xl font-bold text-foreground">{formatNumber(stats.total_views)}</p>
                             </div>
-                            <Eye className="h-8 w-8 text-green-600 dark:text-green-400" />
+                            <Eye className="h-8 w-8 text-chart-2" />
                         </div>
                     </div>
 
-                    <div className="stats-card bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-                        <div className="flex items-center justify-between">
+                    <div className="stats-card bg-card rounded-xl p-6 border border-border relative overflow-hidden">
+                        <div className="absolute inset-0 bg-chart-5/5"></div>
+                        <div className="relative flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Conversions</p>
-                                <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatNumber(stats.total_conversions)}</p>
+                                <p className="text-sm font-medium text-muted-foreground">Total Conversions</p>
+                                <p className="text-2xl font-bold text-foreground">{formatNumber(stats.total_conversions)}</p>
                             </div>
-                            <Users className="h-8 w-8 text-purple-600 dark:text-purple-400" />
+                            <Users className="h-8 w-8 text-chart-5" />
                         </div>
                     </div>
 
-                    <div className="stats-card bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-                        <div className="flex items-center justify-between">
+                    <div className="stats-card bg-card rounded-xl p-6 border border-border relative overflow-hidden">
+                        <div className="absolute inset-0 bg-chart-1/5"></div>
+                        <div className="relative flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Avg. Conversion Rate</p>
-                                <p className="text-2xl font-bold text-gray-900 dark:text-white">{Number(stats.avg_conversion_rate || 0).toFixed(1)}%</p>
+                                <p className="text-sm font-medium text-muted-foreground">Avg. Conversion Rate</p>
+                                <p className="text-2xl font-bold text-foreground">{Number(stats.avg_conversion_rate || 0).toFixed(1)}%</p>
                             </div>
-                            <TrendingUp className="h-8 w-8 text-orange-600 dark:text-orange-400" />
+                            <TrendingUp className="h-8 w-8 text-chart-1" />
                         </div>
                     </div>
                 </div>
@@ -159,18 +163,18 @@ export default function Funnels({ funnels, stats }: FunnelsPageProps) {
                 {/* Funnels Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {funnels.map((funnel) => (
-                        <div 
-                            key={funnel.id} 
-                            className="funnel-card bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-lg transition-shadow"
+                        <div
+                            key={funnel.id}
+                            className="funnel-card bg-card rounded-xl border border-border overflow-hidden hover:border-primary/50 transition-colors group"
                         >
                             {/* Funnel Header */}
                             <div className="p-6">
                                 <div className="flex items-start justify-between mb-4">
                                     <div className="flex-1">
-                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+                                        <h3 className="text-lg font-semibold text-foreground mb-1 group-hover:text-primary transition-colors">
                                             {funnel.name}
                                         </h3>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                                        <p className="text-sm text-muted-foreground">
                                             Updated {funnel.updated_at}
                                         </p>
                                     </div>
@@ -182,26 +186,26 @@ export default function Funnels({ funnels, stats }: FunnelsPageProps) {
                                 {/* Funnel Stats */}
                                 <div className="grid grid-cols-2 gap-4 mb-4">
                                     <div>
-                                        <p className="text-sm text-gray-600 dark:text-gray-400">Views</p>
-                                        <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                                        <p className="text-sm text-muted-foreground">Views</p>
+                                        <p className="text-lg font-semibold text-foreground">
                                             {formatNumber(funnel.views)}
                                         </p>
                                     </div>
                                     <div>
-                                        <p className="text-sm text-gray-600 dark:text-gray-400">Conversions</p>
-                                        <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                                        <p className="text-sm text-muted-foreground">Conversions</p>
+                                        <p className="text-lg font-semibold text-foreground">
                                             {formatNumber(funnel.conversions)}
                                         </p>
                                     </div>
                                     <div>
-                                        <p className="text-sm text-gray-600 dark:text-gray-400">Conversion Rate</p>
-                                        <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                                        <p className="text-sm text-muted-foreground">Conversion Rate</p>
+                                        <p className="text-lg font-semibold text-foreground">
                                             {Number(funnel.conversion_rate || 0).toFixed(1)}%
                                         </p>
                                     </div>
                                     <div>
-                                        <p className="text-sm text-gray-600 dark:text-gray-400">Status</p>
-                                        <p className={`text-sm font-medium ${funnel.is_published ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'}`}>
+                                        <p className="text-sm text-muted-foreground">Status</p>
+                                        <p className={`text-sm font-medium ${funnel.is_published ? 'text-green-500' : 'text-yellow-500'}`}>
                                             {funnel.is_published ? 'Live' : 'Draft'}
                                         </p>
                                     </div>
@@ -209,21 +213,36 @@ export default function Funnels({ funnels, stats }: FunnelsPageProps) {
 
                                 {/* Action Buttons */}
                                 <div className="flex items-center gap-2">
-                                    <Link 
+                                    <Link
                                         href={`/funnel-editor/${funnel.id}`}
-                                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                                        className="flex-1 bg-secondary hover:bg-secondary/80 text-secondary-foreground px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
                                     >
                                         <Edit3 className="h-4 w-4" />
                                         Edit
                                     </Link>
-                                    <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+                                    <Link
+                                        href={route('funnel.preview', funnel.id)}
+                                        className="bg-secondary hover:bg-secondary/80 text-secondary-foreground px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                                    >
                                         <Eye className="h-4 w-4" />
                                         Preview
-                                    </button>
-                                    <button className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 px-3 py-2 rounded-lg text-sm font-medium transition-colors">
+                                    </Link>
+                                    <button
+                                        onClick={() => router.post(route('funnels.duplicate', funnel.id))}
+                                        className="bg-secondary hover:bg-secondary/80 text-secondary-foreground px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+                                        title="Duplicate funnel"
+                                    >
                                         <Copy className="h-4 w-4" />
                                     </button>
-                                    <button className="bg-red-100 hover:bg-red-200 dark:bg-red-900 dark:hover:bg-red-800 text-red-600 dark:text-red-400 px-3 py-2 rounded-lg text-sm font-medium transition-colors">
+                                    <button
+                                        onClick={() => {
+                                            if (confirm(`Delete "${funnel.name}"? This cannot be undone.`)) {
+                                                router.delete(route('funnels.destroy', funnel.id));
+                                            }
+                                        }}
+                                        className="bg-destructive/10 hover:bg-destructive/20 text-destructive px-3 py-2 rounded-lg text-sm font-medium transition-colors border border-destructive/20"
+                                        title="Delete funnel"
+                                    >
                                         <Trash2 className="h-4 w-4" />
                                     </button>
                                 </div>
@@ -234,15 +253,15 @@ export default function Funnels({ funnels, stats }: FunnelsPageProps) {
                     {/* Empty State */}
                     {funnels.length === 0 && (
                         <div className="col-span-full">
-                            <div className="text-center py-12">
-                                <BarChart3 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No funnels yet</h3>
-                                <p className="text-gray-600 dark:text-gray-400 mb-6">
+                            <div className="text-center py-12 border-2 border-dashed border-border rounded-xl">
+                                <BarChart3 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                                <h3 className="text-lg font-medium text-foreground mb-2">No funnels yet</h3>
+                                <p className="text-muted-foreground mb-6">
                                     Get started by creating your first funnel
                                 </p>
-                                <Link 
-                                    href="/funnel-editor" 
-                                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors inline-flex items-center gap-2"
+                                <Link
+                                    href="/funnel-editor"
+                                    className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-lg font-medium transition-colors inline-flex items-center gap-2"
                                 >
                                     <Plus className="h-4 w-4" />
                                     Create Your First Funnel

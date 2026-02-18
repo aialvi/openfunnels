@@ -34,15 +34,15 @@ function createBlockFromDrop(dropItem: { type: string; defaultContent: Record<st
 }
 
 // Render different block types
-function BlockRenderer({ 
-    block, 
-    onUpdate, 
-    onDelete, 
-    isSelected, 
-    onSelect 
-}: { 
-    block: ContentBlock; 
-    onUpdate: (updates: Partial<ContentBlock>) => void; 
+function BlockRenderer({
+    block,
+    onUpdate,
+    onDelete,
+    isSelected,
+    onSelect
+}: {
+    block: ContentBlock;
+    onUpdate: (updates: Partial<ContentBlock>) => void;
     onDelete: () => void;
     isSelected: boolean;
     onSelect: () => void;
@@ -62,7 +62,7 @@ function BlockRenderer({
         borderRadius: block.settings.borderRadius,
     };
 
-    const wrapperClass = `relative group ${isSelected ? 'ring-2 ring-blue-500' : 'hover:ring-1 hover:ring-gray-300'}`;
+    const wrapperClass = `relative group ${isSelected ? 'ring-2 ring-primary' : 'hover:ring-1 hover:ring-primary/30'}`;
 
     switch (block.type) {
         case 'text':
@@ -88,7 +88,7 @@ function BlockRenderer({
                                 e.stopPropagation();
                                 onDelete();
                             }}
-                            className="absolute top-0 right-0 -mt-2 -mr-2 w-6 h-6 bg-red-500 text-white rounded-full text-xs hover:bg-red-600"
+                            className="absolute top-0 right-0 -mt-2 -mr-2 w-6 h-6 bg-destructive text-destructive-foreground rounded-full text-xs hover:bg-destructive/90"
                         >
                             ×
                         </button>
@@ -114,7 +114,7 @@ function BlockRenderer({
                                 e.stopPropagation();
                                 onDelete();
                             }}
-                            className="absolute top-0 right-0 -mt-2 -mr-2 w-6 h-6 bg-red-500 text-white rounded-full text-xs hover:bg-red-600"
+                            className="absolute top-0 right-0 -mt-2 -mr-2 w-6 h-6 bg-destructive text-destructive-foreground rounded-full text-xs hover:bg-destructive/90"
                         >
                             ×
                         </button>
@@ -126,16 +126,14 @@ function BlockRenderer({
             return (
                 <div className={wrapperClass} style={blockStyle} onClick={onSelect}>
                     <button
-                        className={`px-6 py-3 font-medium rounded transition-colors ${
-                            block.content.variant === 'primary'
-                                ? 'bg-blue-600 text-white hover:bg-blue-700'
-                                : 'bg-gray-200 text-gray-900 hover:bg-gray-300'
-                        } ${
-                            block.content.fullWidth ? 'w-full' : ''
-                        }`}
+                        className={`px-6 py-3 font-medium rounded transition-colors ${block.content.variant === 'primary'
+                                ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                                : 'bg-muted text-foreground hover:bg-muted/80'
+                            } ${block.content.fullWidth ? 'w-full' : ''
+                            }`}
                         style={{
-                            fontSize: block.content.size === 'large' ? '18px' : 
-                                     block.content.size === 'small' ? '14px' : '16px',
+                            fontSize: block.content.size === 'large' ? '18px' :
+                                block.content.size === 'small' ? '14px' : '16px',
                         }}
                     >
                         {(block.content.text as string) || 'Click Me'}
@@ -146,7 +144,7 @@ function BlockRenderer({
                                 e.stopPropagation();
                                 onDelete();
                             }}
-                            className="absolute top-0 right-0 -mt-2 -mr-2 w-6 h-6 bg-red-500 text-white rounded-full text-xs hover:bg-red-600"
+                            className="absolute top-0 right-0 -mt-2 -mr-2 w-6 h-6 bg-destructive text-destructive-foreground rounded-full text-xs hover:bg-destructive/90"
                         >
                             ×
                         </button>
@@ -156,16 +154,16 @@ function BlockRenderer({
 
         case 'spacer':
             return (
-                <div 
-                    className={`${wrapperClass} border-2 border-dashed border-gray-300`} 
-                    style={{ 
-                        ...blockStyle, 
+                <div
+                    className={`${wrapperClass} border-2 border-dashed border-border`}
+                    style={{
+                        ...blockStyle,
                         height: block.content.height as string || '50px',
                         minHeight: '20px'
                     }}
                     onClick={onSelect}
                 >
-                    <div className="flex items-center justify-center h-full text-xs text-gray-400">
+                    <div className="flex items-center justify-center h-full text-xs text-muted-foreground">
                         Spacer ({String(block.content.height)})
                     </div>
                     {isSelected && (
@@ -174,7 +172,7 @@ function BlockRenderer({
                                 e.stopPropagation();
                                 onDelete();
                             }}
-                            className="absolute top-0 right-0 -mt-2 -mr-2 w-6 h-6 bg-red-500 text-white rounded-full text-xs hover:bg-red-600"
+                            className="absolute top-0 right-0 -mt-2 -mr-2 w-6 h-6 bg-destructive text-destructive-foreground rounded-full text-xs hover:bg-destructive/90"
                         >
                             ×
                         </button>
@@ -185,7 +183,7 @@ function BlockRenderer({
         default:
             return (
                 <div className={wrapperClass} style={blockStyle} onClick={onSelect}>
-                    <div className="p-4 bg-gray-100 rounded text-center text-gray-600">
+                    <div className="p-4 bg-muted rounded text-center text-muted-foreground">
                         {block.type} block (preview coming soon)
                     </div>
                     {isSelected && (
@@ -194,7 +192,7 @@ function BlockRenderer({
                                 e.stopPropagation();
                                 onDelete();
                             }}
-                            className="absolute top-0 right-0 -mt-2 -mr-2 w-6 h-6 bg-red-500 text-white rounded-full text-xs hover:bg-red-600"
+                            className="absolute top-0 right-0 -mt-2 -mr-2 w-6 h-6 bg-destructive text-destructive-foreground rounded-full text-xs hover:bg-destructive/90"
                         >
                             ×
                         </button>
@@ -214,7 +212,7 @@ export default function ColumnDropZone({
 }: DropZoneProps) {
     const dropRef = useRef<HTMLDivElement>(null);
     const [validationError, setValidationError] = useState<string | null>(null);
-    
+
     const blocks = (column.blocks as unknown) as ContentBlock[];
     const currentBlockTypes = blocks.map(block => block.type as ContentBlockType);
 
@@ -223,13 +221,13 @@ export default function ColumnDropZone({
         canDrop: (item: { type: string; defaultContent: Record<string, unknown> }) => {
             const childType = item.type as ContentBlockType;
             const validation = canAddChild('column', childType, currentBlockTypes);
-            
+
             if (!validation.allowed) {
                 setValidationError(validation.reason || 'Cannot add this content here');
                 setTimeout(() => setValidationError(null), 3000);
                 return false;
             }
-            
+
             return true;
         },
         drop: (item: { type: string; defaultContent: Record<string, unknown> }) => {
@@ -250,12 +248,10 @@ export default function ColumnDropZone({
     return (
         <div
             ref={dropRef}
-            className={`min-h-[100px] p-2 transition-colors relative ${
-                isSelected ? 'bg-blue-50 border-blue-300' : ''
-            } ${
-                isOver && canDrop ? 'bg-green-50 border-green-300' : 
-                isOver && !canDrop ? 'bg-red-50 border-red-300' : 'border-gray-200'
-            } border-2 border-dashed`}
+            className={`min-h-[100px] p-2 transition-colors relative ${isSelected ? 'bg-primary/5 border-primary' : ''
+                } ${isOver && canDrop ? 'bg-chart-2/10 border-chart-2' :
+                    isOver && !canDrop ? 'bg-destructive/10 border-destructive' : 'border-border'
+                } border-2 border-dashed`}
             onClick={onSelect}
         >
             {/* Validation error message */}
@@ -267,12 +263,12 @@ export default function ColumnDropZone({
             )}
 
             {blocks.length === 0 ? (
-                <div className="flex items-center justify-center h-24 text-gray-400">
+                <div className="flex items-center justify-center h-24 text-muted-foreground">
                     <div className="text-center">
-                        <Plus className="w-8 h-8 mx-auto mb-2" />
+                        <Plus className="w-8 h-8 mx-auto mb-2 text-muted-foreground/50" />
                         <p className="text-sm">
-                            Drop {allowedChildren.length > 3 
-                                ? `${allowedChildren.slice(0, 3).join(', ')}...` 
+                            Drop {allowedChildren.length > 3
+                                ? `${allowedChildren.slice(0, 3).join(', ')}...`
                                 : allowedChildren.join(', ')} blocks here
                         </p>
                         {isOver && canDrop && (
@@ -292,7 +288,7 @@ export default function ColumnDropZone({
                             onUpdate={(updates) => onBlockUpdate(column.id, block.id, updates)}
                             onDelete={() => onBlockDelete(column.id, block.id)}
                             isSelected={false} // You'd track selected block here
-                            onSelect={() => {}} // Handle block selection
+                            onSelect={() => { }} // Handle block selection
                         />
                     ))}
                 </div>

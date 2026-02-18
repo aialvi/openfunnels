@@ -17,33 +17,35 @@ class FunnelController extends Controller
     public function index()
     {
         $user = auth()->user();
-        
+
         $funnels = $user->funnels()
             ->orderBy('updated_at', 'desc')
-            ->get()
-            ->map(function ($funnel) {
-                return [
-                    'id' => $funnel->id,
-                    'name' => $funnel->name,
-                    'slug' => $funnel->slug,
-                    'status' => $funnel->status,
-                    'is_published' => $funnel->is_published,
-                    'views' => $funnel->views,
-                    'conversions' => $funnel->conversions,
-                    'conversion_rate' => $funnel->conversion_rate,
-                    'updated_at' => $funnel->updated_at->format('M j, Y'),
-                ];
-            });
+            ->get();
 
+        // Compute stats from the already-loaded collection — no extra queries.
         $stats = [
-            'total_funnels' => $user->funnels()->count(),
-            'total_views' => $user->funnels()->sum('views'),
-            'total_conversions' => $user->funnels()->sum('conversions'),
-            'avg_conversion_rate' => $user->funnels()->avg('conversion_rate') ?? 0,
+            'total_funnels' => $funnels->count(),
+            'total_views' => $funnels->sum('views'),
+            'total_conversions' => $funnels->sum('conversions'),
+            'avg_conversion_rate' => $funnels->avg('conversion_rate') ?? 0,
         ];
 
+        $funnelData = $funnels->map(function ($funnel) {
+            return [
+                'id' => $funnel->id,
+                'name' => $funnel->name,
+                'slug' => $funnel->slug,
+                'status' => $funnel->status,
+                'is_published' => $funnel->is_published,
+                'views' => $funnel->views,
+                'conversions' => $funnel->conversions,
+                'conversion_rate' => $funnel->conversion_rate,
+                'updated_at' => $funnel->updated_at->format('M j, Y'),
+            ];
+        });
+
         return Inertia::render('funnels', [
-            'funnels' => $funnels,
+            'funnels' => $funnelData,
             'stats' => $stats,
         ]);
     }
@@ -72,7 +74,7 @@ class FunnelController extends Controller
         $baseSlug = Str::slug($request->name);
         $slug = $baseSlug;
         $counter = 1;
-        
+
         while (auth()->user()->funnels()->where('slug', $slug)->exists()) {
             $slug = $baseSlug . '-' . $counter;
             $counter++;
@@ -95,11 +97,25 @@ class FunnelController extends Controller
      */
     public function show(Funnel $funnel)
     {
-        $this->authorize('view', $funnel);
-        
+        // Published funnels are publicly viewable; unpublished require ownership.
+        if (!$funnel->is_published) {
+            $this->authorize('view', $funnel);
+        }
+
         $funnel->incrementViews();
 
-        return view('funnel.show', compact('funnel'));
+        return Inertia::render('funnel-preview', [
+            'funnel' => [
+                'id' => $funnel->id,
+                'name' => $funnel->name,
+                'slug' => $funnel->slug,
+                'description' => $funnel->description,
+                'content' => $funnel->content,
+                'settings' => $funnel->settings,
+                'status' => $funnel->status,
+                'is_published' => $funnel->is_published,
+            ],
+        ]);
     }
 
     /**
@@ -164,7 +180,7 @@ class FunnelController extends Controller
             $baseSlug = Str::slug($request->name);
             $slug = $baseSlug;
             $counter = 1;
-            
+
             while (auth()->user()->funnels()->where('slug', $slug)->where('id', '!=', $funnel->id)->exists()) {
                 $slug = $baseSlug . '-' . $counter;
                 $counter++;
@@ -217,5 +233,24 @@ class FunnelController extends Controller
         $funnel->unpublish();
 
         return back()->with('success', 'Funnel unpublished successfully!');
+    }
+
+    /**
+     * Duplicate the funnel.
+     */
+    public function duplicate(Funnel $funnel)
+    {
+        $this->authorize('create', Funnel::class);
+
+        $newFunnel = $funnel->replicate(['slug', 'views', 'conversions', 'conversion_rate', 'created_at', 'updated_at']);
+        $newFunnel->name = $funnel->name . ' (Copy)';
+        $newFunnel->status = 'draft';
+        $newFunnel->is_published = false;
+        $newFunnel->published_at = null;
+        $newFunnel->slug = Str::slug($newFunnel->name) . '-' . Str::random(5);
+        $newFunnel->save();
+
+        return redirect()->route('funnels.index')
+            ->with('success', 'Funnel duplicated successfully!');
     }
 }

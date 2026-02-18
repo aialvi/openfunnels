@@ -1,10 +1,10 @@
 import React, { useRef, useCallback } from 'react';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { 
-    Layout, 
-    Grid, 
-    Columns, 
+import {
+    Layout,
+    Grid,
+    Columns,
     Move,
     Settings,
     Trash2,
@@ -115,18 +115,17 @@ function LayoutTemplate({ template }: { template: typeof LAYOUT_TEMPLATES[0] }) 
     return (
         <div
             ref={dragRef}
-            className={`p-3 bg-white border border-gray-200 rounded-lg cursor-move hover:border-blue-400 transition-colors ${
-                isDragging ? 'opacity-50' : ''
-            }`}
+            className={`p-3 bg-card border border-border rounded-lg cursor-move hover:border-primary/50 transition-all ${isDragging ? 'opacity-50' : ''
+                }`}
         >
             <div className="flex flex-col items-center text-center space-y-2">
-                <div className="text-gray-600">{template.icon}</div>
-                <span className="text-xs font-medium text-gray-700">{template.name}</span>
+                <div className="text-muted-foreground group-hover:text-primary transition-colors">{template.icon}</div>
+                <span className="text-xs font-medium text-foreground">{template.name}</span>
                 <div className="flex space-x-1">
                     {template.columns.map((col, index) => (
                         <div
                             key={index}
-                            className="h-4 bg-gray-300 rounded"
+                            className="h-4 bg-muted rounded"
                             style={{ width: `${col.width / 4}px` }}
                         />
                     ))}
@@ -137,11 +136,11 @@ function LayoutTemplate({ template }: { template: typeof LAYOUT_TEMPLATES[0] }) 
 }
 
 // Section Component
-function SectionComponent({ 
-    section, 
-    index, 
-    moveSection, 
-    onSelect, 
+function SectionComponent({
+    section,
+    index,
+    moveSection,
+    onSelect,
     isSelected,
     onDelete,
     onDuplicate,
@@ -211,18 +210,17 @@ function SectionComponent({
         <div
             ref={ref}
             data-handler-id={handlerId}
-            className={`relative group border-2 transition-all ${
-                isSelected 
-                    ? 'border-blue-500 bg-blue-50' 
-                    : 'border-gray-200 hover:border-gray-300'
-            } ${isDragging ? 'opacity-50' : ''}`}
+            className={`relative group border-2 transition-all ${isSelected
+                ? 'border-primary bg-primary/5'
+                : 'border-border hover:border-primary/30'
+                } ${isDragging ? 'opacity-50' : ''}`}
             style={{
                 backgroundColor: section.settings.backgroundColor,
                 padding: section.settings.padding,
                 margin: section.settings.margin,
                 minHeight: section.settings.minHeight,
-                backgroundImage: section.settings.backgroundImage 
-                    ? `url(${section.settings.backgroundImage})` 
+                backgroundImage: section.settings.backgroundImage
+                    ? `url(${section.settings.backgroundImage})`
                     : undefined,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
@@ -233,9 +231,10 @@ function SectionComponent({
             }}
         >
             {/* Section Controls */}
-            <div className={`absolute top-2 right-2 flex space-x-1 ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition-opacity`}>
+            {/* Section Controls */}
+            <div className={`absolute top-2 right-2 flex space-x-1 ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition-opacity z-10`}>
                 <button
-                    className="p-1 bg-white border border-gray-300 rounded hover:bg-gray-50"
+                    className="p-1 bg-card border border-border rounded hover:bg-muted text-foreground"
                     title="Move Section"
                 >
                     <Move className="w-3 h-3" />
@@ -245,7 +244,7 @@ function SectionComponent({
                         e.stopPropagation();
                         onDuplicate(section.id);
                     }}
-                    className="p-1 bg-white border border-gray-300 rounded hover:bg-gray-50"
+                    className="p-1 bg-card border border-border rounded hover:bg-muted text-foreground"
                     title="Duplicate Section"
                 >
                     <Copy className="w-3 h-3" />
@@ -255,7 +254,7 @@ function SectionComponent({
                         e.stopPropagation();
                         onDelete(section.id);
                     }}
-                    className="p-1 bg-white border border-gray-300 rounded hover:bg-red-50 text-red-600"
+                    className="p-1 bg-card border border-border rounded hover:bg-destructive/10 text-destructive"
                     title="Delete Section"
                 >
                     <Trash2 className="w-3 h-3" />
@@ -264,7 +263,7 @@ function SectionComponent({
 
             {/* Section Label */}
             {isSelected && (
-                <div className="absolute top-2 left-2 px-2 py-1 bg-blue-600 text-white text-xs rounded">
+                <div className="absolute top-2 left-2 px-2 py-1 bg-primary text-primary-foreground text-xs rounded z-10">
                     Section: {section.layout}
                 </div>
             )}
@@ -291,9 +290,9 @@ function SectionComponent({
 
                         {/* Column controls */}
                         {isSelected && (
-                            <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
                                 <button
-                                    className="p-1 bg-white border border-gray-300 rounded hover:bg-gray-50"
+                                    className="p-1 bg-card border border-border rounded hover:bg-muted text-foreground"
                                     title="Column Settings"
                                 >
                                     <Settings className="w-3 h-3" />
@@ -308,10 +307,10 @@ function SectionComponent({
 }
 
 // Main Layout Builder Component
-export default function LayoutBuilder({ 
-    sections, 
-    onSectionsChange, 
-    selectedSection, 
+export default function LayoutBuilder({
+    sections,
+    onSectionsChange,
+    selectedSection,
     onSelectSection,
     selectedColumn,
     onSelectColumn,
@@ -341,12 +340,12 @@ export default function LayoutBuilder({
                 return;
             }
         }
-        
+
         // Fallback to local state management
         const newSections = sections.map(section => ({
             ...section,
-            columns: section.columns.map(column => 
-                column.id === columnId 
+            columns: section.columns.map(column =>
+                column.id === columnId
                     ? { ...column, blocks: [...column.blocks, block] }
                     : column
             )
@@ -359,15 +358,15 @@ export default function LayoutBuilder({
             onBlockUpdate(blockId, updates);
             return;
         }
-        
+
         // Fallback to local state management
         const newSections = sections.map(section => ({
             ...section,
-            columns: section.columns.map(column => 
-                column.id === columnId 
-                    ? { 
-                        ...column, 
-                        blocks: column.blocks.map(block => 
+            columns: section.columns.map(column =>
+                column.id === columnId
+                    ? {
+                        ...column,
+                        blocks: column.blocks.map(block =>
                             block.id === blockId ? { ...block, ...updates } : block
                         )
                     }
@@ -386,19 +385,19 @@ export default function LayoutBuilder({
                 return;
             }
         }
-        
+
         // Clear selection if deleting the selected block
         if (selectedBlock?.id === blockId && onSelectBlock) {
             onSelectBlock(null);
         }
-        
+
         // Fallback to local state management
         const newSections = sections.map(section => ({
             ...section,
-            columns: section.columns.map(column => 
-                column.id === columnId 
-                    ? { 
-                        ...column, 
+            columns: section.columns.map(column =>
+                column.id === columnId
+                    ? {
+                        ...column,
                         blocks: column.blocks.filter(block => block.id !== blockId)
                     }
                     : column
@@ -466,7 +465,7 @@ export default function LayoutBuilder({
                     id: `column-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
                 })),
             };
-            
+
             const sectionIndex = sections.findIndex(section => section.id === sectionId);
             const newSections = [...sections];
             newSections.splice(sectionIndex + 1, 0, duplicatedSection);
@@ -478,41 +477,40 @@ export default function LayoutBuilder({
         <DndProvider backend={HTML5Backend}>
             <div className="flex h-full">
                 {/* Layout Templates Sidebar */}
-                <div className="w-64 bg-white border-r border-gray-200 p-4">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Layout Templates</h3>
+                <div className="w-64 bg-card border-r border-border p-4 h-full overflow-y-auto">
+                    <h3 className="text-lg font-semibold text-foreground mb-4">Layout Templates</h3>
                     <div className="grid grid-cols-2 gap-3">
                         {LAYOUT_TEMPLATES.map((template) => (
                             <LayoutTemplate key={template.id} template={template} />
                         ))}
                     </div>
-                    
+
                     <div className="mt-6">
-                        <h4 className="text-sm font-medium text-gray-700 mb-2">Instructions</h4>
-                        <p className="text-xs text-gray-500">
-                            Drag layout templates to the canvas to create sections. 
+                        <h4 className="text-sm font-medium text-foreground mb-2">Instructions</h4>
+                        <p className="text-xs text-muted-foreground">
+                            Drag layout templates to the canvas to create sections.
                             You can then add content blocks to each column.
                         </p>
                     </div>
                 </div>
 
                 {/* Canvas Area */}
-                <div className="flex-1 p-4">
+                <div className="flex-1 h-full overflow-hidden bg-background/50 relative">
                     <div
                         ref={(node) => {
                             canvasRef.current = node;
                             drop(node);
                         }}
-                        className={`min-h-full border-2 border-dashed transition-colors ${
-                            isOver ? 'border-blue-400 bg-blue-50' : 'border-gray-300'
-                        }`}
+                        className={`absolute inset-0 overflow-y-auto p-8 transition-colors ${isOver ? 'bg-primary/5' : ''
+                            }`}
                     >
                         {sections.length === 0 ? (
-                            <div className="flex items-center justify-center h-96 text-gray-500">
+                            <div className="flex items-center justify-center h-96 text-muted-foreground">
                                 <div className="text-center">
-                                    <Layout className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-                                    <h3 className="text-xl font-medium mb-2">Start Building Your Layout</h3>
+                                    <Layout className="w-16 h-16 mx-auto mb-4 text-muted-foreground/50" />
+                                    <h3 className="text-xl font-medium mb-2 text-foreground">Start Building Your Layout</h3>
                                     <p className="text-sm mb-4">Drag layout templates from the sidebar to create sections</p>
-                                    <p className="text-xs text-gray-400">Each section can contain multiple columns for content</p>
+                                    <p className="text-xs text-muted-foreground/70">Each section can contain multiple columns for content</p>
                                 </div>
                             </div>
                         ) : (

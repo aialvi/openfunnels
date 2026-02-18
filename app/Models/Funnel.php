@@ -47,11 +47,6 @@ class Funnel extends Model
             if ($funnel->isDirty('name') && empty($funnel->slug)) {
                 $funnel->slug = Str::slug($funnel->name);
             }
-            
-            // Update conversion rate when views or conversions change
-            if ($funnel->isDirty(['views', 'conversions']) && $funnel->views > 0) {
-                $funnel->conversion_rate = ($funnel->conversions / $funnel->views) * 100;
-            }
         });
     }
 
@@ -63,6 +58,7 @@ class Funnel extends Model
     public function incrementViews(): void
     {
         $this->increment('views');
+        $this->refresh();
         $this->updateConversionRate();
     }
 
@@ -75,9 +71,8 @@ class Funnel extends Model
     private function updateConversionRate(): void
     {
         if ($this->views > 0) {
-            $this->update([
-                'conversion_rate' => ($this->conversions / $this->views) * 100
-            ]);
+            $this->conversion_rate = number_format(($this->conversions / $this->views) * 100, 2, '.', '');
+            $this->saveQuietly();
         }
     }
 

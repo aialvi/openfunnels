@@ -1,10 +1,10 @@
 import React, { useRef } from 'react';
 import { useDrag } from 'react-dnd';
-import { 
-    Type, 
-    Image, 
-    Square, 
-    FileText, 
+import {
+    Type,
+    Image,
+    Square,
+    FileText,
     Video,
     Code,
     Map,
@@ -279,19 +279,18 @@ function ContentBlockItem({ block }: { block: typeof CONTENT_BLOCKS[0] }) {
     return (
         <div
             ref={dragRef}
-            className={`group p-3 bg-white border border-gray-200 rounded-lg cursor-move hover:border-blue-400 hover:shadow-md transition-all ${
-                isDragging ? 'opacity-50' : ''
-            }`}
+            className={`group p-3 bg-card border border-border rounded-lg cursor-move hover:border-primary/50 hover:shadow-md transition-all ${isDragging ? 'opacity-50' : ''
+                }`}
         >
             <div className="flex items-start space-x-3">
-                <div className="flex-shrink-0 text-gray-600 group-hover:text-blue-600 transition-colors">
+                <div className="flex-shrink-0 text-muted-foreground group-hover:text-primary transition-colors">
                     {block.icon}
                 </div>
                 <div className="flex-1 min-w-0">
-                    <h4 className="text-sm font-medium text-gray-900 group-hover:text-blue-900 transition-colors">
+                    <h4 className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
                         {block.name}
                     </h4>
-                    <p className="text-xs text-gray-500 mt-1 leading-relaxed">
+                    <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
                         {block.description}
                     </p>
                 </div>
@@ -301,11 +300,11 @@ function ContentBlockItem({ block }: { block: typeof CONTENT_BLOCKS[0] }) {
 }
 
 // Search and Filter Component
-function BlockSearch({ 
-    searchQuery, 
-    onSearchChange, 
-    selectedCategory, 
-    onCategoryChange 
+function BlockSearch({
+    searchQuery,
+    onSearchChange,
+    selectedCategory,
+    onCategoryChange
 }: {
     searchQuery: string;
     onSearchChange: (query: string) => void;
@@ -321,18 +320,17 @@ function BlockSearch({
                 placeholder="Search blocks..."
                 value={searchQuery}
                 onChange={(e) => onSearchChange(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 bg-background border border-border rounded-md text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
             />
             <div className="flex flex-wrap gap-1">
                 {categories.map((category) => (
                     <button
                         key={category}
                         onClick={() => onCategoryChange(category)}
-                        className={`px-2 py-1 text-xs rounded transition-colors ${
-                            selectedCategory === category
-                                ? 'bg-blue-600 text-white'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        }`}
+                        className={`px-2 py-1 text-xs rounded transition-colors ${selectedCategory === category
+                                ? 'bg-primary text-primary-foreground'
+                                : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                            }`}
                     >
                         {category}
                     </button>
@@ -357,16 +355,16 @@ export default function ContentBlockLibrary({
     // Filter blocks based on search and category
     const filteredBlocks = CONTENT_BLOCKS.filter((block) => {
         const matchesSearch = block.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                            block.description.toLowerCase().includes(searchQuery.toLowerCase());
+            block.description.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesCategory = selectedCategory === 'All' || block.category === selectedCategory;
         return matchesSearch && matchesCategory;
     });
 
     return (
-        <div className="w-80 bg-white border-l border-gray-200 p-4 h-full overflow-y-auto">
+        <div className="w-80 bg-card border-l border-border p-4 h-full overflow-y-auto">
             <div className="mb-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-2">Content Blocks</h2>
-                <p className="text-sm text-gray-600 mb-4">
+                <h2 className="text-lg font-semibold text-foreground mb-2">Content Blocks</h2>
+                <p className="text-sm text-muted-foreground mb-4">
                     Drag blocks into your layout columns to add content
                 </p>
 
@@ -382,10 +380,10 @@ export default function ContentBlockLibrary({
 
             <div className="space-y-3">
                 {filteredBlocks.length === 0 ? (
-                    <div className="text-center text-gray-500 py-8">
-                        <Type className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                    <div className="text-center text-muted-foreground py-8">
+                        <Type className="w-12 h-12 mx-auto mb-4 text-muted-foreground/50" />
                         <p className="text-sm">No blocks found</p>
-                        <p className="text-xs text-gray-400 mt-1">Try adjusting your search or filter</p>
+                        <p className="text-xs text-muted-foreground/70 mt-1">Try adjusting your search or filter</p>
                     </div>
                 ) : (
                     filteredBlocks.map((block) => (
@@ -394,9 +392,9 @@ export default function ContentBlockLibrary({
                 )}
             </div>
 
-            <div className="mt-8 pt-4 border-t border-gray-200">
-                <h3 className="text-sm font-medium text-gray-700 mb-2">Tips</h3>
-                <ul className="text-xs text-gray-500 space-y-1">
+            <div className="mt-8 pt-4 border-t border-border">
+                <h3 className="text-sm font-medium text-foreground mb-2">Tips</h3>
+                <ul className="text-xs text-muted-foreground space-y-1">
                     <li>• Drag blocks into layout columns</li>
                     <li>• Use spacers to add vertical spacing</li>
                     <li>• Customize each block in the properties panel</li>

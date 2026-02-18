@@ -1,7 +1,7 @@
 import React from 'react';
-import { 
-    Settings, 
-    Palette, 
+import {
+    Settings,
+    Palette,
     Type,
     Image as ImageIcon,
     Square,
@@ -39,19 +39,19 @@ export default function PropertiesPanel({
         return (
             <div className="space-y-4">
                 <div className="flex items-center space-x-2 mb-4">
-                    <Settings className="w-4 h-4" />
-                    <h3 className="text-sm font-semibold">Section Properties</h3>
+                    <Settings className="w-4 h-4 text-foreground" />
+                    <h3 className="text-sm font-semibold text-foreground">Section Properties</h3>
                 </div>
 
                 {/* Background Settings */}
                 <div className="space-y-3">
-                    <h4 className="text-xs font-medium text-gray-700 uppercase tracking-wide flex items-center">
+                    <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center">
                         <Palette className="w-3 h-3 mr-1" />
                         Background
                     </h4>
-                    
+
                     <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1">
+                        <label className="block text-xs font-medium text-muted-foreground mb-1">
                             Background Color
                         </label>
                         <input
@@ -60,12 +60,12 @@ export default function PropertiesPanel({
                             onChange={(e) => onSectionUpdate(selectedSection.id, {
                                 settings: { ...selectedSection.settings, backgroundColor: e.target.value }
                             })}
-                            className="w-full h-8 border border-gray-300 rounded"
+                            className="w-full h-8 border border-border rounded bg-background"
                         />
                     </div>
 
                     <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1">
+                        <label className="block text-xs font-medium text-muted-foreground mb-1">
                             Background Image URL
                         </label>
                         <input
@@ -75,20 +75,20 @@ export default function PropertiesPanel({
                                 settings: { ...selectedSection.settings, backgroundImage: e.target.value }
                             })}
                             placeholder="https://example.com/image.jpg"
-                            className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            className="w-full px-2 py-1 text-xs bg-background border border-border rounded text-foreground placeholder-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                         />
                     </div>
                 </div>
 
                 {/* Spacing Settings */}
                 <div className="space-y-3">
-                    <h4 className="text-xs font-medium text-gray-700 uppercase tracking-wide flex items-center">
+                    <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center">
                         <Settings className="w-3 h-3 mr-1" />
                         Spacing
                     </h4>
-                    
+
                     <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1">
+                        <label className="block text-xs font-medium text-muted-foreground mb-1">
                             Padding
                         </label>
                         <input
@@ -98,12 +98,12 @@ export default function PropertiesPanel({
                                 settings: { ...selectedSection.settings, padding: e.target.value }
                             })}
                             placeholder="40px 20px"
-                            className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            className="w-full px-2 py-1 text-xs bg-background border border-border rounded text-foreground placeholder-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                         />
                     </div>
 
                     <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1">
+                        <label className="block text-xs font-medium text-muted-foreground mb-1">
                             Margin
                         </label>
                         <input
@@ -113,12 +113,12 @@ export default function PropertiesPanel({
                                 settings: { ...selectedSection.settings, margin: e.target.value }
                             })}
                             placeholder="0"
-                            className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            className="w-full px-2 py-1 text-xs bg-background border border-border rounded text-foreground placeholder-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                         />
                     </div>
 
                     <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1">
+                        <label className="block text-xs font-medium text-muted-foreground mb-1">
                             Min Height
                         </label>
                         <input
@@ -128,17 +128,17 @@ export default function PropertiesPanel({
                                 settings: { ...selectedSection.settings, minHeight: e.target.value }
                             })}
                             placeholder="200px"
-                            className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            className="w-full px-2 py-1 text-xs bg-background border border-border rounded text-foreground placeholder-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                         />
                     </div>
                 </div>
 
                 {/* Layout Settings */}
                 <div className="space-y-3">
-                    <h4 className="text-xs font-medium text-gray-700 uppercase tracking-wide">
+                    <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                         Layout
                     </h4>
-                    
+
                     <div className="flex items-center">
                         <input
                             type="checkbox"
@@ -147,9 +147,9 @@ export default function PropertiesPanel({
                             onChange={(e) => onSectionUpdate(selectedSection.id, {
                                 settings: { ...selectedSection.settings, fullWidth: e.target.checked }
                             })}
-                            className="mr-2"
+                            className="mr-2 accent-primary"
                         />
-                        <label htmlFor="fullWidth" className="text-xs text-gray-600">
+                        <label htmlFor="fullWidth" className="text-xs text-muted-foreground">
                             Full Width Section
                         </label>
                     </div>
@@ -164,14 +164,14 @@ export default function PropertiesPanel({
         return (
             <div className="space-y-4">
                 <div className="flex items-center space-x-2 mb-4">
-                    <Settings className="w-4 h-4" />
-                    <h3 className="text-sm font-semibold">Column Properties</h3>
+                    <Settings className="w-4 h-4 text-foreground" />
+                    <h3 className="text-sm font-semibold text-foreground">Column Properties</h3>
                 </div>
 
                 {/* Column Settings */}
                 <div className="space-y-3">
                     <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1">
+                        <label className="block text-xs font-medium text-muted-foreground mb-1">
                             Width (%)
                         </label>
                         <input
@@ -182,12 +182,12 @@ export default function PropertiesPanel({
                             onChange={(e) => onColumnUpdate(selectedSection.id, selectedColumn.id, {
                                 width: parseFloat(e.target.value)
                             })}
-                            className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            className="w-full px-2 py-1 text-xs bg-background border border-border rounded text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                         />
                     </div>
 
                     <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1">
+                        <label className="block text-xs font-medium text-muted-foreground mb-1">
                             Padding
                         </label>
                         <input
@@ -197,12 +197,12 @@ export default function PropertiesPanel({
                                 settings: { ...selectedColumn.settings, padding: e.target.value }
                             })}
                             placeholder="20px"
-                            className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            className="w-full px-2 py-1 text-xs bg-background border border-border rounded text-foreground placeholder-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                         />
                     </div>
 
                     <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1">
+                        <label className="block text-xs font-medium text-muted-foreground mb-1">
                             Background Color
                         </label>
                         <input
@@ -211,12 +211,12 @@ export default function PropertiesPanel({
                             onChange={(e) => onColumnUpdate(selectedSection.id, selectedColumn.id, {
                                 settings: { ...selectedColumn.settings, backgroundColor: e.target.value }
                             })}
-                            className="w-full h-8 border border-gray-300 rounded"
+                            className="w-full h-8 border border-border rounded bg-background"
                         />
                     </div>
 
                     <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1">
+                        <label className="block text-xs font-medium text-muted-foreground mb-1">
                             Vertical Alignment
                         </label>
                         <select
@@ -224,7 +224,7 @@ export default function PropertiesPanel({
                             onChange={(e) => onColumnUpdate(selectedSection.id, selectedColumn.id, {
                                 settings: { ...selectedColumn.settings, verticalAlign: e.target.value as 'top' | 'middle' | 'bottom' }
                             })}
-                            className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            className="w-full px-2 py-1 text-xs bg-background border border-border rounded text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                         >
                             <option value="top">Top</option>
                             <option value="middle">Middle</option>
@@ -241,7 +241,7 @@ export default function PropertiesPanel({
 
         return (
             <div className="space-y-4">
-                <div className="flex items-center space-x-2 mb-4">
+                <div className="flex items-center space-x-2 mb-4 text-foreground">
                     {selectedBlock.type === 'text' && <Type className="w-4 h-4" />}
                     {selectedBlock.type === 'image' && <ImageIcon className="w-4 h-4" />}
                     {selectedBlock.type === 'button' && <Square className="w-4 h-4" />}
@@ -251,7 +251,7 @@ export default function PropertiesPanel({
                 {/* Block-specific properties would go here */}
                 <div className="space-y-3">
                     <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1">
+                        <label className="block text-xs font-medium text-muted-foreground mb-1">
                             Padding
                         </label>
                         <input
@@ -261,12 +261,12 @@ export default function PropertiesPanel({
                                 settings: { ...selectedBlock.settings, padding: e.target.value }
                             })}
                             placeholder="16px"
-                            className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            className="w-full px-2 py-1 text-xs bg-background border border-border rounded text-foreground placeholder-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                         />
                     </div>
 
                     <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1">
+                        <label className="block text-xs font-medium text-muted-foreground mb-1">
                             Margin
                         </label>
                         <input
@@ -276,12 +276,12 @@ export default function PropertiesPanel({
                                 settings: { ...selectedBlock.settings, margin: e.target.value }
                             })}
                             placeholder="0"
-                            className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            className="w-full px-2 py-1 text-xs bg-background border border-border rounded text-foreground placeholder-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                         />
                     </div>
 
                     <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1">
+                        <label className="block text-xs font-medium text-muted-foreground mb-1">
                             Background Color
                         </label>
                         <input
@@ -290,12 +290,12 @@ export default function PropertiesPanel({
                             onChange={(e) => onBlockUpdate(selectedBlock.id, {
                                 settings: { ...selectedBlock.settings, backgroundColor: e.target.value }
                             })}
-                            className="w-full h-8 border border-gray-300 rounded"
+                            className="w-full h-8 border border-border rounded bg-background"
                         />
                     </div>
 
                     <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1">
+                        <label className="block text-xs font-medium text-muted-foreground mb-1">
                             Border Radius
                         </label>
                         <input
@@ -305,7 +305,7 @@ export default function PropertiesPanel({
                                 settings: { ...selectedBlock.settings, borderRadius: e.target.value }
                             })}
                             placeholder="8px"
-                            className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            className="w-full px-2 py-1 text-xs bg-background border border-border rounded text-foreground placeholder-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                         />
                     </div>
                 </div>
@@ -315,31 +315,28 @@ export default function PropertiesPanel({
 
     const renderDevicePreview = () => (
         <div className="space-y-4">
-            <h3 className="text-sm font-semibold">Device Preview</h3>
-            <div className="flex items-center space-x-2 bg-gray-100 rounded-lg p-1">
+            <h3 className="text-sm font-semibold text-foreground">Device Preview</h3>
+            <div className="flex items-center space-x-2 bg-muted rounded-lg p-1">
                 <button
                     onClick={() => onDeviceChange('desktop')}
-                    className={`flex items-center space-x-1 px-2 py-1 rounded text-xs ${
-                        selectedDevice === 'desktop' ? 'bg-white shadow' : ''
-                    }`}
+                    className={`flex items-center space-x-1 px-2 py-1 rounded text-xs transition-colors ${selectedDevice === 'desktop' ? 'bg-background text-primary shadow' : 'text-muted-foreground hover:text-foreground'
+                        }`}
                 >
                     <Monitor className="w-3 h-3" />
                     <span>Desktop</span>
                 </button>
                 <button
                     onClick={() => onDeviceChange('tablet')}
-                    className={`flex items-center space-x-1 px-2 py-1 rounded text-xs ${
-                        selectedDevice === 'tablet' ? 'bg-white shadow' : ''
-                    }`}
+                    className={`flex items-center space-x-1 px-2 py-1 rounded text-xs transition-colors ${selectedDevice === 'tablet' ? 'bg-background text-primary shadow' : 'text-muted-foreground hover:text-foreground'
+                        }`}
                 >
                     <Tablet className="w-3 h-3" />
                     <span>Tablet</span>
                 </button>
                 <button
                     onClick={() => onDeviceChange('mobile')}
-                    className={`flex items-center space-x-1 px-2 py-1 rounded text-xs ${
-                        selectedDevice === 'mobile' ? 'bg-white shadow' : ''
-                    }`}
+                    className={`flex items-center space-x-1 px-2 py-1 rounded text-xs transition-colors ${selectedDevice === 'mobile' ? 'bg-background text-primary shadow' : 'text-muted-foreground hover:text-foreground'
+                        }`}
                 >
                     <Smartphone className="w-3 h-3" />
                     <span>Mobile</span>
@@ -349,23 +346,23 @@ export default function PropertiesPanel({
     );
 
     const renderEmptyState = () => (
-        <div className="text-center text-gray-500 py-8">
-            <Settings className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+        <div className="text-center text-muted-foreground py-8">
+            <Settings className="w-12 h-12 mx-auto mb-4 text-muted-foreground/50" />
             <p className="text-sm">Select an element to edit its properties</p>
-            <p className="text-xs text-gray-400 mt-1">
+            <p className="text-xs text-muted-foreground/70 mt-1">
                 Click on sections, columns, or blocks to customize them
             </p>
         </div>
     );
 
     return (
-        <div className="w-80 bg-white border-l border-gray-200 p-4 h-full overflow-y-auto">
+        <div className="w-80 bg-card border-l border-border p-4 h-full overflow-y-auto">
             <div className="space-y-6">
                 {/* Device Preview */}
                 {renderDevicePreview()}
 
                 {/* Properties */}
-                <div className="border-t pt-4">
+                <div className="border-t border-border pt-4">
                     {selectedBlock && renderBlockProperties()}
                     {selectedColumn && !selectedBlock && renderColumnProperties()}
                     {selectedSection && !selectedColumn && !selectedBlock && renderSectionProperties()}
