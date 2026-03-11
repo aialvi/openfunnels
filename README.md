@@ -1,5 +1,12 @@
 # OpenFunnels
 
+### Homepage
+<img width="1511" height="855" alt="image" src="https://github.com/user-attachments/assets/312f379f-c452-428a-b930-8aa41410e4cb" />
+
+### Editor
+<img width="1511" height="856" alt="image" src="https://github.com/user-attachments/assets/8306072d-9686-48ec-acc8-d4c7ea0326a2" />
+
+
 🚧 **Work in Progress** 🚧
 
 An open-source funnel builder with drag-and-drop functionality and interactive layout management. Build high-converting funnels with ease using our modern, intuitive interface.
