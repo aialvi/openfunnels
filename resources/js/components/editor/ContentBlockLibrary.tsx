@@ -19,18 +19,9 @@ import {
     Zap
 } from 'lucide-react';
 
-export interface ContentBlock {
-    id: string;
-    type: 'text' | 'image' | 'button' | 'form' | 'video' | 'code' | 'map' | 'testimonial' | 'calendar' | 'ecommerce' | 'team' | 'chart' | 'audio' | 'countdown' | 'social' | 'spacer' | 'container' | 'grid' | 'tabs' | 'accordion';
-    content: Record<string, unknown>;
-    settings: {
-        padding: string;
-        margin: string;
-        backgroundColor: string;
-        borderRadius: string;
-        animation?: string;
-    };
-}
+// Re-export canonical type for backwards compatibility.
+export type { Block as ContentBlock } from '@/types/editor';
+import type { Block as ContentBlock } from '@/types/editor';
 
 const ItemTypes = {
     CONTENT_BLOCK: 'content_block',
@@ -249,6 +240,31 @@ const CONTENT_BLOCKS = [
             height: '50px',
         }
     },
+    {
+        id: 'woocommerce-product',
+        name: 'WooCommerce Product',
+        icon: <ShoppingCart className="w-5 h-5" />, // Reusing ShoppingCart for now
+        description: 'Embed a WooCommerce product',
+        category: 'E-commerce',
+        defaultContent: {
+            productId: '',
+            showTitle: true,
+            showPrice: true,
+            showButton: true,
+        }
+    },
+    {
+        id: 'shopify-buy-button',
+        name: 'Shopify Buy Button',
+        icon: <ShoppingCart className="w-5 h-5" />,
+        description: 'Embed a Shopify Buy Button',
+        category: 'E-commerce',
+        defaultContent: {
+            productId: '',
+            shopDomain: '',
+            accessToken: '',
+        }
+    },
 ];
 
 // Group blocks by category
@@ -328,8 +344,8 @@ function BlockSearch({
                         key={category}
                         onClick={() => onCategoryChange(category)}
                         className={`px-2 py-1 text-xs rounded transition-colors ${selectedCategory === category
-                                ? 'bg-primary text-primary-foreground'
-                                : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-muted text-muted-foreground hover:bg-muted/80'
                             }`}
                     >
                         {category}

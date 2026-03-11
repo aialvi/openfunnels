@@ -9,14 +9,23 @@ import {
     Redo,
     Layout,
     Palette,
-    ArrowLeft
+    ArrowLeft,
+    Download
 } from 'lucide-react';
-import LayoutBuilder, { LayoutSection, LayoutColumn } from '@/components/editor/LayoutBuilder';
-import ContentBlockLibrary, { ContentBlock } from '@/components/editor/ContentBlockLibrary';
+import ExportModal from '@/components/editor/ExportModal';
+import LayoutBuilder from '@/components/editor/LayoutBuilder';
+import ContentBlockLibrary from '@/components/editor/ContentBlockLibrary';
 import PropertiesPanel from '@/components/editor/PropertiesPanel';
 
-// ... (existing imports)
-import { useFunnelStore, type Funnel } from '@/stores/funnelStore';
+import {
+    useFunnelStore,
+    getSelectedSection,
+    getSelectedColumn,
+    getSelectedBlock,
+    findBlockLocation,
+    findColumnSection,
+} from '@/stores/funnelStore';
+import type { Funnel, Section, Block } from '@/types/editor';
 import { useLayoutPersistence } from '@/hooks/useLayoutPersistence';
 
 interface EnhancedFunnelEditorProps {
@@ -37,39 +46,49 @@ type EditorMode = 'editor' | 'design';
 export default function EnhancedFunnelEditor({ funnel: initialFunnel }: EnhancedFunnelEditorProps) {
     // Editor state
     const [editorMode, setEditorMode] = useState<EditorMode>('editor');
-
-    // Layout builder state
-    const [selectedSection, setSelectedSection] = useState<LayoutSection | null>(null);
-    const [selectedColumn, setSelectedColumn] = useState<LayoutColumn | null>(null);
-    const [selectedBlock, setSelectedBlock] = useState<ContentBlock | null>(null);
-    const [selectedDevice, setSelectedDevice] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
+    const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
     // Content block library state
     const [blockSearchQuery, setBlockSearchQuery] = useState('');
     const [blockCategory, setBlockCategory] = useState('All');
 
-    // Funnel store
-    // Get store references
-    const funnelStore = useFunnelStore();
-    const {
-        funnel,
-        isDirty,
-        setFunnel,
-        updateFunnelName,
-        undo,
-        redo,
-        canUndo,
-        canRedo,
-        markClean,
-        setSaving,
-    } = funnelStore;
+    // ── Store ─────────────────────────────────────────────────────────
+    const funnel = useFunnelStore((s) => s.funnel);
+    const isDirty = useFunnelStore((s) => s.isDirty);
+    const isSaving = useFunnelStore((s) => s.isSaving);
+    const selectedDevice = useFunnelStore((s) => s.selectedDevice);
+
+    // Derived selections — always fresh from the live tree.
+    const selectedSection = useFunnelStore(getSelectedSection);
+    const selectedColumn = useFunnelStore(getSelectedColumn);
+    const selectedBlock = useFunnelStore(getSelectedBlock);
+
+    // Actions (stable references, won't cause re-renders)
+    const setFunnel = useFunnelStore((s) => s.setFunnel);
+    const updateFunnelName = useFunnelStore((s) => s.updateFunnelName);
+    const undo = useFunnelStore((s) => s.undo);
+    const redo = useFunnelStore((s) => s.redo);
+    const canUndo = useFunnelStore((s) => s.canUndo);
+    const canRedo = useFunnelStore((s) => s.canRedo);
+    const markClean = useFunnelStore((s) => s.markClean);
+    const setSaving = useFunnelStore((s) => s.setSaving);
+    const selectSection = useFunnelStore((s) => s.selectSection);
+    const selectColumn = useFunnelStore((s) => s.selectColumn);
+    const selectBlock = useFunnelStore((s) => s.selectBlock);
+    const selectDevice = useFunnelStore((s) => s.selectDevice);
+    const setSections = useFunnelStore((s) => s.setSections);
+    const addBlockAction = useFunnelStore((s) => s.addBlock);
+    const updateBlockAction = useFunnelStore((s) => s.updateBlock);
+    const deleteBlockAction = useFunnelStore((s) => s.deleteBlock);
+    const updateSectionAction = useFunnelStore((s) => s.updateSection);
+    const updateColumnAction = useFunnelStore((s) => s.updateColumn);
 
     // Auto-save functionality (disabled since we handle saving manually)
     const {
         lastSaved
     } = useLayoutPersistence({
         funnelId: initialFunnel?.id,
-        sections: funnel.content.sections as LayoutSection[],
+        sections: funnel.content.sections,
         isDirty: false // Disable auto-save, handle saving manually
     });
 
@@ -81,7 +100,6 @@ export default function EnhancedFunnelEditor({ funnel: initialFunnel }: Enhanced
     // Initialize funnel from props — runs once on mount.
     useEffect(() => {
         if (initialFunnel) {
-            // Parse content object from JSON if needed
             let contentObj;
             try {
                 contentObj = typeof initialFunnel.content === 'string'
@@ -92,17 +110,13 @@ export default function EnhancedFunnelEditor({ funnel: initialFunnel }: Enhanced
                 contentObj = { sections: [] };
             }
 
-            // Ensure we have a proper sections array
             const sectionsArray = contentObj?.sections || [];
 
-            // Set in funnel store (single source of truth)
             setFunnel({
                 id: initialFunnel.id,
                 name: initialFunnel.name,
                 description: initialFunnel.description || '',
-                content: {
-                    sections: sectionsArray
-                },
+                content: { sections: sectionsArray },
                 settings: initialFunnel.settings,
                 status: initialFunnel.status as 'draft' | 'published' | 'archived',
                 is_published: initialFunnel.is_published,
@@ -111,25 +125,24 @@ export default function EnhancedFunnelEditor({ funnel: initialFunnel }: Enhanced
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // Update handlers only for block operations (sections are updated via onSectionsChange)
+    // ── Handlers ──────────────────────────────────────────────────────
 
-    const handleBlockUpdate = useCallback((blockId: string, updates: Partial<ContentBlock>) => {
-        // Handle block updates
-        setSelectedBlock(prev => prev ? { ...prev, ...updates } : null);
-        // Layout persistence hook will handle auto-save
-    }, []);
+    const handleBlockAdd = useCallback((sectionId: string, columnId: string, block: Block, index?: number) => {
+        addBlockAction(sectionId, columnId, block, index);
+    }, [addBlockAction]);
 
-    const handleBlockAdd = useCallback((sectionId: string, columnId: string, block: ContentBlock, index?: number) => {
-        // Delegate to the store — single source of truth.
-        funnelStore.addBlock(sectionId, columnId, block as import('@/stores/funnelStore').Block, index);
-    }, [funnelStore]);
+    const handleBlockUpdate = useCallback((blockId: string, updates: Partial<Block>) => {
+        // Find the block location in the tree and write updates to the store.
+        const state = useFunnelStore.getState();
+        const loc = findBlockLocation(state, blockId);
+        if (loc) {
+            updateBlockAction(loc.sectionId, loc.columnId, blockId, updates);
+        }
+    }, [updateBlockAction]);
 
     const handleBlockDelete = useCallback((sectionId: string, columnId: string, blockId: string) => {
-        // Delegate to the store — single source of truth.
-        funnelStore.deleteBlock(sectionId, columnId, blockId);
-        // Clear selection if the deleted block was selected
-        setSelectedBlock(prev => prev?.id === blockId ? null : prev);
-    }, [funnelStore]);
+        deleteBlockAction(sectionId, columnId, blockId);
+    }, [deleteBlockAction]);
 
     // Name editing handlers
     const handleNameEdit = () => {
@@ -170,17 +183,16 @@ export default function EnhancedFunnelEditor({ funnel: initialFunnel }: Enhanced
                         {/* Main Canvas with LayoutBuilder */}
                         <div className="flex-1">
                             <LayoutBuilder
-                                sections={funnel.content.sections as LayoutSection[]}
+                                sections={funnel.content.sections}
                                 onSectionsChange={(updatedSections) => {
-                                    // Single write path: store is the source of truth.
-                                    funnelStore.setSections?.(updatedSections);
+                                    setSections(updatedSections);
                                 }}
-                                selectedSection={selectedSection}
-                                onSelectSection={setSelectedSection}
-                                selectedColumn={selectedColumn}
-                                onSelectColumn={setSelectedColumn}
-                                selectedBlock={selectedBlock}
-                                onSelectBlock={setSelectedBlock}
+                                selectedSectionId={selectedSection?.id ?? null}
+                                onSelectSection={(sectionId) => selectSection(sectionId)}
+                                selectedColumnId={selectedColumn?.id ?? null}
+                                onSelectColumn={(columnId) => selectColumn(columnId)}
+                                selectedBlockId={selectedBlock?.id ?? null}
+                                onSelectBlock={(blockId) => selectBlock(blockId)}
                                 onBlockAdd={handleBlockAdd}
                                 onBlockUpdate={handleBlockUpdate}
                                 onBlockDelete={handleBlockDelete}
@@ -303,67 +315,95 @@ export default function EnhancedFunnelEditor({ funnel: initialFunnel }: Enhanced
                                     <Redo className="w-4 h-4" />
                                 </button>
                                 <button
-                                    className="flex items-center space-x-2 px-4 py-2 bg-muted rounded-lg hover:bg-muted/80 text-foreground"
-                                    title="Preview funnel"
+                                    onClick={() => {
+                                        if (initialFunnel?.id) {
+                                            window.open(`/funnel/${initialFunnel.id}/preview`, '_blank');
+                                        }
+                                    }}
+                                    disabled={!initialFunnel?.id}
+                                    className={`flex items-center space-x-2 px-4 py-2 bg-muted rounded-lg text-foreground transition-colors ${!initialFunnel?.id ? 'opacity-50 cursor-not-allowed' : 'hover:bg-muted/80'
+                                        }`}
+                                    title={initialFunnel?.id ? "Preview funnel" : "Save the funnel first to preview"}
                                 >
                                     <Eye className="w-4 h-4" />
                                     <span>Preview</span>
+                                </button>
+                                <button
+                                    onClick={() => setIsExportModalOpen(true)}
+                                    className="flex items-center space-x-2 px-4 py-2 bg-muted rounded-lg hover:bg-muted/80 text-foreground"
+                                    title="Export funnel code"
+                                >
+                                    <Download className="w-4 h-4" />
+                                    <span>Export</span>
                                 </button>
                                 <button
                                     onClick={async () => {
                                         try {
                                             setSaving(true);
 
-                                            // Create a unified save that combines funnel data and layout
-                                            if (initialFunnel?.id) {
-                                                await new Promise<void>((resolve, reject) => {
-                                                    router.patch(`/funnels/${initialFunnel.id}`, {
-                                                        name: funnel.name,
-                                                        description: funnel.description,
-                                                        content: JSON.stringify({
-                                                            sections: funnel.content.sections.map((section: import('@/stores/funnelStore').Section) => ({
-                                                                id: section.id,
-                                                                type: section.type,
-                                                                layout: section.layout,
-                                                                settings: section.settings,
-                                                                columns: section.columns.map((column: import('@/stores/funnelStore').Column) => ({
-                                                                    id: column.id,
-                                                                    type: column.type,
-                                                                    width: column.width,
-                                                                    settings: column.settings,
-                                                                    blocks: column.blocks.map((block: import('@/stores/funnelStore').Block) => ({
-                                                                        id: block.id,
-                                                                        type: block.type,
-                                                                        content: block.content,
-                                                                        settings: block.settings
-                                                                    }))
+                                            await new Promise<void>((resolve, reject) => {
+                                                const currentFunnel = useFunnelStore.getState().funnel;
+                                                const payload = {
+                                                    name: currentFunnel.name,
+                                                    description: currentFunnel.description,
+                                                    content: JSON.stringify({
+                                                        sections: currentFunnel.content.sections.map((section: Section) => ({
+                                                            id: section.id,
+                                                            type: section.type,
+                                                            layout: section.layout,
+                                                            settings: section.settings,
+                                                            columns: section.columns.map((column) => ({
+                                                                id: column.id,
+                                                                type: column.type,
+                                                                width: column.width,
+                                                                settings: column.settings,
+                                                                blocks: column.blocks.map((block) => ({
+                                                                    id: block.id,
+                                                                    type: block.type,
+                                                                    content: block.content,
+                                                                    settings: block.settings
                                                                 }))
                                                             }))
-                                                        }),
-                                                        settings: JSON.stringify(funnel.settings)
-                                                    }, {
+                                                        }))
+                                                    }),
+                                                    settings: JSON.stringify(currentFunnel.settings)
+                                                };
+
+                                                if (initialFunnel?.id) {
+                                                    router.put(`/funnels/${initialFunnel.id}`, payload, {
                                                         preserveScroll: true,
                                                         preserveState: true,
                                                         onSuccess: () => {
-                                                            console.log('Funnel and layout saved successfully');
-                                                            markClean(); // Mark store as clean
+                                                            markClean();
                                                             resolve();
                                                         },
                                                         onError: (errors) => {
-                                                            console.error('Failed to save:', errors);
-                                                            reject(new Error('Failed to save funnel and layout'));
+                                                            console.error('Failed to update:', errors);
+                                                            reject(new Error('Failed to update funnel'));
                                                         }
                                                     });
-                                                });
-                                            }
+                                                } else {
+                                                    router.post(`/funnels`, payload, {
+                                                        preserveScroll: true,
+                                                        onSuccess: () => {
+                                                            markClean();
+                                                            resolve();
+                                                        },
+                                                        onError: (errors) => {
+                                                            console.error('Failed to create:', errors);
+                                                            reject(new Error('Failed to create funnel'));
+                                                        }
+                                                    });
+                                                }
+                                            });
                                         } catch (error) {
-                                            console.error('Failed to save:', error);
+                                            console.error('Save error:', error);
                                         } finally {
                                             setSaving(false);
                                         }
                                     }}
-                                    disabled={funnelStore.isSaving}
-                                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${funnelStore.isSaving
+                                    disabled={isSaving}
+                                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${isSaving
                                         ? 'bg-muted text-muted-foreground cursor-not-allowed'
                                         : isDirty
                                             ? 'bg-primary text-primary-foreground hover:bg-primary/90'
@@ -373,7 +413,7 @@ export default function EnhancedFunnelEditor({ funnel: initialFunnel }: Enhanced
                                 >
                                     <Save className="w-4 h-4" />
                                     <span>
-                                        {funnelStore.isSaving ? 'Saving...' : isDirty ? 'Save' : 'Saved'}
+                                        {isSaving ? 'Saving...' : isDirty ? 'Save' : 'Saved'}
                                     </span>
                                 </button>
 
@@ -396,34 +436,28 @@ export default function EnhancedFunnelEditor({ funnel: initialFunnel }: Enhanced
                     </div>
 
                     {/* Properties Panel */}
-                    {/* Properties Panel */}
-                    <PropertiesPanel // @ts-ignore
+                    <PropertiesPanel
                         selectedSection={selectedSection}
                         selectedColumn={selectedColumn}
                         selectedBlock={selectedBlock}
                         selectedDevice={selectedDevice}
                         onSectionUpdate={(sectionId, updates) => {
-                            const newSections = funnel.content.sections.map((s: any) =>
-                                s.id === sectionId ? { ...s, ...updates } : s
-                            );
-                            funnelStore.setSections?.(newSections);
+                            updateSectionAction(sectionId, updates);
                         }}
                         onColumnUpdate={(sectionId, columnId, updates) => {
-                            const newSections = funnel.content.sections.map((s: any) =>
-                                s.id === sectionId ? {
-                                    ...s,
-                                    columns: s.columns.map((c: any) =>
-                                        c.id === columnId ? { ...c, ...updates } : c
-                                    )
-                                } : s
-                            );
-                            funnelStore.setSections?.(newSections);
+                            updateColumnAction(sectionId, columnId, updates);
                         }}
                         onBlockUpdate={handleBlockUpdate}
-                        onDeviceChange={setSelectedDevice}
+                        onDeviceChange={selectDevice}
                     />
                 </div>
             </div>
+
+            <ExportModal
+                isOpen={isExportModalOpen}
+                onClose={() => setIsExportModalOpen(false)}
+                funnel={funnel}
+            />
         </DndProvider>
     );
 }

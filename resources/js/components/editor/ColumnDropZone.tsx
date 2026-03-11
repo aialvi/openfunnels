@@ -1,7 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { useDrop } from 'react-dnd';
-import { ContentBlock } from './ContentBlockLibrary';
-import { LayoutColumn } from './LayoutBuilder';
+import type { Block as ContentBlock, Column as LayoutColumn } from '@/types/editor';
 import { canAddChild, ContentBlockType, getAllowedChildren } from './validation/ContentValidation';
 import { AlertCircle, Plus } from 'lucide-react';
 
@@ -127,8 +126,8 @@ function BlockRenderer({
                 <div className={wrapperClass} style={blockStyle} onClick={onSelect}>
                     <button
                         className={`px-6 py-3 font-medium rounded transition-colors ${block.content.variant === 'primary'
-                                ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                                : 'bg-muted text-foreground hover:bg-muted/80'
+                            ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                            : 'bg-muted text-foreground hover:bg-muted/80'
                             } ${block.content.fullWidth ? 'w-full' : ''
                             }`}
                         style={{

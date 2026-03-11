@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useDrop } from 'react-dnd';
 import { canAddChild, ContentBlockType, getAllowedChildren, ParentType } from './validation/ContentValidation';
-import { ContentBlock } from './ContentBlockLibrary';
+import type { Block as ContentBlock } from '@/types/editor';
 import { AlertCircle, Plus } from 'lucide-react';
 
 interface DroppedItem {
@@ -48,16 +48,16 @@ export function ContentContainer({
     accept: ItemTypes.CONTENT_BLOCK,
     canDrop: (item: DroppedItem) => {
       if (dropDisabled) return false;
-      
+
       const childType = item.type as ContentBlockType;
       const validation = canAddChild(type, childType, blockTypes);
-      
+
       if (!validation.allowed) {
         setValidationError(validation.reason || 'Cannot add this content here');
         setTimeout(() => setValidationError(null), 3000);
         return false;
       }
-      
+
       return true;
     },
     drop: (item: DroppedItem) => {
@@ -78,11 +78,9 @@ export function ContentContainer({
   return (
     <div
       ref={dropRef}
-      className={`relative content-container ${className} ${
-        isSelected ? 'ring-2 ring-blue-500' : ''
-      } ${isOver && canDrop ? 'bg-green-50 border-green-300' : ''} ${
-        isOver && !canDrop ? 'bg-red-50 border-red-300' : ''
-      }`}
+      className={`relative content-container ${className} ${isSelected ? 'ring-2 ring-blue-500' : ''
+        } ${isOver && canDrop ? 'bg-green-50 border-green-300' : ''} ${isOver && !canDrop ? 'bg-red-50 border-red-300' : ''
+        }`}
       style={style}
       onClick={(e) => {
         e.stopPropagation();

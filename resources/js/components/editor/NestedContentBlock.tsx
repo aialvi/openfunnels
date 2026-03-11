@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useDrag } from 'react-dnd';
-import { ContentBlock } from './ContentBlockLibrary';
+import type { Block as ContentBlock } from '@/types/editor';
 import { ContentBlockType, getAllowedChildren, validateMinChildren } from './validation/ContentValidation';
 import ContentContainer from './ContentContainer';
 import { Copy, MoreHorizontal, Plus, Trash2 } from 'lucide-react';

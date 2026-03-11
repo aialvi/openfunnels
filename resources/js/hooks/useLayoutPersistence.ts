@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { router } from '@inertiajs/react';
-import { LayoutSection } from '@/components/editor/LayoutBuilder';
+import type { Section as LayoutSection } from '@/types/editor';
 
 interface UseLayoutPersistenceProps {
   funnelId?: number;
@@ -130,7 +130,7 @@ export function useLayoutPersistence({
         // Show warning if there are unsaved changes
         e.preventDefault();
         e.returnValue = '';
-        
+
         // Attempt to save (though this might not complete due to page unload)
         saveLayout().catch(() => {
           // Ignore errors during page unload

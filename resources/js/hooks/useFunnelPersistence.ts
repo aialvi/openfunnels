@@ -1,6 +1,5 @@
 import { router } from '@inertiajs/react';
 import { useFunnelStore } from '@/stores/funnelStore';
-import { FunnelSchema } from '@/stores/funnelStore';
 import { useCallback, useEffect } from 'react';
 
 export const useFunnelPersistence = (funnelId?: number) => {
@@ -9,15 +8,12 @@ export const useFunnelPersistence = (funnelId?: number) => {
     const saveFunnel = useCallback(async () => {
         try {
             setSaving(true);
-            
-            // Validate funnel data with Zod
-            const validatedFunnel = FunnelSchema.parse(funnel);
-            
+
             const saveData = {
-                name: validatedFunnel.name,
-                description: validatedFunnel.description || '',
-                content: JSON.stringify(validatedFunnel.content),
-                settings: JSON.stringify(validatedFunnel.settings),
+                name: funnel.name,
+                description: funnel.description || '',
+                content: JSON.stringify(funnel.content),
+                settings: JSON.stringify(funnel.settings),
             };
 
             if (funnelId) {

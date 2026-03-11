@@ -1,19 +1,10 @@
 import { Head, Link } from '@inertiajs/react';
 import { useState } from 'react';
 import { Monitor, Tablet, Smartphone, ArrowLeft, ExternalLink, Share } from 'lucide-react';
-import { Block, Funnel } from '@/stores/funnelStore';
+import type { Funnel, Block, Section, Column } from '@/types/editor';
 
 interface FunnelPreviewProps {
-    funnel: {
-        id: number;
-        name: string;
-        slug: string;
-        description?: string;
-        content: Block[];
-        settings: Funnel['settings'];
-        status: string;
-        is_published: boolean;
-    };
+    funnel: Funnel & { id: number; slug: string };
 }
 
 export default function FunnelPreview({ funnel }: FunnelPreviewProps) {
@@ -34,10 +25,8 @@ export default function FunnelPreview({ funnel }: FunnelPreviewProps) {
     const renderBlock = (block: Block) => {
         const commonProps = {
             'data-block-id': block.id,
-            className: 'absolute',
+            className: 'w-full',
             style: {
-                left: block.position.x,
-                top: block.position.y,
                 fontSize: (block.content.fontSize as string) || '16px',
                 color: (block.content.color as string) || '#000000',
                 backgroundColor: (block.content.backgroundColor as string) || 'transparent',
@@ -56,23 +45,22 @@ export default function FunnelPreview({ funnel }: FunnelPreviewProps) {
             case 'image':
                 return (
                     <div key={block.id} {...commonProps}>
-                        <img 
-                            src={block.content.src as string || 'https://via.placeholder.com/300x200?text=Image'} 
-                            alt={block.content.alt as string || 'Image'} 
+                        <img
+                            src={block.content.src as string || 'https://via.placeholder.com/300x200?text=Image'}
+                            alt={block.content.alt as string || 'Image'}
                             className="max-w-full h-auto"
-                            style={{ 
+                            style={{
                                 borderRadius: (block.content.borderRadius as string) || '8px',
-                                width: (block.content.width as string) || '300px',
-                                height: (block.content.height as string) || '200px'
+                                width: (block.content.width as string) || '100%',
                             }}
                         />
                     </div>
                 );
             case 'button':
                 return (
-                    <button 
-                        key={block.id} 
-                        {...commonProps} 
+                    <button
+                        key={block.id}
+                        {...commonProps}
                         className={`${commonProps.className} px-4 py-2 font-medium cursor-pointer hover:opacity-80 transition-opacity`}
                     >
                         {(block.content.text as string) || 'Click Me'}
@@ -83,8 +71,8 @@ export default function FunnelPreview({ funnel }: FunnelPreviewProps) {
                     <div key={block.id} {...commonProps} className={`${commonProps.className} min-w-64`}>
                         <div className="space-y-4">
                             <h3 className="font-semibold">{(block.content.title as string) || 'Subscribe to our newsletter'}</h3>
-                            <input 
-                                type="email" 
+                            <input
+                                type="email"
                                 placeholder={(block.content.placeholder as string) || 'Enter your email'}
                                 className="w-full p-2 border border-gray-300 rounded"
                             />
@@ -120,15 +108,15 @@ export default function FunnelPreview({ funnel }: FunnelPreviewProps) {
     return (
         <>
             <Head title={`Preview: ${funnel.name} - OpenFunnels`} />
-            
+
             <div className="min-h-screen bg-gray-50">
                 {/* Header */}
                 <div className="bg-white border-b border-gray-200">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="flex items-center justify-between h-16">
                             <div className="flex items-center space-x-4">
-                                <Link 
-                                    href={route('funnel-editor.edit', funnel.id)} 
+                                <Link
+                                    href={route('funnel-editor.edit', funnel.id)}
                                     className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
                                 >
                                     <ArrowLeft className="w-4 h-4" />
@@ -137,45 +125,42 @@ export default function FunnelPreview({ funnel }: FunnelPreviewProps) {
                                 <div className="h-6 w-px bg-gray-300"></div>
                                 <h1 className="text-lg font-semibold text-gray-900">Preview: {funnel.name}</h1>
                             </div>
-                            
+
                             <div className="flex items-center space-x-4">
                                 {/* Device Selection */}
                                 <div className="flex items-center space-x-2 bg-gray-100 rounded-lg p-1">
-                                    <button 
+                                    <button
                                         onClick={() => setSelectedDevice('desktop')}
-                                        className={`p-2 rounded transition-colors ${
-                                            selectedDevice === 'desktop' 
-                                                ? 'bg-white shadow text-blue-600' 
-                                                : 'text-gray-600 hover:text-gray-900'
-                                        }`}
+                                        className={`p-2 rounded transition-colors ${selectedDevice === 'desktop'
+                                            ? 'bg-white shadow text-blue-600'
+                                            : 'text-gray-600 hover:text-gray-900'
+                                            }`}
                                         title="Desktop View"
                                     >
                                         <Monitor className="w-4 h-4" />
                                     </button>
-                                    <button 
+                                    <button
                                         onClick={() => setSelectedDevice('tablet')}
-                                        className={`p-2 rounded transition-colors ${
-                                            selectedDevice === 'tablet' 
-                                                ? 'bg-white shadow text-blue-600' 
-                                                : 'text-gray-600 hover:text-gray-900'
-                                        }`}
+                                        className={`p-2 rounded transition-colors ${selectedDevice === 'tablet'
+                                            ? 'bg-white shadow text-blue-600'
+                                            : 'text-gray-600 hover:text-gray-900'
+                                            }`}
                                         title="Tablet View"
                                     >
                                         <Tablet className="w-4 h-4" />
                                     </button>
-                                    <button 
+                                    <button
                                         onClick={() => setSelectedDevice('mobile')}
-                                        className={`p-2 rounded transition-colors ${
-                                            selectedDevice === 'mobile' 
-                                                ? 'bg-white shadow text-blue-600' 
-                                                : 'text-gray-600 hover:text-gray-900'
-                                        }`}
+                                        className={`p-2 rounded transition-colors ${selectedDevice === 'mobile'
+                                            ? 'bg-white shadow text-blue-600'
+                                            : 'text-gray-600 hover:text-gray-900'
+                                            }`}
                                         title="Mobile View"
                                     >
                                         <Smartphone className="w-4 h-4" />
                                     </button>
                                 </div>
-                                
+
                                 <button
                                     onClick={handleShare}
                                     className="flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-gray-900 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
@@ -187,23 +172,56 @@ export default function FunnelPreview({ funnel }: FunnelPreviewProps) {
                         </div>
                     </div>
                 </div>
-                
+
                 {/* Preview Content */}
                 <div className="py-8">
                     <div className="flex justify-center">
-                        <div 
+                        <div
                             className="bg-white shadow-lg relative mx-auto transition-all duration-300 ease-in-out min-h-screen"
-                            style={{ 
+                            style={{
                                 width: getDeviceWidth(),
                                 maxWidth: funnel.settings.maxWidth,
                                 backgroundColor: funnel.settings.backgroundColor,
                             }}
                         >
-                            {/* Render all blocks */}
-                            {funnel.content.map(renderBlock)}
-                            
+                            {/* Render all sections, columns, and blocks */}
+                            {funnel.content.sections?.map(section => (
+                                <div
+                                    key={section.id}
+                                    className="relative w-full"
+                                    style={{
+                                        backgroundColor: section.settings.backgroundColor,
+                                        padding: section.settings.padding,
+                                        minHeight: section.settings.minHeight,
+                                    }}
+                                >
+                                    <div
+                                        className="mx-auto flex flex-col md:flex-row gap-4"
+                                        style={{
+                                            maxWidth: section.settings.fullWidth ? '100%' : '1200px'
+                                        }}
+                                    >
+                                        {section.columns.map(column => (
+                                            <div
+                                                key={column.id}
+                                                className="flex flex-col gap-4 relative"
+                                                style={{
+                                                    width: selectedDevice === 'mobile' ? '100%' : column.width,
+                                                    padding: column.settings.padding,
+                                                    backgroundColor: column.settings.backgroundColor,
+                                                    justifyContent: column.settings.verticalAlign === 'middle' ? 'center' :
+                                                        column.settings.verticalAlign === 'bottom' ? 'flex-end' : 'flex-start'
+                                                }}
+                                            >
+                                                {column.blocks.map(renderBlock)}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+
                             {/* Empty State */}
-                            {funnel.content.length === 0 && (
+                            {(!funnel.content.sections || funnel.content.sections.length === 0) && (
                                 <div className="flex items-center justify-center h-96 text-gray-500">
                                     <div className="text-center">
                                         <div className="w-16 h-16 mx-auto mb-4 bg-gray-200 rounded-full flex items-center justify-center">
@@ -211,7 +229,7 @@ export default function FunnelPreview({ funnel }: FunnelPreviewProps) {
                                         </div>
                                         <p className="text-lg font-medium">No content to preview</p>
                                         <p className="text-sm">This funnel doesn't have any content yet</p>
-                                        <Link 
+                                        <Link
                                             href={route('funnel-editor.edit', funnel.id)}
                                             className="inline-flex items-center space-x-2 mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                                         >
@@ -224,7 +242,7 @@ export default function FunnelPreview({ funnel }: FunnelPreviewProps) {
                         </div>
                     </div>
                 </div>
-                
+
                 {/* Footer Info */}
                 <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-2">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -232,7 +250,7 @@ export default function FunnelPreview({ funnel }: FunnelPreviewProps) {
                             <div className="flex items-center space-x-4">
                                 <span>Viewing: {selectedDevice.charAt(0).toUpperCase() + selectedDevice.slice(1)} ({getDeviceWidth()})</span>
                                 <span>•</span>
-                                <span>{funnel.content.length} block{funnel.content.length !== 1 ? 's' : ''}</span>
+                                <span>{funnel.content.sections?.length || 0} section{(funnel.content.sections?.length !== 1) ? 's' : ''}</span>
                             </div>
                             <div className="flex items-center space-x-2">
                                 <div className={`w-2 h-2 rounded-full ${funnel.status === 'published' ? 'bg-green-500' : 'bg-yellow-500'}`}></div>

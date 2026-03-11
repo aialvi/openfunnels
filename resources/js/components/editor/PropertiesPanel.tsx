@@ -9,8 +9,7 @@ import {
     Smartphone,
     Tablet
 } from 'lucide-react';
-import { LayoutSection, LayoutColumn } from './LayoutBuilder';
-import { ContentBlock } from './ContentBlockLibrary';
+import type { Section as LayoutSection, Column as LayoutColumn, Block as ContentBlock } from '@/types/editor';
 
 interface PropertiesPanelProps {
     selectedSection: LayoutSection | null;

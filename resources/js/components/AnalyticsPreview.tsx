@@ -34,7 +34,7 @@ export default function AnalyticsPreview({ funnel }: AnalyticsPreviewProps) {
                 <h3 className="text-lg font-semibold text-gray-900">Analytics Preview</h3>
                 <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">Demo Data</span>
             </div>
-            
+
             <div className="grid grid-cols-2 gap-4 mb-4">
                 <div className="text-center">
                     <div className="flex items-center justify-center space-x-1 mb-1">
@@ -43,7 +43,7 @@ export default function AnalyticsPreview({ funnel }: AnalyticsPreviewProps) {
                     </div>
                     <div className="text-2xl font-bold text-gray-900">{mockAnalytics.views.toLocaleString()}</div>
                 </div>
-                
+
                 <div className="text-center">
                     <div className="flex items-center justify-center space-x-1 mb-1">
                         <MousePointer className="w-4 h-4 text-gray-500" />
@@ -52,7 +52,7 @@ export default function AnalyticsPreview({ funnel }: AnalyticsPreviewProps) {
                     <div className="text-2xl font-bold text-gray-900">{mockAnalytics.conversions}</div>
                 </div>
             </div>
-            
+
             <div className="space-y-3">
                 <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-600">Conversion Rate</span>
@@ -65,27 +65,27 @@ export default function AnalyticsPreview({ funnel }: AnalyticsPreviewProps) {
                         </div>
                     </div>
                 </div>
-                
+
                 <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-600">Bounce Rate</span>
                     <div className="text-right">
                         <div className="font-semibold text-gray-900">{mockAnalytics.bounceRate}%</div>
                     </div>
                 </div>
-                
+
                 <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Blocks Count</span>
+                    <span className="text-sm text-gray-600">Sections Count</span>
                     <div className="text-right">
-                        <div className="font-semibold text-gray-900">{funnel.content.length}</div>
+                        <div className="font-semibold text-gray-900">{funnel.content.sections?.length || 0}</div>
                         <div className="text-xs text-gray-500">
-                            {funnel.content.length === 0 ? 'Add blocks' : 
-                             funnel.content.length < 3 ? 'Consider more content' : 
-                             'Good content density'}
+                            {(!funnel.content.sections || funnel.content.sections.length === 0) ? 'Add sections' :
+                                funnel.content.sections.length < 3 ? 'Consider more content' :
+                                    'Good content density'}
                         </div>
                     </div>
                 </div>
             </div>
-            
+
             <div className="mt-4 pt-4 border-t border-gray-200">
                 <div className="flex items-center space-x-2 text-sm text-gray-500">
                     <TrendingUp className="w-4 h-4" />

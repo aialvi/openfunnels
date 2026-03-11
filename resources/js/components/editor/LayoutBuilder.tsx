@@ -11,46 +11,23 @@ import {
     Copy
 } from 'lucide-react';
 import ColumnDropZone from './ColumnDropZone';
-import { ContentBlock } from './ContentBlockLibrary';
+import type { Section, Column, Block } from '@/types/editor';
 
-export interface LayoutSection {
-    id: string;
-    type: 'section';
-    layout: 'single' | 'two-column' | 'three-column' | 'four-column' | 'custom';
-    columns: LayoutColumn[];
-    settings: {
-        backgroundColor: string;
-        padding: string;
-        margin: string;
-        fullWidth: boolean;
-        backgroundImage?: string;
-        minHeight: string;
-    };
-}
-
-export interface LayoutColumn {
-    id: string;
-    type: 'column';
-    width: number; // percentage
-    blocks: ContentBlock[]; // Changed from Record<string, unknown>[] to ContentBlock[]
-    settings: {
-        padding: string;
-        backgroundColor: string;
-        verticalAlign: 'top' | 'middle' | 'bottom';
-    };
-}
+// Re-export for backwards compatibility with existing imports.
+export type LayoutSection = Section;
+export type LayoutColumn = Column;
 
 interface LayoutBuilderProps {
-    sections: LayoutSection[];
-    onSectionsChange: (sections: LayoutSection[]) => void;
-    selectedSection: LayoutSection | null;
-    onSelectSection: (section: LayoutSection | null) => void;
-    selectedColumn?: LayoutColumn | null;
-    onSelectColumn?: (column: LayoutColumn | null) => void;
-    selectedBlock?: ContentBlock | null;
-    onSelectBlock?: (block: ContentBlock | null) => void;
-    onBlockAdd?: (sectionId: string, columnId: string, block: ContentBlock, index?: number) => void;
-    onBlockUpdate?: (blockId: string, updates: Partial<ContentBlock>) => void;
+    sections: Section[];
+    onSectionsChange: (sections: Section[]) => void;
+    selectedSectionId: string | null;
+    onSelectSection: (sectionId: string | null) => void;
+    selectedColumnId?: string | null;
+    onSelectColumn?: (columnId: string | null) => void;
+    selectedBlockId?: string | null;
+    onSelectBlock?: (blockId: string | null) => void;
+    onBlockAdd?: (sectionId: string, columnId: string, block: Block, index?: number) => void;
+    onBlockUpdate?: (blockId: string, updates: Partial<Block>) => void;
     onBlockDelete?: (sectionId: string, columnId: string, blockId: string) => void;
 }
 
@@ -144,27 +121,23 @@ function SectionComponent({
     isSelected,
     onDelete,
     onDuplicate,
-    selectedColumn,
+    selectedColumnId,
     onSelectColumn,
-    // selectedBlock,
-    // onSelectBlock,
     onBlockAdd,
     onBlockUpdate,
     onBlockDelete
 }: {
-    section: LayoutSection;
+    section: Section;
     index: number;
     moveSection: (dragIndex: number, hoverIndex: number) => void;
-    onSelect: (section: LayoutSection) => void;
+    onSelect: (sectionId: string) => void;
     isSelected: boolean;
     onDelete: (sectionId: string) => void;
     onDuplicate: (sectionId: string) => void;
-    selectedColumn?: LayoutColumn | null;
-    onSelectColumn?: (column: LayoutColumn | null) => void;
-    // selectedBlock?: ContentBlock | null;
-    // onSelectBlock?: (block: ContentBlock | null) => void;
-    onBlockAdd: (columnId: string, block: ContentBlock) => void;
-    onBlockUpdate: (columnId: string, blockId: string, updates: Partial<ContentBlock>) => void;
+    selectedColumnId?: string | null;
+    onSelectColumn?: (columnId: string | null) => void;
+    onBlockAdd: (columnId: string, block: Block) => void;
+    onBlockUpdate: (columnId: string, blockId: string, updates: Partial<Block>) => void;
     onBlockDelete: (columnId: string, blockId: string) => void;
 }) {
     const ref = useRef<HTMLDivElement>(null);
@@ -227,10 +200,9 @@ function SectionComponent({
             }}
             onClick={(e) => {
                 e.stopPropagation();
-                onSelect(section);
+                onSelect(section.id);
             }}
         >
-            {/* Section Controls */}
             {/* Section Controls */}
             <div className={`absolute top-2 right-2 flex space-x-1 ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition-opacity z-10`}>
                 <button
@@ -276,7 +248,7 @@ function SectionComponent({
                         className="relative"
                         style={{
                             width: `${column.width}%`,
-                            padding: '4px', // Small padding between columns
+                            padding: '4px',
                         }}
                     >
                         <ColumnDropZone
@@ -284,8 +256,8 @@ function SectionComponent({
                             onBlockAdd={onBlockAdd}
                             onBlockUpdate={onBlockUpdate}
                             onBlockDelete={onBlockDelete}
-                            isSelected={selectedColumn?.id === column.id}
-                            onSelect={() => onSelectColumn?.(column)}
+                            isSelected={selectedColumnId === column.id}
+                            onSelect={() => onSelectColumn?.(column.id)}
                         />
 
                         {/* Column controls */}
@@ -310,11 +282,11 @@ function SectionComponent({
 export default function LayoutBuilder({
     sections,
     onSectionsChange,
-    selectedSection,
+    selectedSectionId,
     onSelectSection,
-    selectedColumn,
+    selectedColumnId,
     onSelectColumn,
-    selectedBlock,
+    selectedBlockId,
     onSelectBlock,
     onBlockAdd,
     onBlockUpdate,
@@ -331,7 +303,7 @@ export default function LayoutBuilder({
     }, [sections, onSectionsChange]);
 
     // Block handling functions
-    const handleBlockAdd = useCallback((columnId: string, block: ContentBlock) => {
+    const handleBlockAdd = useCallback((columnId: string, block: Block) => {
         if (onBlockAdd) {
             // Find the section that contains this column
             const section = sections.find(s => s.columns.some(c => c.id === columnId));
@@ -353,7 +325,7 @@ export default function LayoutBuilder({
         onSectionsChange(newSections);
     }, [sections, onSectionsChange, onBlockAdd]);
 
-    const handleBlockUpdate = useCallback((columnId: string, blockId: string, updates: Partial<ContentBlock>) => {
+    const handleBlockUpdate = useCallback((columnId: string, blockId: string, updates: Partial<Block>) => {
         if (onBlockUpdate) {
             onBlockUpdate(blockId, updates);
             return;
@@ -387,7 +359,7 @@ export default function LayoutBuilder({
         }
 
         // Clear selection if deleting the selected block
-        if (selectedBlock?.id === blockId && onSelectBlock) {
+        if (selectedBlockId === blockId && onSelectBlock) {
             onSelectBlock(null);
         }
 
@@ -404,34 +376,22 @@ export default function LayoutBuilder({
             )
         }));
         onSectionsChange(newSections);
-    }, [sections, onSectionsChange, onBlockDelete, selectedBlock, onSelectBlock]);
+    }, [sections, onSectionsChange, onBlockDelete, selectedBlockId, onSelectBlock]);
 
-    const [{ isOver }, drop] = useDrop(() => ({
-        accept: ItemTypes.LAYOUT_TEMPLATE,
-        drop: (item: typeof LAYOUT_TEMPLATES[0], monitor) => {
-            if (!monitor.didDrop()) {
-                addSection(item);
-            }
-        },
-        collect: (monitor) => ({
-            isOver: monitor.isOver(),
-        }),
-    }));
-
-    const addSection = (template: typeof LAYOUT_TEMPLATES[0]) => {
-        const newSection: LayoutSection = {
+    const addSection = useCallback((template: typeof LAYOUT_TEMPLATES[0]) => {
+        const newSection: Section = {
             id: `section-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
             type: 'section',
-            layout: template.id as LayoutSection['layout'],
+            layout: template.id as Section['layout'],
             columns: template.columns.map((col, index) => ({
                 id: `column-${Date.now()}-${index}`,
-                type: 'column',
+                type: 'column' as const,
                 width: col.width,
                 blocks: [],
                 settings: {
                     padding: '20px',
                     backgroundColor: 'transparent',
-                    verticalAlign: 'top',
+                    verticalAlign: 'top' as const,
                 },
             })),
             settings: {
@@ -444,12 +404,24 @@ export default function LayoutBuilder({
         };
 
         onSectionsChange([...sections, newSection]);
-    };
+    }, [sections, onSectionsChange]);
+
+    const [{ isOver }, drop] = useDrop(() => ({
+        accept: ItemTypes.LAYOUT_TEMPLATE,
+        drop: (item: typeof LAYOUT_TEMPLATES[0], monitor) => {
+            if (!monitor.didDrop()) {
+                addSection(item);
+            }
+        },
+        collect: (monitor) => ({
+            isOver: monitor.isOver(),
+        }),
+    }), [addSection]);
 
     const deleteSection = (sectionId: string) => {
         const newSections = sections.filter(section => section.id !== sectionId);
         onSectionsChange(newSections);
-        if (selectedSection?.id === sectionId) {
+        if (selectedSectionId === sectionId) {
             onSelectSection(null);
         }
     };
@@ -457,7 +429,7 @@ export default function LayoutBuilder({
     const duplicateSection = (sectionId: string) => {
         const sectionToDuplicate = sections.find(section => section.id === sectionId);
         if (sectionToDuplicate) {
-            const duplicatedSection: LayoutSection = {
+            const duplicatedSection: Section = {
                 ...sectionToDuplicate,
                 id: `section-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
                 columns: sectionToDuplicate.columns.map(col => ({
@@ -521,14 +493,12 @@ export default function LayoutBuilder({
                                         section={section}
                                         index={index}
                                         moveSection={moveSection}
-                                        onSelect={onSelectSection}
-                                        isSelected={selectedSection?.id === section.id}
+                                        onSelect={(sectionId) => onSelectSection(sectionId)}
+                                        isSelected={selectedSectionId === section.id}
                                         onDelete={deleteSection}
                                         onDuplicate={duplicateSection}
-                                        selectedColumn={selectedColumn}
+                                        selectedColumnId={selectedColumnId}
                                         onSelectColumn={onSelectColumn}
-                                        // selectedBlock={selectedBlock}
-                                        // onSelectBlock={onSelectBlock}
                                         onBlockAdd={handleBlockAdd}
                                         onBlockUpdate={handleBlockUpdate}
                                         onBlockDelete={handleBlockDelete}
