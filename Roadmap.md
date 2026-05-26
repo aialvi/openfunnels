@@ -9,6 +9,7 @@ This roadmap is a planning aid for agents and contributors. It should guide prio
 - Funnel model, policy, migrations, and CRUD controller.
 - Funnel dashboard/listing with aggregate stats.
 - Enhanced React funnel editor surface.
+- New-funnel starter layout chooser with common premade layouts.
 - Zustand + Immer editor store with undo/redo history.
 - Public funnel preview route at `/f/{slug}`.
 - Custom domain mapping at the Laravel/React application layer.
@@ -20,6 +21,8 @@ This roadmap is a planning aid for agents and contributors. It should guide prio
 
 - Harden funnel CRUD behavior with focused feature tests.
 - Improve lead capture form configuration in the editor.
+- Move starter layout definitions out of the editor page once the template library grows.
+- Add thumbnails/previews for starter layouts.
 - Add contact search, filters, detail pages, notes, and lifecycle statuses.
 - Improve autosave/manual save flows in the editor.
 - Expand editor block coverage and block-level property editing.
@@ -38,6 +41,7 @@ This roadmap is a planning aid for agents and contributors. It should guide prio
 - Selection, duplication, deletion, and reordering polish.
 - Undo/redo reliability.
 - Reusable templates and saved sections.
+- Template library with categories, thumbnails, preview mode, and one-click install.
 
 ### Publishing
 

@@ -8,7 +8,8 @@ import {
     Move,
     Settings,
     Trash2,
-    Copy
+    Copy,
+    ChevronDown,
 } from 'lucide-react';
 import ColumnDropZone from './ColumnDropZone';
 import type { Section, Column, Block } from '@/types/editor';
@@ -20,6 +21,7 @@ export type LayoutColumn = Column;
 interface LayoutBuilderProps {
     sections: Section[];
     onSectionsChange: (sections: Section[]) => void;
+    sidebarExtra?: React.ReactNode;
     selectedSectionId: string | null;
     onSelectSection: (sectionId: string | null) => void;
     selectedColumnId?: string | null;
@@ -29,6 +31,7 @@ interface LayoutBuilderProps {
     onBlockAdd?: (sectionId: string, columnId: string, block: Block, index?: number) => void;
     onBlockUpdate?: (blockId: string, updates: Partial<Block>) => void;
     onBlockDelete?: (sectionId: string, columnId: string, blockId: string) => void;
+    inspectorActive?: boolean;
 }
 
 const ItemTypes = {
@@ -282,6 +285,8 @@ function SectionComponent({
 export default function LayoutBuilder({
     sections,
     onSectionsChange,
+    sidebarExtra,
+    inspectorActive = false,
     selectedSectionId,
     onSelectSection,
     selectedColumnId,
@@ -293,6 +298,15 @@ export default function LayoutBuilder({
     onBlockDelete
 }: LayoutBuilderProps) {
     const canvasRef = useRef<HTMLDivElement>(null);
+    const [isTemplatesOpen, setIsTemplatesOpen] = React.useState(!inspectorActive);
+    const [isInspectorOpen, setIsInspectorOpen] = React.useState(inspectorActive);
+
+    React.useEffect(() => {
+        if (inspectorActive) {
+            setIsTemplatesOpen(false);
+            setIsInspectorOpen(true);
+        }
+    }, [inspectorActive]);
 
     const moveSection = useCallback((dragIndex: number, hoverIndex: number) => {
         const newSections = [...sections];
@@ -450,20 +464,45 @@ export default function LayoutBuilder({
             <div className="flex h-full">
                 {/* Layout Templates Sidebar */}
                 <div className="w-64 bg-card border-r border-border p-4 h-full overflow-y-auto">
-                    <h3 className="text-lg font-semibold text-foreground mb-4">Layout Templates</h3>
-                    <div className="grid grid-cols-2 gap-3">
-                        {LAYOUT_TEMPLATES.map((template) => (
-                            <LayoutTemplate key={template.id} template={template} />
-                        ))}
+                    <div className="space-y-3">
+                        <button
+                            onClick={() => setIsTemplatesOpen((open) => !open)}
+                            className="flex w-full items-center justify-between rounded-md px-1 py-1 text-left text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+                        >
+                            <span>Layout Templates</span>
+                            <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${isTemplatesOpen ? 'rotate-180' : ''}`} />
+                        </button>
+
+                        {isTemplatesOpen && (
+                            <>
+                                <div className="grid grid-cols-2 gap-3">
+                                    {LAYOUT_TEMPLATES.map((template) => (
+                                        <LayoutTemplate key={template.id} template={template} />
+                                    ))}
+                                </div>
+
+                                <div className="rounded-lg bg-muted/40 p-3">
+                                    <h4 className="text-sm font-medium text-foreground mb-2">Instructions</h4>
+                                    <p className="text-xs text-muted-foreground">
+                                        Drag layout templates to the canvas to create sections. Add content blocks to each column.
+                                    </p>
+                                </div>
+                            </>
+                        )}
                     </div>
 
-                    <div className="mt-6">
-                        <h4 className="text-sm font-medium text-foreground mb-2">Instructions</h4>
-                        <p className="text-xs text-muted-foreground">
-                            Drag layout templates to the canvas to create sections.
-                            You can then add content blocks to each column.
-                        </p>
-                    </div>
+                    {sidebarExtra && (
+                        <div className="mt-4 border-t border-border pt-4">
+                            <button
+                                onClick={() => setIsInspectorOpen((open) => !open)}
+                                className="flex w-full items-center justify-between rounded-md px-1 py-1 text-left text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+                            >
+                                <span>Inspector</span>
+                                <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${isInspectorOpen ? 'rotate-180' : ''}`} />
+                            </button>
+                            {isInspectorOpen && sidebarExtra}
+                        </div>
+                    )}
                 </div>
 
                 {/* Canvas Area */}

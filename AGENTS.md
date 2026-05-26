@@ -23,6 +23,7 @@ OpenFunnels is a Laravel 12 + Inertia.js SaaS application for building and publi
 - `routes/web.php`: public home, public `/f/{funnel:slug}` route, authenticated funnel/dashboard/editor routes.
 - `routes/auth.php` and `routes/settings.php`: auth and settings routes from the Laravel React starter kit.
 - `resources/js/pages`: Inertia page components.
+- `resources/js/pages/enhanced-funnel-editor.tsx`: primary editor page, including the new-funnel starter layout chooser.
 - `resources/js/components/editor`: funnel editor components and drag/drop UI.
 - `resources/js/types/editor.ts`: canonical editor/funnel TypeScript types. Import these instead of redefining duplicate editor types.
 - `resources/js/lib/exporters`: funnel export implementations.
@@ -120,6 +121,7 @@ Notes:
 - Preserve the current dark black/orange theme tokens in `resources/css/app.css` unless the task explicitly changes branding.
 - For editor state changes, use the existing Zustand store patterns in `funnelStore.ts`, including history updates for undo/redo.
 - Be careful with editor content shape: a funnel has `content.sections`, sections have columns, and columns have blocks.
+- Starter layouts should use the canonical `Section`, `Column`, and `Block` shape and should include practical form blocks where lead capture is expected.
 
 ## Testing And Verification
 

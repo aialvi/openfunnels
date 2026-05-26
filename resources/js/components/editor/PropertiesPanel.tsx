@@ -12,6 +12,8 @@ import {
 import type { Section as LayoutSection, Column as LayoutColumn, Block as ContentBlock } from '@/types/editor';
 
 interface PropertiesPanelProps {
+    embedded?: boolean;
+    forceExpanded?: boolean;
     selectedSection: LayoutSection | null;
     selectedColumn: LayoutColumn | null;
     selectedBlock: ContentBlock | null;
@@ -23,6 +25,8 @@ interface PropertiesPanelProps {
 }
 
 export default function PropertiesPanel({
+    embedded = false,
+    forceExpanded = false,
     selectedSection,
     selectedColumn,
     selectedBlock,
@@ -354,14 +358,16 @@ export default function PropertiesPanel({
         </div>
     );
 
+    const hasSelection = Boolean(selectedSection || selectedColumn || selectedBlock);
+
     return (
-        <div className="w-80 bg-card border-l border-border p-4 h-full overflow-y-auto">
+        <div className={embedded ? 'pt-4' : 'w-80 bg-card border-l border-border p-4 h-full overflow-y-auto'}>
             <div className="space-y-6">
                 {/* Device Preview */}
-                {renderDevicePreview()}
+                {(!forceExpanded || !hasSelection) && renderDevicePreview()}
 
                 {/* Properties */}
-                <div className="border-t border-border pt-4">
+                <div className={forceExpanded && hasSelection ? '' : 'border-t border-border pt-4'}>
                     {selectedBlock && renderBlockProperties()}
                     {selectedColumn && !selectedBlock && renderColumnProperties()}
                     {selectedSection && !selectedColumn && !selectedBlock && renderSectionProperties()}

@@ -62,6 +62,8 @@ export default function FunnelPreview({ funnel }: FunnelPreviewProps) {
                 backgroundColor: (block.content.backgroundColor as string) || 'transparent',
                 padding: (block.content.padding as string) || '8px',
                 borderRadius: (block.content.borderRadius as string) || '0px',
+                fontWeight: (block.content.fontWeight as string) || 'normal',
+                textAlign: (block.content.textAlign as React.CSSProperties['textAlign']) || 'left',
             },
         };
 
@@ -263,7 +265,7 @@ export default function FunnelPreview({ funnel }: FunnelPreviewProps) {
                                                 key={column.id}
                                                 className="flex flex-col gap-4 relative"
                                                 style={{
-                                                    width: selectedDevice === 'mobile' ? '100%' : column.width,
+                                                    width: selectedDevice === 'mobile' ? '100%' : `${column.width}%`,
                                                     padding: column.settings.padding,
                                                     backgroundColor: column.settings.backgroundColor,
                                                     justifyContent: column.settings.verticalAlign === 'middle' ? 'center' :
