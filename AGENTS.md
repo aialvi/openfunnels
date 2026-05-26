@@ -15,7 +15,10 @@ OpenFunnels is a Laravel 12 + Inertia.js SaaS application for building and publi
 ## Repository Map
 
 - `app/Http/Controllers/FunnelController.php`: funnel CRUD, preview, publish/unpublish, duplication, and public funnel rendering.
+- `app/Http/Controllers/LeadCaptureController.php`: public funnel form submissions that create/update contacts and increment conversions.
+- `app/Http/Controllers/ContactController.php`: authenticated contacts/CRM-lite index.
 - `app/Models/Funnel.php`: funnel model, JSON casts, publishing helpers, view/conversion counters.
+- `app/Models/Contact.php`: captured lead/contact records owned by users and optionally tied to funnels.
 - `app/Policies/FunnelPolicy.php`: funnel authorization rules.
 - `routes/web.php`: public home, public `/f/{funnel:slug}` route, authenticated funnel/dashboard/editor routes.
 - `routes/auth.php` and `routes/settings.php`: auth and settings routes from the Laravel React starter kit.
@@ -99,6 +102,8 @@ Notes:
 - Follow Laravel conventions for controllers, requests, policies, migrations, factories, and seeders.
 - Use policies for user-owned resources. Existing funnel routes rely on `FunnelPolicy`.
 - Keep public funnel behavior explicit: published funnels can be viewed publicly via `/f/{slug}`, unpublished funnels require authorization.
+- Funnel form submissions post to `LeadCaptureController` and should create contacts for the funnel owner, not the anonymous visitor.
+- Contact records are currently CRM-lite leads. Do not build automation, SMS, or email behavior into contacts directly; use separate workflow/integration layers when those features are added.
 - Keep migrations database-agnostic where practical. The local app uses SQLite.
 - For JSON content/settings, preserve array casts and validate request payloads before decoding.
 - Prefer named routes and Inertia responses over hard-coded URLs in app code.

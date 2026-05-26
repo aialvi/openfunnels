@@ -1,7 +1,7 @@
-import { Head, Link } from '@inertiajs/react';
-import { useState } from 'react';
+import { Head, Link, router } from '@inertiajs/react';
+import { type FormEvent, useState } from 'react';
 import { Monitor, Tablet, Smartphone, ArrowLeft, ExternalLink, Share } from 'lucide-react';
-import type { Funnel, Block, Section, Column } from '@/types/editor';
+import type { Funnel, Block } from '@/types/editor';
 
 interface FunnelPreviewProps {
     funnel: Funnel & { id: number; slug: string };
@@ -9,6 +9,8 @@ interface FunnelPreviewProps {
 
 export default function FunnelPreview({ funnel }: FunnelPreviewProps) {
     const [selectedDevice, setSelectedDevice] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
+    const [submittingBlockId, setSubmittingBlockId] = useState<string | null>(null);
+    const [submittedBlockId, setSubmittedBlockId] = useState<string | null>(null);
 
     const getDeviceWidth = () => {
         switch (selectedDevice) {
@@ -20,6 +22,34 @@ export default function FunnelPreview({ funnel }: FunnelPreviewProps) {
             default:
                 return '100%';
         }
+    };
+
+    const handleLeadSubmit = (event: FormEvent<HTMLFormElement>, block: Block) => {
+        event.preventDefault();
+
+        const form = event.currentTarget;
+        const formData = new FormData(form);
+
+        setSubmittingBlockId(block.id);
+
+        router.post(
+            `/funnels/${funnel.id}/leads`,
+            {
+                name: formData.get('name') || undefined,
+                email: formData.get('email'),
+                phone: formData.get('phone') || undefined,
+                form_id: block.id,
+                fields: Object.fromEntries(formData.entries()),
+            },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    form.reset();
+                    setSubmittedBlockId(block.id);
+                },
+                onFinish: () => setSubmittingBlockId(null),
+            },
+        );
     };
 
     const renderBlock = (block: Block) => {
@@ -69,17 +99,44 @@ export default function FunnelPreview({ funnel }: FunnelPreviewProps) {
             case 'form':
                 return (
                     <div key={block.id} {...commonProps} className={`${commonProps.className} min-w-64`}>
-                        <div className="space-y-4">
+                        <form className="space-y-4" onSubmit={(event) => handleLeadSubmit(event, block)}>
                             <h3 className="font-semibold">{(block.content.title as string) || 'Subscribe to our newsletter'}</h3>
+                            {(block.content.showName as boolean | undefined) !== false && (
+                                <input
+                                    name="name"
+                                    type="text"
+                                    placeholder={(block.content.namePlaceholder as string) || 'Your name'}
+                                    className="w-full rounded border border-gray-300 p-2"
+                                />
+                            )}
                             <input
+                                name="email"
                                 type="email"
+                                required
                                 placeholder={(block.content.placeholder as string) || 'Enter your email'}
-                                className="w-full p-2 border border-gray-300 rounded"
+                                className="w-full rounded border border-gray-300 p-2"
                             />
-                            <button className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700 transition-colors">
-                                {(block.content.buttonText as string) || 'Subscribe'}
+                            {(block.content.showPhone as boolean | undefined) === true && (
+                                <input
+                                    name="phone"
+                                    type="tel"
+                                    placeholder={(block.content.phonePlaceholder as string) || 'Phone number'}
+                                    className="w-full rounded border border-gray-300 p-2"
+                                />
+                            )}
+                            <button
+                                type="submit"
+                                disabled={submittingBlockId === block.id}
+                                className="w-full rounded bg-blue-600 p-2 text-white transition-colors hover:bg-blue-700 disabled:opacity-60"
+                            >
+                                {submittingBlockId === block.id ? 'Submitting...' : (block.content.buttonText as string) || 'Subscribe'}
                             </button>
-                        </div>
+                            {submittedBlockId === block.id && (
+                                <p className="text-sm font-medium text-green-600">
+                                    {(block.content.successMessage as string) || 'Thanks. Your information was submitted.'}
+                                </p>
+                            )}
+                        </form>
                     </div>
                 );
             default:

@@ -1,10 +1,14 @@
 <?php
 
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\FunnelController;
+use App\Http\Controllers\LeadCaptureController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 $appDomain = parse_url(config('app.url'), PHP_URL_HOST) ?? 'localhost';
+
+Route::post('funnels/{funnel}/leads', [LeadCaptureController::class, 'store'])->name('funnels.leads.store');
 
 Route::domain($appDomain)->group(function () {
     Route::get('/', function () {
@@ -17,10 +21,33 @@ Route::domain($appDomain)->group(function () {
 
     Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('dashboard', function () {
-            return Inertia::render('dashboard');
+            $user = auth()->user();
+            $funnels = $user->funnels();
+
+            return Inertia::render('dashboard', [
+                'stats' => [
+                    'total_funnels' => (clone $funnels)->count(),
+                    'total_views' => (clone $funnels)->sum('views'),
+                    'total_conversions' => (clone $funnels)->sum('conversions'),
+                    'total_contacts' => $user->contacts()->count(),
+                ],
+                'recentContacts' => $user->contacts()
+                    ->with('funnel:id,name')
+                    ->latest('last_submitted_at')
+                    ->limit(5)
+                    ->get()
+                    ->map(fn ($contact) => [
+                        'id' => $contact->id,
+                        'email' => $contact->email,
+                        'name' => $contact->name,
+                        'funnel' => $contact->funnel?->name,
+                        'last_submitted_at' => $contact->last_submitted_at?->diffForHumans(),
+                    ]),
+            ]);
         })->name('dashboard');
 
         // Exclude 'show' — it is handled by the public route above.
+        Route::get('contacts', [ContactController::class, 'index'])->name('contacts.index');
         Route::resource('funnels', FunnelController::class)->except(['show']);
         Route::get('funnel-editor', [FunnelController::class, 'create'])->name('funnel-editor');
         Route::get('funnel-editor/{funnel}', [FunnelController::class, 'edit'])->name('funnel-editor.edit');
