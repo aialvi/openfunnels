@@ -48,6 +48,9 @@ Route::domain($appDomain)->group(function () {
 
         // Exclude 'show' — it is handled by the public route above.
         Route::get('contacts', [ContactController::class, 'index'])->name('contacts.index');
+        Route::get('contacts/{contact}', [ContactController::class, 'show'])->name('contacts.show');
+        Route::patch('contacts/{contact}', [ContactController::class, 'update'])->name('contacts.update');
+        Route::post('contacts/{contact}/notes', [ContactController::class, 'storeNote'])->name('contacts.notes.store');
         Route::resource('funnels', FunnelController::class)->except(['show']);
         Route::get('funnel-editor', [FunnelController::class, 'create'])->name('funnel-editor');
         Route::get('funnel-editor/{funnel}', [FunnelController::class, 'edit'])->name('funnel-editor.edit');

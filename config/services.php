@@ -40,4 +40,9 @@ return [
         'a_record_ip' => env('DOMAIN_MAPPING_A_RECORD_IP'),
     ],
 
+    'lead_capture' => [
+        'notification_email' => env('LEAD_CAPTURE_NOTIFICATION_EMAIL'),
+        'webhook_url' => env('LEAD_CAPTURE_WEBHOOK_URL'),
+    ],
+
 ];

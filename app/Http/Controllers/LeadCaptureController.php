@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\NewLeadCaptured;
 use App\Models\Contact;
 use App\Models\Funnel;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
 
 class LeadCaptureController extends Controller
 {
@@ -54,8 +57,55 @@ class LeadCaptureController extends Controller
         ]);
 
         $contact->save();
+        $submission = $contact->submissions()->create([
+            'funnel_id' => $funnel->id,
+            'form_id' => $validated['form_id'] ?? null,
+            'fields' => $validated['fields'] ?? [],
+            'source' => 'funnel_form',
+            'url' => $request->headers->get('referer'),
+            'ip_address' => $request->ip(),
+            'user_agent' => (string) $request->userAgent(),
+        ]);
+
         $funnel->incrementConversions();
+        $this->notifyLeadCaptured($contact, $funnel, $submission);
 
         return back()->with('success', 'Thanks. Your information was submitted.');
+    }
+
+    private function notifyLeadCaptured(Contact $contact, Funnel $funnel, \App\Models\ContactSubmission $submission): void
+    {
+        $recipient = config('services.lead_capture.notification_email') ?: $funnel->user->email;
+
+        if ($recipient) {
+            Mail::to($recipient)->send(new NewLeadCaptured($contact, $funnel, $submission));
+        }
+
+        $webhookUrl = config('services.lead_capture.webhook_url');
+
+        if ($webhookUrl) {
+            Http::timeout(5)->post($webhookUrl, [
+                'event' => 'lead.captured',
+                'contact' => [
+                    'id' => $contact->id,
+                    'email' => $contact->email,
+                    'name' => $contact->name,
+                    'phone' => $contact->phone,
+                    'status' => $contact->status,
+                ],
+                'funnel' => [
+                    'id' => $funnel->id,
+                    'name' => $funnel->name,
+                    'slug' => $funnel->slug,
+                ],
+                'submission' => [
+                    'id' => $submission->id,
+                    'form_id' => $submission->form_id,
+                    'fields' => $submission->fields,
+                    'url' => $submission->url,
+                    'created_at' => $submission->created_at?->toISOString(),
+                ],
+            ]);
+        }
     }
 }

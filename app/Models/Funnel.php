@@ -66,6 +66,11 @@ class Funnel extends Model
         return $this->hasMany(Contact::class);
     }
 
+    public function contactSubmissions(): HasMany
+    {
+        return $this->hasMany(ContactSubmission::class);
+    }
+
     public function incrementViews(): void
     {
         $this->increment('views');

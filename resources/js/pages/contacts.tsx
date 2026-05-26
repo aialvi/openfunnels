@@ -108,7 +108,9 @@ export default function Contacts({ contacts, stats }: ContactsPageProps) {
                             className="grid grid-cols-[minmax(220px,1.3fr)_minmax(160px,1fr)_120px_160px] items-center gap-4 border-b border-border px-5 py-4 last:border-b-0"
                         >
                             <div className="min-w-0">
-                                <div className="truncate font-medium text-foreground">{contact.name || contact.email}</div>
+                                <Link href={route('contacts.show', contact.id)} className="truncate font-medium text-foreground hover:text-primary">
+                                    {contact.name || contact.email}
+                                </Link>
                                 <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-sm text-muted-foreground">
                                     <span className="inline-flex items-center gap-1">
                                         <Mail className="h-3.5 w-3.5" />

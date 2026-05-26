@@ -96,7 +96,9 @@ type StarterTemplateId =
 interface StarterTemplate {
     id: StarterTemplateId;
     name: string;
+    category: 'Lead capture' | 'Sales' | 'Events' | 'Services' | 'Industry';
     description: string;
+    preview: 'split-form' | 'centered-form' | 'split-media' | 'proof-grid' | 'event' | 'metrics';
     icon: typeof Sparkles;
     funnelName: string;
     sections: Section[];
@@ -157,7 +159,9 @@ const starterTemplates: StarterTemplate[] = [
     {
         id: 'lead-magnet',
         name: 'Lead Magnet',
+        category: 'Lead capture',
         description: 'Headline, benefit bullets, opt-in form, and social proof.',
+        preview: 'split-form',
         icon: Gift,
         funnelName: 'Lead Magnet Funnel',
         sections: [
@@ -187,7 +191,9 @@ const starterTemplates: StarterTemplate[] = [
     {
         id: 'webinar',
         name: 'Webinar Registration',
+        category: 'Events',
         description: 'Event promise, agenda, speaker proof, and registration form.',
+        preview: 'event',
         icon: CalendarDays,
         funnelName: 'Webinar Registration Funnel',
         sections: [
@@ -218,7 +224,9 @@ const starterTemplates: StarterTemplate[] = [
     {
         id: 'product-launch',
         name: 'Product Launch',
+        category: 'Sales',
         description: 'Launch hero, offer section, benefits, testimonials, and CTA.',
+        preview: 'split-media',
         icon: Rocket,
         funnelName: 'Product Launch Funnel',
         sections: [
@@ -243,7 +251,9 @@ const starterTemplates: StarterTemplate[] = [
     {
         id: 'consultation',
         name: 'Consultation Funnel',
+        category: 'Services',
         description: 'Service pitch, qualification copy, and request-a-call form.',
+        preview: 'split-form',
         icon: MousePointerClick,
         funnelName: 'Consultation Booking Funnel',
         sections: [
@@ -275,7 +285,9 @@ const starterTemplates: StarterTemplate[] = [
     {
         id: 'waitlist',
         name: 'Waitlist',
+        category: 'Lead capture',
         description: 'Simple pre-launch signup page for products and SaaS ideas.',
+        preview: 'split-form',
         icon: ClipboardList,
         funnelName: 'Waitlist Funnel',
         sections: [
@@ -305,7 +317,9 @@ const starterTemplates: StarterTemplate[] = [
     {
         id: 'newsletter',
         name: 'Newsletter Signup',
+        category: 'Lead capture',
         description: 'Audience-building page with clear promise and opt-in.',
+        preview: 'centered-form',
         icon: Mail,
         funnelName: 'Newsletter Signup Funnel',
         sections: [
@@ -332,7 +346,9 @@ const starterTemplates: StarterTemplate[] = [
     {
         id: 'quote-request',
         name: 'Quote Request',
+        category: 'Services',
         description: 'Lead form for agencies, contractors, and service providers.',
+        preview: 'split-form',
         icon: FileText,
         funnelName: 'Quote Request Funnel',
         sections: [
@@ -358,7 +374,9 @@ const starterTemplates: StarterTemplate[] = [
     {
         id: 'event-rsvp',
         name: 'Event RSVP',
+        category: 'Events',
         description: 'Event details, agenda, and attendance capture.',
+        preview: 'event',
         icon: PartyPopper,
         funnelName: 'Event RSVP Funnel',
         sections: [
@@ -389,7 +407,9 @@ const starterTemplates: StarterTemplate[] = [
     {
         id: 'course',
         name: 'Course Enrollment',
+        category: 'Sales',
         description: 'Course promise, module preview, and enrollment interest form.',
+        preview: 'proof-grid',
         icon: GraduationCap,
         funnelName: 'Course Enrollment Funnel',
         sections: [
@@ -420,7 +440,9 @@ const starterTemplates: StarterTemplate[] = [
     {
         id: 'local-service',
         name: 'Local Service',
+        category: 'Services',
         description: 'Conversion page for contractors, clinics, and local teams.',
+        preview: 'split-form',
         icon: Wrench,
         funnelName: 'Local Service Funnel',
         sections: [
@@ -451,7 +473,9 @@ const starterTemplates: StarterTemplate[] = [
     {
         id: 'real-estate',
         name: 'Real Estate Lead',
+        category: 'Industry',
         description: 'Property or market report funnel for buyer/seller leads.',
+        preview: 'split-form',
         icon: Home,
         funnelName: 'Real Estate Lead Funnel',
         sections: [
@@ -477,7 +501,9 @@ const starterTemplates: StarterTemplate[] = [
     {
         id: 'nonprofit',
         name: 'Nonprofit Campaign',
+        category: 'Industry',
         description: 'Cause story, impact proof, and supporter signup.',
+        preview: 'centered-form',
         icon: HeartHandshake,
         funnelName: 'Nonprofit Campaign Funnel',
         sections: [
@@ -508,7 +534,9 @@ const starterTemplates: StarterTemplate[] = [
     {
         id: 'ecommerce-promo',
         name: 'Ecommerce Promo',
+        category: 'Sales',
         description: 'Product promo page with benefits and email capture.',
+        preview: 'split-media',
         icon: ShoppingBag,
         funnelName: 'Ecommerce Promotion Funnel',
         sections: [
@@ -539,7 +567,9 @@ const starterTemplates: StarterTemplate[] = [
     {
         id: 'case-study',
         name: 'Case Study',
+        category: 'Sales',
         description: 'Proof-first layout with results and CTA form.',
+        preview: 'metrics',
         icon: FileText,
         funnelName: 'Case Study Funnel',
         sections: [
@@ -571,7 +601,9 @@ const starterTemplates: StarterTemplate[] = [
     {
         id: 'saas-demo',
         name: 'SaaS Demo Request',
+        category: 'Industry',
         description: 'B2B demo page with value prop, feature proof, and form.',
+        preview: 'split-form',
         icon: MonitorPlay,
         funnelName: 'SaaS Demo Funnel',
         sections: [
@@ -601,6 +633,9 @@ const starterTemplates: StarterTemplate[] = [
     },
 ];
 
+const starterCategories = ['All', 'Lead capture', 'Sales', 'Events', 'Services', 'Industry'] as const;
+type StarterCategory = typeof starterCategories[number];
+
 function createBlankFunnel(): Funnel {
     return {
         name: 'Untitled Funnel',
@@ -626,12 +661,95 @@ function createTemplateFunnel(template: StarterTemplate): Funnel {
     };
 }
 
+function StarterTemplatePreview({ variant }: { variant: StarterTemplate['preview'] }) {
+    const line = 'rounded-full bg-foreground/20';
+
+    if (variant === 'centered-form') {
+        return (
+            <div className="rounded-lg border border-border bg-muted/40 p-3">
+                <div className="mx-auto mb-2 h-2 w-16 rounded-full bg-primary/60" />
+                <div className={`mx-auto mb-2 h-3 w-32 ${line}`} />
+                <div className={`mx-auto mb-4 h-2 w-44 ${line}`} />
+                <div className="mx-auto h-12 w-40 rounded-md bg-background" />
+            </div>
+        );
+    }
+
+    if (variant === 'split-media') {
+        return (
+            <div className="grid grid-cols-2 gap-2 rounded-lg border border-border bg-muted/40 p-3">
+                <div className="space-y-2">
+                    <div className={`h-2 w-12 ${line}`} />
+                    <div className={`h-3 w-24 ${line}`} />
+                    <div className={`h-2 w-20 ${line}`} />
+                    <div className="h-5 w-16 rounded bg-primary/70" />
+                </div>
+                <div className="rounded-md bg-primary/20" />
+            </div>
+        );
+    }
+
+    if (variant === 'proof-grid') {
+        return (
+            <div className="rounded-lg border border-border bg-muted/40 p-3">
+                <div className={`mx-auto mb-3 h-3 w-32 ${line}`} />
+                <div className="grid grid-cols-3 gap-2">
+                    <div className="h-12 rounded-md bg-background" />
+                    <div className="h-12 rounded-md bg-background" />
+                    <div className="h-12 rounded-md bg-background" />
+                </div>
+            </div>
+        );
+    }
+
+    if (variant === 'event') {
+        return (
+            <div className="rounded-lg border border-border bg-muted/40 p-3">
+                <div className="mb-3 rounded-md bg-primary/20 p-3">
+                    <div className={`mb-2 h-2 w-14 ${line}`} />
+                    <div className={`h-3 w-36 ${line}`} />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                    <div className="h-12 rounded-md bg-background" />
+                    <div className="h-12 rounded-md bg-background" />
+                </div>
+            </div>
+        );
+    }
+
+    if (variant === 'metrics') {
+        return (
+            <div className="rounded-lg border border-border bg-muted/40 p-3">
+                <div className={`mx-auto mb-3 h-3 w-36 ${line}`} />
+                <div className="grid grid-cols-3 gap-2">
+                    <div className="h-10 rounded-md bg-primary/20" />
+                    <div className="h-10 rounded-md bg-primary/20" />
+                    <div className="h-10 rounded-md bg-primary/20" />
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="grid grid-cols-[1.5fr_1fr] gap-2 rounded-lg border border-border bg-muted/40 p-3">
+            <div className="space-y-2">
+                <div className={`h-2 w-12 ${line}`} />
+                <div className={`h-3 w-28 ${line}`} />
+                <div className={`h-2 w-24 ${line}`} />
+            </div>
+            <div className="h-16 rounded-md bg-background" />
+        </div>
+    );
+}
+
 export default function EnhancedFunnelEditor({ funnel: initialFunnel, domainMapping }: EnhancedFunnelEditorProps) {
     // Editor state
     const [editorMode, setEditorMode] = useState<EditorMode>('editor');
     const [isExportModalOpen, setIsExportModalOpen] = useState(false);
     const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
     const [isStarterOpen, setIsStarterOpen] = useState(!initialFunnel);
+    const [starterStep, setStarterStep] = useState<'choice' | 'templates'>('choice');
+    const [starterCategory, setStarterCategory] = useState<StarterCategory>('All');
 
     // Content block library state
     const [blockSearchQuery, setBlockSearchQuery] = useState('');
@@ -774,7 +892,22 @@ export default function EnhancedFunnelEditor({ funnel: initialFunnel, domainMapp
         setFunnel(createTemplateFunnel(template));
         markDirty();
         setIsStarterOpen(false);
+        setStarterStep('choice');
     };
+
+    const openStarterTemplates = () => {
+        setStarterStep('templates');
+        setStarterCategory('All');
+    };
+
+    const closeStarter = () => {
+        setIsStarterOpen(false);
+        setStarterStep('choice');
+    };
+
+    const visibleStarterTemplates = starterCategory === 'All'
+        ? starterTemplates
+        : starterTemplates.filter((template) => template.category === starterCategory);
 
     // Render editor mode content
     const renderEditorContent = () => {
@@ -959,7 +1092,10 @@ export default function EnhancedFunnelEditor({ funnel: initialFunnel, domainMapp
                                 </button>
                                 {!initialFunnel && (
                                     <button
-                                        onClick={() => setIsStarterOpen(true)}
+                                        onClick={() => {
+                                            setStarterStep('choice');
+                                            setIsStarterOpen(true);
+                                        }}
                                         className="flex items-center space-x-2 px-4 py-2 bg-muted rounded-lg hover:bg-muted/80 text-foreground"
                                         title="Choose a starter layout"
                                     >
@@ -1079,7 +1215,7 @@ export default function EnhancedFunnelEditor({ funnel: initialFunnel, domainMapp
 
             {isStarterOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/85 p-6 backdrop-blur-sm">
-                    <div className="w-full max-w-5xl overflow-hidden rounded-xl border border-border bg-card shadow-2xl">
+                    <div className="flex max-h-[88vh] w-full max-w-5xl flex-col overflow-hidden rounded-xl border border-border bg-card shadow-2xl">
                         <div className="flex items-start justify-between border-b border-border px-6 py-5">
                             <div>
                                 <div className="mb-2 flex items-center gap-2 text-sm font-medium text-primary">
@@ -1088,58 +1224,126 @@ export default function EnhancedFunnelEditor({ funnel: initialFunnel, domainMapp
                                 </div>
                                 <h2 className="text-2xl font-bold text-foreground">Choose how to start this funnel</h2>
                                 <p className="mt-1 text-sm text-muted-foreground">
-                                    Pick a commonly used layout, then customize every section in the editor.
+                                    {starterStep === 'choice'
+                                        ? 'Start with a blank canvas or browse proven funnel layouts.'
+                                        : 'Pick a commonly used layout, then customize every section in the editor.'}
                                 </p>
                             </div>
                             <button
-                                onClick={() => setIsStarterOpen(false)}
+                                onClick={closeStarter}
                                 className="rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                             >
                                 Skip
                             </button>
                         </div>
 
-                        <div className="grid gap-4 p-6 md:grid-cols-2 lg:grid-cols-3">
-                            <button
-                                onClick={handleStartBlank}
-                                className="group flex min-h-56 flex-col justify-between rounded-lg border border-border bg-background p-5 text-left transition-colors hover:border-primary/60 hover:bg-muted/40"
-                            >
-                                <div>
-                                    <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                                        <FilePlus2 className="h-5 w-5" />
+                        {starterStep === 'choice' ? (
+                            <div className="grid gap-4 overflow-y-auto p-6 md:grid-cols-2">
+                                <button
+                                    onClick={handleStartBlank}
+                                    className="group flex min-h-72 flex-col justify-between rounded-lg border border-border bg-background p-6 text-left transition-colors hover:border-primary/60 hover:bg-muted/40"
+                                >
+                                    <div>
+                                        <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                                            <FilePlus2 className="h-6 w-6" />
+                                        </div>
+                                        <h3 className="text-xl font-semibold text-foreground">Build from scratch</h3>
+                                        <p className="mt-3 max-w-sm text-sm leading-6 text-muted-foreground">
+                                            Open a clean canvas and create your own sections, columns, and blocks manually.
+                                        </p>
                                     </div>
-                                    <h3 className="text-lg font-semibold text-foreground">Start from scratch</h3>
-                                    <p className="mt-2 text-sm text-muted-foreground">
-                                        Open a clean canvas and build your own sections manually.
-                                    </p>
-                                </div>
-                                <span className="mt-6 text-sm font-medium text-primary">Blank canvas</span>
-                            </button>
+                                    <span className="mt-8 text-sm font-medium text-primary">Start blank</span>
+                                </button>
 
-                            {starterTemplates.map((template) => {
-                                const Icon = template.icon;
-
-                                return (
+                                <button
+                                    onClick={openStarterTemplates}
+                                    className="group flex min-h-72 flex-col justify-between rounded-lg border border-border bg-background p-6 text-left transition-colors hover:border-primary/60 hover:bg-muted/40"
+                                >
+                                    <div>
+                                        <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                                            <Sparkles className="h-6 w-6" />
+                                        </div>
+                                        <h3 className="text-xl font-semibold text-foreground">Select a template</h3>
+                                        <p className="mt-3 max-w-sm text-sm leading-6 text-muted-foreground">
+                                            Browse {starterTemplates.length} premade layouts for lead capture, sales, events, services, and industry pages.
+                                        </p>
+                                    </div>
+                                    <span className="mt-8 text-sm font-medium text-primary">Browse templates</span>
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="grid min-h-0 flex-1 grid-cols-[220px_minmax(0,1fr)] overflow-hidden">
+                                <aside className="border-r border-border p-4">
                                     <button
-                                        key={template.id}
-                                        onClick={() => handleApplyTemplate(template)}
-                                        className="group flex min-h-56 flex-col justify-between rounded-lg border border-border bg-background p-5 text-left transition-colors hover:border-primary/60 hover:bg-muted/40"
+                                        onClick={() => setStarterStep('choice')}
+                                        className="mb-4 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
                                     >
-                                        <div>
-                                            <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                                                <Icon className="h-5 w-5" />
-                                            </div>
-                                            <h3 className="text-lg font-semibold text-foreground">{template.name}</h3>
-                                            <p className="mt-2 text-sm text-muted-foreground">{template.description}</p>
-                                        </div>
-                                        <div className="mt-6 flex items-center justify-between text-sm">
-                                            <span className="font-medium text-primary">Use layout</span>
-                                            <span className="text-muted-foreground">{template.sections.length} sections</span>
-                                        </div>
+                                        Back
                                     </button>
-                                );
-                            })}
-                        </div>
+
+                                    <div className="space-y-1">
+                                        {starterCategories.map((category) => (
+                                            <button
+                                                key={category}
+                                                onClick={() => setStarterCategory(category)}
+                                                className={`flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm transition-colors ${starterCategory === category
+                                                    ? 'bg-primary text-primary-foreground'
+                                                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                                                    }`}
+                                            >
+                                                <span>{category}</span>
+                                                <span className="text-xs opacity-75">
+                                                    {category === 'All' ? starterTemplates.length : starterTemplates.filter((template) => template.category === category).length}
+                                                </span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </aside>
+
+                                <div className="flex min-h-[560px] flex-col overflow-hidden p-6">
+                                    <div className="mb-4 flex items-center justify-between">
+                                        <div>
+                                            <h3 className="text-lg font-semibold text-foreground">{starterCategory} templates</h3>
+                                            <p className="text-sm text-muted-foreground">
+                                                {visibleStarterTemplates.length} layout{visibleStarterTemplates.length === 1 ? '' : 's'} available
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="min-h-0 flex-1 overflow-y-auto pr-1">
+                                    <div className="grid auto-rows-[minmax(176px,auto)] gap-4 lg:grid-cols-2">
+                                        {visibleStarterTemplates.map((template) => {
+                                            const Icon = template.icon;
+
+                                            return (
+                                                <button
+                                                    key={template.id}
+                                                    onClick={() => handleApplyTemplate(template)}
+                                                    className="group flex min-h-44 flex-col justify-between rounded-lg border border-border bg-background p-5 text-left transition-colors hover:border-primary/60 hover:bg-muted/40"
+                                                >
+                                                    <div>
+                                                        <StarterTemplatePreview variant={template.preview} />
+                                                        <div className="mb-4 flex items-start justify-between gap-3">
+                                                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                                                                <Icon className="h-5 w-5" />
+                                                            </div>
+                                                            <span className="rounded-full bg-muted px-2 py-1 text-xs text-muted-foreground">{template.category}</span>
+                                                        </div>
+                                                        <h3 className="text-lg font-semibold text-foreground">{template.name}</h3>
+                                                        <p className="mt-2 text-sm text-muted-foreground">{template.description}</p>
+                                                    </div>
+                                                    <div className="mt-6 flex items-center justify-between text-sm">
+                                                        <span className="font-medium text-primary">Use layout</span>
+                                                        <span className="text-muted-foreground">{template.sections.length} sections</span>
+                                                    </div>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             )}

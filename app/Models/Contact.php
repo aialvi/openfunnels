@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Contact extends Model
 {
@@ -36,5 +37,10 @@ class Contact extends Model
     public function funnel(): BelongsTo
     {
         return $this->belongsTo(Funnel::class);
+    }
+
+    public function submissions(): HasMany
+    {
+        return $this->hasMany(ContactSubmission::class);
     }
 }

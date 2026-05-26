@@ -1,8 +1,11 @@
 <?php
 
+use App\Mail\NewLeadCaptured;
 use App\Models\Funnel;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
 
 uses(RefreshDatabase::class);
 
@@ -24,6 +27,8 @@ function createLeadCaptureFunnelFor(User $user, array $overrides = []): Funnel
 }
 
 test('published funnel form submissions create contacts and increment conversions', function () {
+    Mail::fake();
+
     $user = User::factory()->create();
     $funnel = createLeadCaptureFunnelFor($user);
 
@@ -45,11 +50,38 @@ test('published funnel form submissions create contacts and increment conversion
         'source' => 'funnel_form',
         'status' => 'new',
     ]);
+    $this->assertDatabaseHas('contact_submissions', [
+        'funnel_id' => $funnel->id,
+        'form_id' => 'block-form-1',
+    ]);
+
+    Mail::assertSent(NewLeadCaptured::class);
 
     $funnel->refresh();
 
     expect($funnel->conversions)->toBe(1);
     expect((float) $funnel->conversion_rate)->toBe(0.0);
+});
+
+test('lead capture can send a webhook payload', function () {
+    Mail::fake();
+    Http::fake();
+    config(['services.lead_capture.webhook_url' => 'https://hooks.example.test/leads']);
+
+    $user = User::factory()->create();
+    $funnel = createLeadCaptureFunnelFor($user);
+
+    $this->post(route('funnels.leads.store', $funnel), [
+        'name' => 'Ada Lovelace',
+        'email' => 'ada@example.com',
+        'form_id' => 'demo-form',
+        'fields' => ['email' => 'ada@example.com'],
+    ])->assertRedirect();
+
+    Http::assertSent(fn ($request) => $request->url() === 'https://hooks.example.test/leads'
+        && $request['event'] === 'lead.captured'
+        && $request['contact']['email'] === 'ada@example.com'
+        && $request['funnel']['id'] === $funnel->id);
 });
 
 test('repeat submissions update the existing contact for the account', function () {
@@ -94,6 +126,8 @@ test('guests cannot submit leads to unpublished funnels', function () {
 });
 
 test('contacts page lists captured leads for the authenticated user', function () {
+    Mail::fake();
+
     $user = User::factory()->create();
     $funnel = createLeadCaptureFunnelFor($user);
 
@@ -109,4 +143,42 @@ test('contacts page lists captured leads for the authenticated user', function (
         ->assertOk()
         ->assertSee('Ada Lovelace')
         ->assertSee('ada@example.com');
+});
+
+test('contact detail shows submissions and supports notes and status updates', function () {
+    Mail::fake();
+
+    $user = User::factory()->create();
+    $funnel = createLeadCaptureFunnelFor($user);
+
+    $this->post(route('funnels.leads.store', $funnel), [
+        'name' => 'Ada Lovelace',
+        'email' => 'ada@example.com',
+        'form_id' => 'demo-form',
+        'fields' => ['email' => 'ada@example.com', 'plan' => 'pro'],
+    ])->assertRedirect();
+
+    $contact = $user->contacts()->where('email', 'ada@example.com')->firstOrFail();
+
+    $this->withoutVite();
+
+    $this->actingAs($user)
+        ->get(route('contacts.show', $contact))
+        ->assertOk()
+        ->assertSee('Ada Lovelace')
+        ->assertSee('demo-form')
+        ->assertSee('pro');
+
+    $this->actingAs($user)
+        ->patch(route('contacts.update', $contact), ['status' => 'qualified'])
+        ->assertRedirect();
+
+    $this->actingAs($user)
+        ->post(route('contacts.notes.store', $contact), ['note' => 'Follow up tomorrow.'])
+        ->assertRedirect();
+
+    $contact->refresh();
+
+    expect($contact->status)->toBe('qualified');
+    expect(data_get($contact->metadata, 'notes.0.body'))->toBe('Follow up tomorrow.');
 });
