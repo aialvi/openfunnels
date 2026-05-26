@@ -1,6 +1,33 @@
 import { Funnel, Section, Column, Block } from '@/stores/funnelStore';
 import { Exporter } from './index';
 
+type TextContent = {
+    text: string;
+    textAlign: string;
+    color: string;
+    fontSize: string;
+    fontWeight: string;
+};
+
+type ImageContent = {
+    src: string;
+    alt?: string;
+    width: string;
+    objectFit: string;
+};
+
+type ButtonContent = {
+    text: string;
+    url: string;
+    size?: 'small' | 'medium' | 'large';
+    variant?: 'primary' | 'secondary';
+    fullWidth?: boolean;
+};
+
+type WooCommerceProductContent = {
+    productId: string;
+};
+
 export class LaravelExporter implements Exporter {
     export(funnel: Funnel): string {
         const sectionsHtml = funnel.content.sections.map(section => this.renderSection(section)).join('\n');
@@ -75,16 +102,18 @@ ${blocksHtml}
         let contentHtml = '';
 
         switch (block.type) {
-            case 'text':
-                const textContent = block.content as any;
+            case 'text': {
+                const textContent = block.content as Partial<TextContent>;
                 contentHtml = `<div style="text-align: ${textContent.textAlign}; color: ${textContent.color}; font-size: ${textContent.fontSize}; font-weight: ${textContent.fontWeight};">${textContent.text}</div>`;
                 break;
-            case 'image':
-                const imageContent = block.content as any;
+            }
+            case 'image': {
+                const imageContent = block.content as Partial<ImageContent>;
                 contentHtml = `<img src="${imageContent.src}" alt="${imageContent.alt || ''}" style="width: ${imageContent.width}; object-fit: ${imageContent.objectFit}; display: block; max-width: 100%;" />`;
                 break;
-            case 'button':
-                const btnContent = block.content as any;
+            }
+            case 'button': {
+                const btnContent = block.content as Partial<ButtonContent>;
                 const btnStyle = {
                     display: 'inline-block',
                     padding: btnContent.size === 'small' ? '8px 16px' : btnContent.size === 'large' ? '16px 32px' : '12px 24px',
@@ -97,11 +126,13 @@ ${blocksHtml}
                 };
                 contentHtml = `<a href="${btnContent.url}" style="${this.styleToString(btnStyle)}">${btnContent.text}</a>`;
                 break;
-            case 'woocommerce-product':
-                const wooContent = block.content as any;
+            }
+            case 'woocommerce-product': {
+                const wooContent = block.content as Partial<WooCommerceProductContent>;
                 // Example of using a Blade component for WooCommerce product
                 contentHtml = `@livewire('product-card', ['productId' => '${wooContent.productId}'])`;
                 break;
+            }
             default:
                 // Fallback to HTML exporter logic or simple div
                 contentHtml = `<!-- Block type "${block.type}" -->`;
@@ -115,7 +146,7 @@ ${blocksHtml}
 
     private styleToString(style: Record<string, string | undefined>): string {
         return Object.entries(style)
-            .filter(([_, value]) => value !== undefined)
+            .filter((entry) => entry[1] !== undefined)
             .map(([key, value]) => `${key.replace(/[A-Z]/g, m => `-${m.toLowerCase()}`)}: ${value}`)
             .join('; ');
     }

@@ -1,8 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'; // Assuming these exist or I'll use raw HTML if not
-import { Button } from '@/components/ui/button'; // Assuming
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'; // Assuming
-
+import { useCallback, useEffect, useState } from 'react';
 import { Copy, Download, Check, Code } from 'lucide-react';
 import { funnelExporter, ExportFormat } from '@/lib/exporters';
 import { Funnel } from '@/stores/funnelStore';
@@ -19,13 +15,7 @@ export default function ExportModal({ isOpen, onClose, funnel }: ExportModalProp
     const [isGenerating, setIsGenerating] = useState(false);
     const [copied, setCopied] = useState(false);
 
-    useEffect(() => {
-        if (isOpen) {
-            generateCode(format);
-        }
-    }, [isOpen, format, funnel]);
-
-    const generateCode = async (fmt: ExportFormat) => {
+    const generateCode = useCallback(async (fmt: ExportFormat) => {
         setIsGenerating(true);
         try {
             const result = await funnelExporter.export(funnel, fmt);
@@ -36,7 +26,13 @@ export default function ExportModal({ isOpen, onClose, funnel }: ExportModalProp
         } finally {
             setIsGenerating(false);
         }
-    };
+    }, [funnel]);
+
+    useEffect(() => {
+        if (isOpen) {
+            generateCode(format);
+        }
+    }, [isOpen, format, generateCode]);
 
     const handleCopy = () => {
         navigator.clipboard.writeText(code);

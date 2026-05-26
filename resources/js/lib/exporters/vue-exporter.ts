@@ -1,6 +1,37 @@
 import { Funnel, Section, Column, Block } from '@/stores/funnelStore';
 import { Exporter } from './index';
 
+type TextContent = {
+    text: string;
+    textAlign: string;
+    color: string;
+    fontSize: string;
+    fontWeight: string;
+};
+
+type ImageContent = {
+    src: string;
+    alt?: string;
+    width: string;
+    objectFit: string;
+};
+
+type ButtonContent = {
+    text: string;
+    url: string;
+    size?: 'small' | 'medium' | 'large';
+    variant?: 'primary' | 'secondary';
+    fullWidth?: boolean;
+};
+
+type SpacerContent = {
+    height: string;
+};
+
+type CodeContent = {
+    code: string;
+};
+
 export class VueExporter implements Exporter {
     export(funnel: Funnel): string {
         const sectionsHtml = funnel.content.sections.map(section => this.renderSection(section)).join('\n');
@@ -75,16 +106,18 @@ const mainStyle = computed(() => ({
         let contentHtml = '';
 
         switch (block.type) {
-            case 'text':
-                const textContent = block.content as any;
+            case 'text': {
+                const textContent = block.content as Partial<TextContent>;
                 contentHtml = `<div :style="{ textAlign: '${textContent.textAlign}', color: '${textContent.color}', fontSize: '${textContent.fontSize}', fontWeight: '${textContent.fontWeight}' }">${textContent.text}</div>`;
                 break;
-            case 'image':
-                const imageContent = block.content as any;
+            }
+            case 'image': {
+                const imageContent = block.content as Partial<ImageContent>;
                 contentHtml = `<img src="${imageContent.src}" alt="${imageContent.alt || ''}" :style="{ width: '${imageContent.width}', objectFit: '${imageContent.objectFit}', display: 'block', maxWidth: '100%' }" />`;
                 break;
-            case 'button':
-                const btnContent = block.content as any;
+            }
+            case 'button': {
+                const btnContent = block.content as Partial<ButtonContent>;
                 const btnStyle = {
                     display: 'inline-block',
                     padding: btnContent.size === 'small' ? '8px 16px' : btnContent.size === 'large' ? '16px 32px' : '12px 24px',
@@ -97,14 +130,17 @@ const mainStyle = computed(() => ({
                 };
                 contentHtml = `<a href="${btnContent.url}" :style='${JSON.stringify(btnStyle)}'>${btnContent.text}</a>`;
                 break;
-            case 'spacer':
-                const spacerContent = block.content as any;
+            }
+            case 'spacer': {
+                const spacerContent = block.content as Partial<SpacerContent>;
                 contentHtml = `<div style="height: ${spacerContent.height}"></div>`;
                 break;
-            case 'code':
-                const codeContent = block.content as any;
+            }
+            case 'code': {
+                const codeContent = block.content as Partial<CodeContent>;
                 contentHtml = `<div v-html="\`${codeContent.code}\`"></div>`;
                 break;
+            }
             default:
                 contentHtml = `<!-- Block type "${block.type}" not yet supported in export -->`;
         }

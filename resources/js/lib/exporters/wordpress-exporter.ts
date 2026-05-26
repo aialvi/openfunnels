@@ -1,6 +1,26 @@
 import { Funnel, Section, Column, Block } from '@/stores/funnelStore';
 import { Exporter } from './index';
 
+type TextContent = {
+    text: string;
+    color: string;
+    fontSize: string;
+};
+
+type ImageContent = {
+    src: string;
+    alt?: string;
+};
+
+type ButtonContent = {
+    text: string;
+    url: string;
+};
+
+type CodeContent = {
+    code: string;
+};
+
 export class WordPressExporter implements Exporter {
     export(funnel: Funnel): string {
         // WordPress posts are essentially a list of blocks.
@@ -38,22 +58,24 @@ export class WordPressExporter implements Exporter {
 
     private renderBlock(block: Block): string {
         switch (block.type) {
-            case 'text':
-                const textContent = block.content as any;
+            case 'text': {
+                const textContent = block.content as Partial<TextContent>;
                 // Simple paragraph or heading based on content? For now assume paragraph.
                 // In a real implementation we might inspect fontSize to decide between h1-h6 vs p.
                 return `<!-- wp:paragraph {"style":{"typography":{"fontSize":"${textContent.fontSize}"},"color":{"text":"${textContent.color}"}}} -->
 <p style="color:${textContent.color};font-size:${textContent.fontSize}">${textContent.text}</p>
 <!-- /wp:paragraph -->`;
+            }
 
-            case 'image':
-                const imageContent = block.content as any;
+            case 'image': {
+                const imageContent = block.content as Partial<ImageContent>;
                 return `<!-- wp:image -->
 <figure class="wp-block-image"><img src="${imageContent.src}" alt="${imageContent.alt || ''}"/></figure>
 <!-- /wp:image -->`;
+            }
 
-            case 'button':
-                const btnContent = block.content as any;
+            case 'button': {
+                const btnContent = block.content as Partial<ButtonContent>;
                 return `<!-- wp:buttons -->
 <div class="wp-block-buttons">
     <!-- wp:button {"backgroundColor":"primary","textColor":"white"} -->
@@ -61,12 +83,14 @@ export class WordPressExporter implements Exporter {
     <!-- /wp:button -->
 </div>
 <!-- /wp:buttons -->`;
+            }
 
-            case 'code':
-                const codeContent = block.content as any;
+            case 'code': {
+                const codeContent = block.content as Partial<CodeContent>;
                 return `<!-- wp:html -->
 ${codeContent.code}
 <!-- /wp:html -->`;
+            }
 
             default:
                 return `<!-- wp:html -->

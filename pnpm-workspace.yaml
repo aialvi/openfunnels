@@ -1,0 +1,5 @@
+packages:
+  - .
+
+overrides:
+  rollup: 4.21.3

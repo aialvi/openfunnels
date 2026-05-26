@@ -35,6 +35,8 @@ class ExportSystem {
     }
 
     async export(funnel: Funnel, format: ExportFormat, options?: ExportOptions): Promise<string> {
+        void options;
+
         const exporter = this.exporters.get(format);
         if (!exporter) {
             throw new Error(`Exporter for format "${format}" not found.`);

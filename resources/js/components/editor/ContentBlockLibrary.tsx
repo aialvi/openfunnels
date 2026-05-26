@@ -21,7 +21,6 @@ import {
 
 // Re-export canonical type for backwards compatibility.
 export type { Block as ContentBlock } from '@/types/editor';
-import type { Block as ContentBlock } from '@/types/editor';
 
 const ItemTypes = {
     CONTENT_BLOCK: 'content_block',
