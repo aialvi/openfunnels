@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'domain_mapping' => [
+        'cname_target' => env('DOMAIN_MAPPING_CNAME_TARGET', 'cname.openfunnels.com'),
+        'a_record_ip' => env('DOMAIN_MAPPING_A_RECORD_IP'),
+    ],
+
 ];

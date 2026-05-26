@@ -3,14 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\Funnel;
-use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Illuminate\Support\Str;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use Inertia\Inertia;
 
 class FunnelController extends Controller
 {
     use AuthorizesRequests;
+
     /**
      * Display a listing of the resource.
      */
@@ -76,7 +77,7 @@ class FunnelController extends Controller
         $counter = 1;
 
         while (auth()->user()->funnels()->where('slug', $slug)->exists()) {
-            $slug = $baseSlug . '-' . $counter;
+            $slug = $baseSlug.'-'.$counter;
             $counter++;
         }
 
@@ -98,7 +99,7 @@ class FunnelController extends Controller
     public function show(Funnel $funnel)
     {
         // Published funnels are publicly viewable; unpublished require ownership.
-        if (!$funnel->is_published) {
+        if (! $funnel->is_published) {
             $this->authorize('view', $funnel);
         }
 
@@ -125,6 +126,8 @@ class FunnelController extends Controller
     {
         $this->authorize('update', $funnel);
 
+        $funnel->load(['domains' => fn ($query) => $query->orderByDesc('created_at')]);
+
         return Inertia::render('enhanced-funnel-editor', [
             'funnel' => [
                 'id' => $funnel->id,
@@ -135,6 +138,17 @@ class FunnelController extends Controller
                 'settings' => $funnel->settings,
                 'status' => $funnel->status,
                 'is_published' => $funnel->is_published,
+                'domains' => $funnel->domains->map(fn ($domain) => [
+                    'id' => $domain->id,
+                    'domain' => $domain->domain,
+                    'is_verified' => $domain->is_verified,
+                    'ssl_status' => $domain->ssl_status,
+                    'created_at' => $domain->created_at?->toISOString(),
+                ]),
+            ],
+            'domainMapping' => [
+                'cnameTarget' => config('services.domain_mapping.cname_target'),
+                'aRecordIp' => config('services.domain_mapping.a_record_ip'),
             ],
         ]);
     }
@@ -182,7 +196,7 @@ class FunnelController extends Controller
             $counter = 1;
 
             while (auth()->user()->funnels()->where('slug', $slug)->where('id', '!=', $funnel->id)->exists()) {
-                $slug = $baseSlug . '-' . $counter;
+                $slug = $baseSlug.'-'.$counter;
                 $counter++;
             }
         }
@@ -243,11 +257,11 @@ class FunnelController extends Controller
         $this->authorize('create', Funnel::class);
 
         $newFunnel = $funnel->replicate(['slug', 'views', 'conversions', 'conversion_rate', 'created_at', 'updated_at']);
-        $newFunnel->name = $funnel->name . ' (Copy)';
+        $newFunnel->name = $funnel->name.' (Copy)';
         $newFunnel->status = 'draft';
         $newFunnel->is_published = false;
         $newFunnel->published_at = null;
-        $newFunnel->slug = Str::slug($newFunnel->name) . '-' . Str::random(5);
+        $newFunnel->slug = Str::slug($newFunnel->name).'-'.Str::random(5);
         $newFunnel->save();
 
         return redirect()->route('funnels.index')

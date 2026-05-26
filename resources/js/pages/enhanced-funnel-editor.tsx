@@ -10,9 +10,11 @@ import {
     Layout,
     Palette,
     ArrowLeft,
-    Download
+    Download,
+    Globe
 } from 'lucide-react';
 import ExportModal from '@/components/editor/ExportModal';
+import FunnelSettingsModal from '@/components/editor/FunnelSettingsModal';
 import LayoutBuilder from '@/components/editor/LayoutBuilder';
 import ContentBlockLibrary from '@/components/editor/ContentBlockLibrary';
 import PropertiesPanel from '@/components/editor/PropertiesPanel';
@@ -23,7 +25,6 @@ import {
     getSelectedColumn,
     getSelectedBlock,
     findBlockLocation,
-    findColumnSection,
 } from '@/stores/funnelStore';
 import type { Funnel, Section, Block } from '@/types/editor';
 import { useLayoutPersistence } from '@/hooks/useLayoutPersistence';
@@ -38,15 +39,31 @@ interface EnhancedFunnelEditorProps {
         settings: Funnel['settings'];
         status: string;
         is_published: boolean;
+        domains: DomainMapping[];
     };
+    domainMapping?: DomainMappingSettings;
+}
+
+interface DomainMapping {
+    id: number;
+    domain: string;
+    is_verified: boolean;
+    ssl_status: string | null;
+    created_at?: string;
+}
+
+interface DomainMappingSettings {
+    cnameTarget: string;
+    aRecordIp: string | null;
 }
 
 type EditorMode = 'editor' | 'design';
 
-export default function EnhancedFunnelEditor({ funnel: initialFunnel }: EnhancedFunnelEditorProps) {
+export default function EnhancedFunnelEditor({ funnel: initialFunnel, domainMapping }: EnhancedFunnelEditorProps) {
     // Editor state
     const [editorMode, setEditorMode] = useState<EditorMode>('editor');
     const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+    const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
     // Content block library state
     const [blockSearchQuery, setBlockSearchQuery] = useState('');
@@ -337,6 +354,14 @@ export default function EnhancedFunnelEditor({ funnel: initialFunnel }: Enhanced
                                     <span>Export</span>
                                 </button>
                                 <button
+                                    onClick={() => setIsSettingsModalOpen(true)}
+                                    className="flex items-center space-x-2 px-4 py-2 bg-muted rounded-lg hover:bg-muted/80 text-foreground"
+                                    title="Domain Settings"
+                                >
+                                    <Globe className="w-4 h-4" />
+                                    <span>Domain Settings</span>
+                                </button>
+                                <button
                                     onClick={async () => {
                                         try {
                                             setSaving(true);
@@ -458,6 +483,19 @@ export default function EnhancedFunnelEditor({ funnel: initialFunnel }: Enhanced
                 onClose={() => setIsExportModalOpen(false)}
                 funnel={funnel}
             />
+            {initialFunnel?.id && (
+                <FunnelSettingsModal
+                    isOpen={isSettingsModalOpen}
+                    onClose={() => setIsSettingsModalOpen(false)}
+                    funnel={{
+                        id: initialFunnel.id,
+                        name: initialFunnel.name,
+                        is_published: initialFunnel.is_published,
+                        domains: initialFunnel.domains,
+                    }}
+                    domainMapping={domainMapping}
+                />
+            )}
         </DndProvider>
     );
 }
