@@ -10,11 +10,13 @@ This roadmap is a planning aid for agents and contributors. It should guide prio
 - Funnel dashboard/listing with aggregate stats.
 - Enhanced React funnel editor surface.
 - New-funnel starter layout chooser with common premade layouts.
+- Categorized starter template browser with visual thumbnails.
 - Zustand + Immer editor store with undo/redo history.
 - Public funnel preview route at `/f/{slug}`.
 - Custom domain mapping at the Laravel/React application layer.
-- CRM-lite contacts table and contacts page.
+- CRM-lite contacts table, contacts page, contact detail page, notes, statuses, and submission timeline.
 - Funnel form submissions that capture leads and increment conversion counters.
+- Email notification and optional webhook for new lead submissions.
 - Exporter modules for multiple output targets.
 
 ## Near-Term Priorities
@@ -22,8 +24,8 @@ This roadmap is a planning aid for agents and contributors. It should guide prio
 - Harden funnel CRUD behavior with focused feature tests.
 - Improve lead capture form configuration in the editor.
 - Move starter layout definitions out of the editor page once the template library grows.
-- Add thumbnails/previews for starter layouts.
-- Add contact search, filters, detail pages, notes, and lifecycle statuses.
+- Add contact search, filters, CSV import/export, and duplicate management.
+- Add configurable lead notification settings in the UI.
 - Improve autosave/manual save flows in the editor.
 - Expand editor block coverage and block-level property editing.
 - Improve preview fidelity across desktop, tablet, and mobile.
@@ -52,17 +54,15 @@ This roadmap is a planning aid for agents and contributors. It should guide prio
 
 ### CRM And Lead Capture
 
-- Contact detail pages with activity timeline, notes, tags, and lifecycle status.
 - Contact search, filtering, CSV import/export, and duplicate management.
 - Custom fields attached to contacts.
-- Form submission event records separate from contact records.
 - Lead source and UTM capture from published funnels.
 - Team assignment and task follow-up.
 
 ### Automation
 
-- Webhook-first actions for new lead events.
-- Basic email notification action for funnel submissions.
+- UI-managed webhook actions for new lead events.
+- UI-managed email notification action for funnel submissions.
 - Visual workflow builder with triggers, wait steps, if/else branches, and actions.
 - Automation templates bundled with funnel templates.
 - Audit logs and retry handling for workflow runs.

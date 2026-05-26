@@ -16,9 +16,11 @@ OpenFunnels is a Laravel 12 + Inertia.js SaaS application for building and publi
 
 - `app/Http/Controllers/FunnelController.php`: funnel CRUD, preview, publish/unpublish, duplication, and public funnel rendering.
 - `app/Http/Controllers/LeadCaptureController.php`: public funnel form submissions that create/update contacts and increment conversions.
-- `app/Http/Controllers/ContactController.php`: authenticated contacts/CRM-lite index.
+- `app/Http/Controllers/ContactController.php`: authenticated contacts/CRM-lite index, detail page, status updates, and notes.
 - `app/Models/Funnel.php`: funnel model, JSON casts, publishing helpers, view/conversion counters.
 - `app/Models/Contact.php`: captured lead/contact records owned by users and optionally tied to funnels.
+- `app/Models/ContactSubmission.php`: immutable-ish submission timeline records created from funnel form posts.
+- `app/Mail/NewLeadCaptured.php`: email notification for new form submissions.
 - `app/Policies/FunnelPolicy.php`: funnel authorization rules.
 - `routes/web.php`: public home, public `/f/{funnel:slug}` route, authenticated funnel/dashboard/editor routes.
 - `routes/auth.php` and `routes/settings.php`: auth and settings routes from the Laravel React starter kit.
@@ -40,6 +42,7 @@ General companion docs:
 
 - Design guidance: `DESIGN.md`
 - Product roadmap: `Roadmap.md`
+- MVP funnel/CRM PRD: `docs/prds/mvp-funnel-crm.md`
 
 ### Custom Domain Mapping
 
@@ -104,7 +107,8 @@ Notes:
 - Use policies for user-owned resources. Existing funnel routes rely on `FunnelPolicy`.
 - Keep public funnel behavior explicit: published funnels can be viewed publicly via `/f/{slug}`, unpublished funnels require authorization.
 - Funnel form submissions post to `LeadCaptureController` and should create contacts for the funnel owner, not the anonymous visitor.
-- Contact records are currently CRM-lite leads. Do not build automation, SMS, or email behavior into contacts directly; use separate workflow/integration layers when those features are added.
+- Contact records are currently CRM-lite leads. Keep repeat submissions in `contact_submissions`; do not overwrite the timeline by storing everything only in contact metadata.
+- New lead notifications currently support email and an optional webhook. Do not build SMS or automation behavior directly into contacts; use separate workflow/integration layers when those features are added.
 - Keep migrations database-agnostic where practical. The local app uses SQLite.
 - For JSON content/settings, preserve array casts and validate request payloads before decoding.
 - Prefer named routes and Inertia responses over hard-coded URLs in app code.
@@ -122,6 +126,7 @@ Notes:
 - For editor state changes, use the existing Zustand store patterns in `funnelStore.ts`, including history updates for undo/redo.
 - Be careful with editor content shape: a funnel has `content.sections`, sections have columns, and columns have blocks.
 - Starter layouts should use the canonical `Section`, `Column`, and `Block` shape and should include practical form blocks where lead capture is expected.
+- Starter template cards include visual thumbnails and categories. Keep the template browser scroll-contained so category switching does not resize the modal.
 
 ## Testing And Verification
 
