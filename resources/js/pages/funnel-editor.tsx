@@ -1,27 +1,11 @@
+import PreviewModal from '@/components/PreviewModal';
+import { useFunnelPersistence } from '@/hooks/useFunnelPersistence';
+import { useFunnelStore, type Block, type Funnel } from '@/stores/funnelStore';
 import { Head, Link } from '@inertiajs/react';
-import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { Draggable } from 'gsap/Draggable';
-import { 
-    Type, 
-    Image, 
-    Square, 
-    FileText, 
-    Plus, 
-    Save, 
-    Eye, 
-    Settings, 
-    Layers,
-    Smartphone,
-    Tablet,
-    Monitor,
-    Undo,
-    Redo,
-    Trash2
-} from 'lucide-react';
-import { useFunnelStore, type Block, type Funnel } from '@/stores/funnelStore';
-import { useFunnelPersistence } from '@/hooks/useFunnelPersistence';
-import PreviewModal from '@/components/PreviewModal';
+import { Eye, FileText, Image, Layers, Monitor, Plus, Redo, Save, Settings, Smartphone, Square, Tablet, Trash2, Type, Undo } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 
 gsap.registerPlugin(Draggable);
 
@@ -35,6 +19,7 @@ interface FunnelEditorProps {
         settings: Funnel['settings'];
         status: string;
         is_published: boolean;
+        public_url?: string | null;
     };
 }
 
@@ -58,17 +43,17 @@ export default function FunnelEditor({ funnel: initialFunnel }: FunnelEditorProp
         canRedo,
     } = useFunnelStore();
 
-    // Auto-save functionality 
+    // Auto-save functionality
     const { saveFunnel, isSaving } = useFunnelPersistence(initialFunnel?.id);
-    
+
     // Local state for inline name editing
     const [isEditingName, setIsEditingName] = useState(false);
     const [tempName, setTempName] = useState(funnel.name);
     const nameInputRef = useRef<HTMLInputElement>(null);
-    
+
     // Preview modal state
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-    
+
     const canvasRef = useRef<HTMLDivElement>(null);
     const sidebarRef = useRef<HTMLDivElement>(null);
     const draggableInstancesRef = useRef<Draggable[]>([]);
@@ -84,6 +69,7 @@ export default function FunnelEditor({ funnel: initialFunnel }: FunnelEditorProp
                 settings: initialFunnel.settings,
                 status: initialFunnel.status as 'draft' | 'published' | 'archived',
                 is_published: initialFunnel.is_published,
+                public_url: initialFunnel.public_url,
             });
         }
     }, [initialFunnel, setFunnel]);
@@ -120,7 +106,7 @@ export default function FunnelEditor({ funnel: initialFunnel }: FunnelEditorProp
     useEffect(() => {
         if (canvasRef.current) {
             // Clean up existing draggable instances
-            draggableInstancesRef.current.forEach(instance => instance.kill());
+            draggableInstancesRef.current.forEach((instance) => instance.kill());
             draggableInstancesRef.current = [];
 
             const blocks = canvasRef.current.querySelectorAll('.draggable-block');
@@ -128,23 +114,23 @@ export default function FunnelEditor({ funnel: initialFunnel }: FunnelEditorProp
                 bounds: canvasRef.current,
                 edgeResistance: 0.65,
                 type: 'x,y',
-                onDrag: function() {
+                onDrag: function () {
                     const blockId = this.target.dataset.blockId;
                     if (blockId) {
                         updateBlockPosition(blockId, { x: this.x, y: this.y });
                     }
                 },
-                onDragEnd: function() {
+                onDragEnd: function () {
                     // Add to history after drag is complete
                     useFunnelStore.getState().addToHistory();
-                }
+                },
             });
-            
+
             draggableInstancesRef.current = instances;
         }
-        
+
         return () => {
-            draggableInstancesRef.current.forEach(instance => instance.kill());
+            draggableInstancesRef.current.forEach((instance) => instance.kill());
         };
     }, [funnel.content, updateBlockPosition]);
 
@@ -161,10 +147,10 @@ export default function FunnelEditor({ funnel: initialFunnel }: FunnelEditorProp
     const handleNameSave = async () => {
         if (tempName.trim() && tempName !== funnel.name) {
             console.log('Updating funnel name to:', tempName.trim());
-            
+
             // Update the funnel name in the store
             updateFunnelName(tempName.trim());
-            
+
             // The auto-save will handle saving to backend
             // or user can click Save button manually
         }
@@ -211,14 +197,14 @@ export default function FunnelEditor({ funnel: initialFunnel }: FunnelEditorProp
                 padding: (block.content.padding as string) || '8px',
                 borderRadius: (block.content.borderRadius as string) || '0px',
             },
-            onClick: () => setSelectedBlock(block)
+            onClick: () => setSelectedBlock(block),
         };
 
         switch (block.type) {
             case 'text':
                 return (
                     <div key={block.id} {...commonProps}>
-                        <div 
+                        <div
                             contentEditable
                             suppressContentEditableWarning
                             onBlur={(e) => updateBlockContent(block.id, { text: e.target.textContent || '' })}
@@ -231,14 +217,14 @@ export default function FunnelEditor({ funnel: initialFunnel }: FunnelEditorProp
             case 'image':
                 return (
                     <div key={block.id} {...commonProps}>
-                        <img 
-                            src={block.content.src as string || 'https://via.placeholder.com/300x200?text=Image'} 
-                            alt={block.content.alt as string || 'Image'} 
-                            className="max-w-full h-auto"
-                            style={{ 
+                        <img
+                            src={(block.content.src as string) || 'https://via.placeholder.com/300x200?text=Image'}
+                            alt={(block.content.alt as string) || 'Image'}
+                            className="h-auto max-w-full"
+                            style={{
                                 borderRadius: (block.content.borderRadius as string) || '8px',
                                 width: (block.content.width as string) || '300px',
-                                height: (block.content.height as string) || '200px'
+                                height: (block.content.height as string) || '200px',
                             }}
                         />
                     </div>
@@ -254,12 +240,12 @@ export default function FunnelEditor({ funnel: initialFunnel }: FunnelEditorProp
                     <div key={block.id} {...commonProps} className={`${commonProps.className} min-w-64`}>
                         <div className="space-y-4">
                             <h3 className="font-semibold">{(block.content.title as string) || 'Subscribe to our newsletter'}</h3>
-                            <input 
-                                type="email" 
+                            <input
+                                type="email"
                                 placeholder={(block.content.placeholder as string) || 'Enter your email'}
-                                className="w-full p-2 border border-gray-300 rounded"
+                                className="w-full rounded border border-gray-300 p-2"
                             />
-                            <button className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700">
+                            <button className="w-full rounded bg-blue-600 p-2 text-white hover:bg-blue-700">
                                 {(block.content.buttonText as string) || 'Subscribe'}
                             </button>
                         </div>
@@ -273,39 +259,39 @@ export default function FunnelEditor({ funnel: initialFunnel }: FunnelEditorProp
     return (
         <>
             <Head title="Funnel Editor - OpenFunnels" />
-            
-            <div className="h-screen flex bg-gray-50">
+
+            <div className="flex h-screen bg-gray-50">
                 {/* Left Sidebar - Block Library */}
-                <div ref={sidebarRef} className="w-64 bg-white border-r border-gray-200 p-4">
+                <div ref={sidebarRef} className="w-64 border-r border-gray-200 bg-white p-4">
                     <div className="mb-6">
-                        <h2 className="text-lg font-semibold text-gray-900 mb-4">Block Library</h2>
+                        <h2 className="mb-4 text-lg font-semibold text-gray-900">Block Library</h2>
                         <div className="space-y-3">
-                            <div 
-                                className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
+                            <div
+                                className="flex cursor-pointer items-center space-x-3 rounded-lg bg-gray-50 p-3 transition-colors hover:bg-gray-100"
                                 onClick={() => addBlock('text')}
                             >
-                                <Type className="w-5 h-5 text-gray-600" />
+                                <Type className="h-5 w-5 text-gray-600" />
                                 <span className="text-sm font-medium">Text Block</span>
                             </div>
-                            <div 
-                                className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
+                            <div
+                                className="flex cursor-pointer items-center space-x-3 rounded-lg bg-gray-50 p-3 transition-colors hover:bg-gray-100"
                                 onClick={() => addBlock('image')}
                             >
-                                <Image className="w-5 h-5 text-gray-600" />
+                                <Image className="h-5 w-5 text-gray-600" />
                                 <span className="text-sm font-medium">Image Block</span>
                             </div>
-                            <div 
-                                className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
+                            <div
+                                className="flex cursor-pointer items-center space-x-3 rounded-lg bg-gray-50 p-3 transition-colors hover:bg-gray-100"
                                 onClick={() => addBlock('button')}
                             >
-                                <Square className="w-5 h-5 text-gray-600" />
+                                <Square className="h-5 w-5 text-gray-600" />
                                 <span className="text-sm font-medium">Button Block</span>
                             </div>
-                            <div 
-                                className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
+                            <div
+                                className="flex cursor-pointer items-center space-x-3 rounded-lg bg-gray-50 p-3 transition-colors hover:bg-gray-100"
                                 onClick={() => addBlock('form')}
                             >
-                                <FileText className="w-5 h-5 text-gray-600" />
+                                <FileText className="h-5 w-5 text-gray-600" />
                                 <span className="text-sm font-medium">Form Block</span>
                             </div>
                         </div>
@@ -313,44 +299,40 @@ export default function FunnelEditor({ funnel: initialFunnel }: FunnelEditorProp
 
                     {/* Layers Panel */}
                     <div className="mb-6">
-                        <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center">
-                            <Layers className="w-4 h-4 mr-2" />
+                        <h3 className="mb-3 flex items-center text-sm font-semibold text-gray-900">
+                            <Layers className="mr-2 h-4 w-4" />
                             Layers
                         </h3>
                         <div className="space-y-1">
                             {funnel.content.map((block: Block) => (
-                                <div 
+                                <div
                                     key={block.id}
-                                    className={`p-2 text-sm rounded cursor-pointer flex items-center justify-between ${
-                                        selectedBlock?.id === block.id 
-                                            ? 'bg-blue-100 text-blue-900' 
-                                            : 'hover:bg-gray-100'
+                                    className={`flex cursor-pointer items-center justify-between rounded p-2 text-sm ${
+                                        selectedBlock?.id === block.id ? 'bg-blue-100 text-blue-900' : 'hover:bg-gray-100'
                                     }`}
                                     onClick={() => setSelectedBlock(block)}
                                 >
                                     <span className="capitalize">{block.type} Block</span>
-                                    <button 
+                                    <button
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             deleteBlock(block.id);
                                         }}
                                         className="text-red-500 hover:text-red-700"
                                     >
-                                        <Trash2 className="w-3 h-3" />
+                                        <Trash2 className="h-3 w-3" />
                                     </button>
                                 </div>
                             ))}
-                            {funnel.content.length === 0 && (
-                                <p className="text-xs text-gray-500">No blocks added yet</p>
-                            )}
+                            {funnel.content.length === 0 && <p className="text-xs text-gray-500">No blocks added yet</p>}
                         </div>
                     </div>
                 </div>
 
                 {/* Main Editor Area */}
-                <div className="flex-1 flex flex-col">
+                <div className="flex flex-1 flex-col">
                     {/* Top Toolbar */}
-                    <div className="bg-white border-b border-gray-200 p-4">
+                    <div className="border-b border-gray-200 bg-white p-4">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-4">
                                 <Link href={route('dashboard')} className="text-gray-600 hover:text-gray-900">
@@ -364,12 +346,12 @@ export default function FunnelEditor({ funnel: initialFunnel }: FunnelEditorProp
                                         onChange={(e) => setTempName(e.target.value)}
                                         onBlur={handleNameSave}
                                         onKeyDown={handleNameKeyDown}
-                                        className="text-lg font-semibold bg-transparent border-none outline-none focus:bg-white focus:border focus:border-blue-500 focus:px-2 focus:py-1 focus:rounded"
+                                        className="border-none bg-transparent text-lg font-semibold outline-none focus:rounded focus:border focus:border-blue-500 focus:bg-white focus:px-2 focus:py-1"
                                         autoFocus
                                     />
                                 ) : (
-                                    <div 
-                                        className="text-lg font-semibold cursor-pointer hover:bg-gray-100 px-2 py-1 rounded transition-colors"
+                                    <div
+                                        className="cursor-pointer rounded px-2 py-1 text-lg font-semibold transition-colors hover:bg-gray-100"
                                         onClick={handleNameEdit}
                                         title="Click to edit funnel name"
                                     >
@@ -377,63 +359,59 @@ export default function FunnelEditor({ funnel: initialFunnel }: FunnelEditorProp
                                     </div>
                                 )}
                             </div>
-                            
+
                             <div className="flex items-center space-x-4">
                                 {/* Device Selection */}
-                                <div className="flex items-center space-x-2 bg-gray-100 rounded-lg p-1">
-                                    <button 
+                                <div className="flex items-center space-x-2 rounded-lg bg-gray-100 p-1">
+                                    <button
                                         onClick={() => setSelectedDevice('desktop')}
-                                        className={`p-2 rounded ${selectedDevice === 'desktop' ? 'bg-white shadow' : ''}`}
+                                        className={`rounded p-2 ${selectedDevice === 'desktop' ? 'bg-white shadow' : ''}`}
                                     >
-                                        <Monitor className="w-4 h-4" />
+                                        <Monitor className="h-4 w-4" />
                                     </button>
-                                    <button 
+                                    <button
                                         onClick={() => setSelectedDevice('tablet')}
-                                        className={`p-2 rounded ${selectedDevice === 'tablet' ? 'bg-white shadow' : ''}`}
+                                        className={`rounded p-2 ${selectedDevice === 'tablet' ? 'bg-white shadow' : ''}`}
                                     >
-                                        <Tablet className="w-4 h-4" />
+                                        <Tablet className="h-4 w-4" />
                                     </button>
-                                    <button 
+                                    <button
                                         onClick={() => setSelectedDevice('mobile')}
-                                        className={`p-2 rounded ${selectedDevice === 'mobile' ? 'bg-white shadow' : ''}`}
+                                        className={`rounded p-2 ${selectedDevice === 'mobile' ? 'bg-white shadow' : ''}`}
                                     >
-                                        <Smartphone className="w-4 h-4" />
+                                        <Smartphone className="h-4 w-4" />
                                     </button>
                                 </div>
 
                                 {/* Action Buttons */}
                                 <div className="flex items-center space-x-2">
-                                    <button 
+                                    <button
                                         onClick={undo}
                                         disabled={!canUndo()}
                                         className={`p-2 transition-colors ${
-                                            canUndo() 
-                                                ? 'text-gray-600 hover:text-gray-900' 
-                                                : 'text-gray-300 cursor-not-allowed'
+                                            canUndo() ? 'text-gray-600 hover:text-gray-900' : 'cursor-not-allowed text-gray-300'
                                         }`}
                                     >
-                                        <Undo className="w-4 h-4" />
+                                        <Undo className="h-4 w-4" />
                                     </button>
-                                    <button 
+                                    <button
                                         onClick={redo}
                                         disabled={!canRedo()}
                                         className={`p-2 transition-colors ${
-                                            canRedo() 
-                                                ? 'text-gray-600 hover:text-gray-900' 
-                                                : 'text-gray-300 cursor-not-allowed'
+                                            canRedo() ? 'text-gray-600 hover:text-gray-900' : 'cursor-not-allowed text-gray-300'
                                         }`}
                                     >
-                                        <Redo className="w-4 h-4" />
+                                        <Redo className="h-4 w-4" />
                                     </button>
-                                    <button 
+                                    <button
                                         onClick={() => setIsPreviewOpen(true)}
-                                        className="flex items-center space-x-2 px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200"
+                                        className="flex items-center space-x-2 rounded-lg bg-gray-100 px-4 py-2 hover:bg-gray-200"
                                         title="Preview funnel (Cmd/Ctrl + P)"
                                     >
-                                        <Eye className="w-4 h-4" />
+                                        <Eye className="h-4 w-4" />
                                         <span>Preview</span>
                                     </button>
-                                    <button 
+                                    <button
                                         onClick={async () => {
                                             try {
                                                 await saveFunnel();
@@ -443,23 +421,16 @@ export default function FunnelEditor({ funnel: initialFunnel }: FunnelEditorProp
                                             }
                                         }}
                                         disabled={isSaving}
-                                        className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
-                                            isSaving 
-                                                ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                                        className={`flex items-center space-x-2 rounded-lg px-4 py-2 transition-colors ${
+                                            isSaving
+                                                ? 'cursor-not-allowed bg-gray-400 text-gray-200'
                                                 : isDirty
-                                                    ? 'bg-orange-600 text-white hover:bg-orange-700'
-                                                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                                                  ? 'bg-orange-600 text-white hover:bg-orange-700'
+                                                  : 'bg-blue-600 text-white hover:bg-blue-700'
                                         }`}
                                     >
-                                        <Save className="w-4 h-4" />
-                                        <span>
-                                            {isSaving 
-                                                ? 'Saving...' 
-                                                : isDirty 
-                                                    ? 'Save Changes' 
-                                                    : 'Save'
-                                            }
-                                        </span>
+                                        <Save className="h-4 w-4" />
+                                        <span>{isSaving ? 'Saving...' : isDirty ? 'Save Changes' : 'Save'}</span>
                                     </button>
                                 </div>
                             </div>
@@ -469,28 +440,28 @@ export default function FunnelEditor({ funnel: initialFunnel }: FunnelEditorProp
                     {/* Canvas Area */}
                     <div className="flex-1 overflow-auto bg-gray-100 p-8">
                         <div className="flex justify-center">
-                            <div 
+                            <div
                                 ref={canvasRef}
-                                className="bg-white shadow-lg relative min-h-screen"
-                                style={{ 
+                                className="relative min-h-screen bg-white shadow-lg"
+                                style={{
                                     width: getDeviceWidth(),
                                     maxWidth: funnel.settings.maxWidth,
-                                    backgroundColor: funnel.settings.backgroundColor 
+                                    backgroundColor: funnel.settings.backgroundColor,
                                 }}
                             >
                                 {funnel.content.map(renderBlock)}
-                                
+
                                 {/* Empty State */}
                                 {funnel.content.length === 0 && (
-                                    <div className="flex items-center justify-center h-96 text-gray-500">
+                                    <div className="flex h-96 items-center justify-center text-gray-500">
                                         <div className="text-center">
-                                            <Plus className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                                            <Plus className="mx-auto mb-4 h-12 w-12 text-gray-400" />
                                             <p className="text-lg font-medium">Start building your funnel</p>
-                                            <p className="text-sm mb-4">Drag blocks from the left panel to get started</p>
+                                            <p className="mb-4 text-sm">Drag blocks from the left panel to get started</p>
                                             <div className="flex items-center justify-center space-x-2">
-                                                <button 
+                                                <button
                                                     onClick={() => setIsPreviewOpen(true)}
-                                                    className="text-sm text-blue-600 hover:text-blue-800 underline"
+                                                    className="text-sm text-blue-600 underline hover:text-blue-800"
                                                 >
                                                     Preview empty funnel
                                                 </button>
@@ -506,128 +477,112 @@ export default function FunnelEditor({ funnel: initialFunnel }: FunnelEditorProp
                 </div>
 
                 {/* Right Sidebar - Properties Panel */}
-                <div className="w-80 bg-white border-l border-gray-200 p-4">
+                <div className="w-80 border-l border-gray-200 bg-white p-4">
                     <div className="mb-6">
-                        <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                            <Settings className="w-5 h-5 mr-2" />
+                        <h2 className="mb-4 flex items-center text-lg font-semibold text-gray-900">
+                            <Settings className="mr-2 h-5 w-5" />
                             Properties
                         </h2>
-                        
+
                         {selectedBlock ? (
                             <div className="space-y-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Content
-                                    </label>
+                                    <label className="mb-2 block text-sm font-medium text-gray-700">Content</label>
                                     {selectedBlock.type === 'image' ? (
-                                        <input 
+                                        <input
                                             type="url"
                                             value={(selectedBlock.content.src as string) || ''}
                                             onChange={(e) => updateBlockContent(selectedBlock.id, { src: e.target.value })}
                                             placeholder="Image URL"
-                                            className="w-full p-2 border border-gray-300 rounded-lg"
+                                            className="w-full rounded-lg border border-gray-300 p-2"
                                         />
                                     ) : selectedBlock.type === 'form' ? (
                                         <div className="text-sm text-gray-500">Form configuration coming soon</div>
                                     ) : (
-                                        <textarea 
+                                        <textarea
                                             value={(selectedBlock.content.text as string) || ''}
                                             onChange={(e) => updateBlockContent(selectedBlock.id, { text: e.target.value })}
-                                            className="w-full p-2 border border-gray-300 rounded-lg"
+                                            className="w-full rounded-lg border border-gray-300 p-2"
                                             rows={3}
                                         />
                                     )}
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Background Color
-                                    </label>
-                                    <input 
+                                    <label className="mb-2 block text-sm font-medium text-gray-700">Background Color</label>
+                                    <input
                                         type="color"
                                         value={(selectedBlock.content.backgroundColor as string) || '#ffffff'}
                                         onChange={(e) => updateBlockContent(selectedBlock.id, { backgroundColor: e.target.value })}
-                                        className="w-full h-10 border border-gray-300 rounded-lg"
+                                        className="h-10 w-full rounded-lg border border-gray-300"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Text Color
-                                    </label>
-                                    <input 
+                                    <label className="mb-2 block text-sm font-medium text-gray-700">Text Color</label>
+                                    <input
                                         type="color"
                                         value={(selectedBlock.content.color as string) || '#000000'}
                                         onChange={(e) => updateBlockContent(selectedBlock.id, { color: e.target.value })}
-                                        className="w-full h-10 border border-gray-300 rounded-lg"
+                                        className="h-10 w-full rounded-lg border border-gray-300"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Font Size
-                                    </label>
-                                    <input 
+                                    <label className="mb-2 block text-sm font-medium text-gray-700">Font Size</label>
+                                    <input
                                         type="text"
                                         value={(selectedBlock.content.fontSize as string) || '16px'}
                                         onChange={(e) => updateBlockContent(selectedBlock.id, { fontSize: e.target.value })}
                                         placeholder="16px"
-                                        className="w-full p-2 border border-gray-300 rounded-lg"
+                                        className="w-full rounded-lg border border-gray-300 p-2"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Padding
-                                    </label>
-                                    <input 
+                                    <label className="mb-2 block text-sm font-medium text-gray-700">Padding</label>
+                                    <input
                                         type="text"
                                         value={(selectedBlock.content.padding as string) || '16px'}
                                         onChange={(e) => updateBlockContent(selectedBlock.id, { padding: e.target.value })}
                                         placeholder="16px"
-                                        className="w-full p-2 border border-gray-300 rounded-lg"
+                                        className="w-full rounded-lg border border-gray-300 p-2"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Border Radius
-                                    </label>
-                                    <input 
+                                    <label className="mb-2 block text-sm font-medium text-gray-700">Border Radius</label>
+                                    <input
                                         type="text"
                                         value={(selectedBlock.content.borderRadius as string) || '0px'}
                                         onChange={(e) => updateBlockContent(selectedBlock.id, { borderRadius: e.target.value })}
                                         placeholder="8px"
-                                        className="w-full p-2 border border-gray-300 rounded-lg"
+                                        className="w-full rounded-lg border border-gray-300 p-2"
                                     />
                                 </div>
 
-                                <div className="pt-4 border-t">
-                                    <button 
+                                <div className="border-t pt-4">
+                                    <button
                                         onClick={() => deleteBlock(selectedBlock.id)}
-                                        className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200"
+                                        className="flex w-full items-center justify-center space-x-2 rounded-lg bg-red-100 px-4 py-2 text-red-700 hover:bg-red-200"
                                     >
-                                        <Trash2 className="w-4 h-4" />
+                                        <Trash2 className="h-4 w-4" />
                                         <span>Delete Block</span>
                                     </button>
                                 </div>
                             </div>
                         ) : (
-                            <div className="text-center text-gray-500 py-8">
-                                <Settings className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                            <div className="py-8 text-center text-gray-500">
+                                <Settings className="mx-auto mb-4 h-12 w-12 text-gray-400" />
                                 <p>Select a block to edit its properties</p>
                             </div>
                         )}
                     </div>
                 </div>
             </div>
-            
+
             {/* Preview Modal */}
-            <PreviewModal 
-                isOpen={isPreviewOpen}
-                onClose={() => setIsPreviewOpen(false)}
-                funnel={funnel}
-            />
+            <PreviewModal isOpen={isPreviewOpen} onClose={() => setIsPreviewOpen(false)} funnel={funnel} />
         </>
     );
 }

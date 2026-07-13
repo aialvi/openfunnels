@@ -2,7 +2,9 @@
 
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\FunnelController;
+use App\Http\Controllers\FunnelResponseController;
 use App\Http\Controllers\LeadCaptureController;
+use App\Services\FunnelPublicUrlResolver;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -52,6 +54,7 @@ Route::domain($appDomain)->group(function () {
         Route::patch('contacts/{contact}', [ContactController::class, 'update'])->name('contacts.update');
         Route::post('contacts/{contact}/notes', [ContactController::class, 'storeNote'])->name('contacts.notes.store');
         Route::resource('funnels', FunnelController::class)->except(['show']);
+        Route::get('funnels/{funnel}/responses', [FunnelResponseController::class, 'index'])->name('funnels.responses');
         Route::get('funnel-editor', [FunnelController::class, 'create'])->name('funnel-editor');
         Route::get('funnel-editor/{funnel}', [FunnelController::class, 'edit'])->name('funnel-editor.edit');
         Route::get('funnel/{funnel}/preview', [FunnelController::class, 'preview'])->name('funnel.preview');
@@ -94,6 +97,8 @@ Route::fallback(function (\Illuminate\Http\Request $request) {
             'settings' => $domain->funnel->settings,
             'status' => $domain->funnel->status,
             'is_published' => $domain->funnel->is_published,
+            'public_url' => app(FunnelPublicUrlResolver::class)->resolve($domain->funnel),
         ],
+        'previewMode' => false,
     ]);
 });

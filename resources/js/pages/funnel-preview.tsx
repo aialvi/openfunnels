@@ -1,16 +1,19 @@
+import { shareLink } from '@/lib/share';
+import type { Block, Funnel } from '@/types/editor';
 import { Head, Link, router } from '@inertiajs/react';
+import { ArrowLeft, ExternalLink, Monitor, Share, Smartphone, Tablet } from 'lucide-react';
 import { type FormEvent, useState } from 'react';
-import { Monitor, Tablet, Smartphone, ArrowLeft, ExternalLink, Share } from 'lucide-react';
-import type { Funnel, Block } from '@/types/editor';
 
 interface FunnelPreviewProps {
     funnel: Funnel & { id: number; slug: string };
+    previewMode?: boolean;
 }
 
-export default function FunnelPreview({ funnel }: FunnelPreviewProps) {
+export default function FunnelPreview({ funnel, previewMode = false }: FunnelPreviewProps) {
     const [selectedDevice, setSelectedDevice] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
     const [submittingBlockId, setSubmittingBlockId] = useState<string | null>(null);
     const [submittedBlockId, setSubmittedBlockId] = useState<string | null>(null);
+    const [shareLabel, setShareLabel] = useState('Share');
 
     const getDeviceWidth = () => {
         switch (selectedDevice) {
@@ -78,9 +81,9 @@ export default function FunnelPreview({ funnel }: FunnelPreviewProps) {
                 return (
                     <div key={block.id} {...commonProps}>
                         <img
-                            src={block.content.src as string || 'https://via.placeholder.com/300x200?text=Image'}
-                            alt={block.content.alt as string || 'Image'}
-                            className="max-w-full h-auto"
+                            src={(block.content.src as string) || 'https://via.placeholder.com/300x200?text=Image'}
+                            alt={(block.content.alt as string) || 'Image'}
+                            className="h-auto max-w-full"
                             style={{
                                 borderRadius: (block.content.borderRadius as string) || '8px',
                                 width: (block.content.width as string) || '100%',
@@ -93,7 +96,7 @@ export default function FunnelPreview({ funnel }: FunnelPreviewProps) {
                     <button
                         key={block.id}
                         {...commonProps}
-                        className={`${commonProps.className} px-4 py-2 font-medium cursor-pointer hover:opacity-80 transition-opacity`}
+                        className={`${commonProps.className} cursor-pointer px-4 py-2 font-medium transition-opacity hover:opacity-80`}
                     >
                         {(block.content.text as string) || 'Click Me'}
                     </button>
@@ -147,20 +150,20 @@ export default function FunnelPreview({ funnel }: FunnelPreviewProps) {
     };
 
     const handleShare = async () => {
-        if (navigator.share) {
-            try {
-                await navigator.share({
-                    title: funnel.name,
-                    text: funnel.description || 'Check out this funnel',
-                    url: window.location.href
-                });
-            } catch (error) {
-                console.log('Error sharing:', error);
-            }
-        } else {
-            // Fallback: copy to clipboard
-            navigator.clipboard.writeText(window.location.href);
-            alert('Link copied to clipboard!');
+        if (!funnel.public_url) {
+            setShareLabel('Publish first');
+            return;
+        }
+
+        const result = await shareLink({
+            title: funnel.name,
+            text: funnel.description || 'Check out this funnel',
+            url: funnel.public_url,
+        });
+
+        if (result === 'copied') {
+            setShareLabel('Copied');
+            window.setTimeout(() => setShareLabel('Share'), 2000);
         }
     };
 
@@ -168,75 +171,74 @@ export default function FunnelPreview({ funnel }: FunnelPreviewProps) {
         <>
             <Head title={`Preview: ${funnel.name} - OpenFunnels`} />
 
-            <div className="min-h-screen bg-gray-50">
-                {/* Header */}
-                <div className="bg-white border-b border-gray-200">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="flex items-center justify-between h-16">
-                            <div className="flex items-center space-x-4">
-                                <Link
-                                    href={route('funnel-editor.edit', funnel.id)}
-                                    className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
-                                >
-                                    <ArrowLeft className="w-4 h-4" />
-                                    <span>Back to Editor</span>
-                                </Link>
-                                <div className="h-6 w-px bg-gray-300"></div>
-                                <h1 className="text-lg font-semibold text-gray-900">Preview: {funnel.name}</h1>
-                            </div>
-
-                            <div className="flex items-center space-x-4">
-                                {/* Device Selection */}
-                                <div className="flex items-center space-x-2 bg-gray-100 rounded-lg p-1">
-                                    <button
-                                        onClick={() => setSelectedDevice('desktop')}
-                                        className={`p-2 rounded transition-colors ${selectedDevice === 'desktop'
-                                            ? 'bg-white shadow text-blue-600'
-                                            : 'text-gray-600 hover:text-gray-900'
-                                            }`}
-                                        title="Desktop View"
+            <div className={previewMode ? 'min-h-screen bg-gray-50' : 'min-h-screen bg-white'}>
+                {/* Preview controls are private editor UI, not part of the public funnel. */}
+                {previewMode && (
+                    <div className="border-b border-gray-200 bg-white">
+                        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                            <div className="flex h-16 items-center justify-between">
+                                <div className="flex items-center space-x-4">
+                                    <Link
+                                        href={route('funnel-editor.edit', funnel.id)}
+                                        className="flex items-center space-x-2 text-gray-600 transition-colors hover:text-gray-900"
                                     >
-                                        <Monitor className="w-4 h-4" />
-                                    </button>
-                                    <button
-                                        onClick={() => setSelectedDevice('tablet')}
-                                        className={`p-2 rounded transition-colors ${selectedDevice === 'tablet'
-                                            ? 'bg-white shadow text-blue-600'
-                                            : 'text-gray-600 hover:text-gray-900'
-                                            }`}
-                                        title="Tablet View"
-                                    >
-                                        <Tablet className="w-4 h-4" />
-                                    </button>
-                                    <button
-                                        onClick={() => setSelectedDevice('mobile')}
-                                        className={`p-2 rounded transition-colors ${selectedDevice === 'mobile'
-                                            ? 'bg-white shadow text-blue-600'
-                                            : 'text-gray-600 hover:text-gray-900'
-                                            }`}
-                                        title="Mobile View"
-                                    >
-                                        <Smartphone className="w-4 h-4" />
-                                    </button>
+                                        <ArrowLeft className="h-4 w-4" />
+                                        <span>Back to Editor</span>
+                                    </Link>
+                                    <div className="h-6 w-px bg-gray-300"></div>
+                                    <h1 className="text-lg font-semibold text-gray-900">Preview: {funnel.name}</h1>
                                 </div>
 
-                                <button
-                                    onClick={handleShare}
-                                    className="flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-gray-900 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                                >
-                                    <Share className="w-4 h-4" />
-                                    <span>Share</span>
-                                </button>
+                                <div className="flex items-center space-x-4">
+                                    {/* Device Selection */}
+                                    <div className="flex items-center space-x-2 rounded-lg bg-gray-100 p-1">
+                                        <button
+                                            onClick={() => setSelectedDevice('desktop')}
+                                            className={`rounded p-2 transition-colors ${
+                                                selectedDevice === 'desktop' ? 'bg-white text-blue-600 shadow' : 'text-gray-600 hover:text-gray-900'
+                                            }`}
+                                            title="Desktop View"
+                                        >
+                                            <Monitor className="h-4 w-4" />
+                                        </button>
+                                        <button
+                                            onClick={() => setSelectedDevice('tablet')}
+                                            className={`rounded p-2 transition-colors ${
+                                                selectedDevice === 'tablet' ? 'bg-white text-blue-600 shadow' : 'text-gray-600 hover:text-gray-900'
+                                            }`}
+                                            title="Tablet View"
+                                        >
+                                            <Tablet className="h-4 w-4" />
+                                        </button>
+                                        <button
+                                            onClick={() => setSelectedDevice('mobile')}
+                                            className={`rounded p-2 transition-colors ${
+                                                selectedDevice === 'mobile' ? 'bg-white text-blue-600 shadow' : 'text-gray-600 hover:text-gray-900'
+                                            }`}
+                                            title="Mobile View"
+                                        >
+                                            <Smartphone className="h-4 w-4" />
+                                        </button>
+                                    </div>
+
+                                    <button
+                                        onClick={handleShare}
+                                        className="flex items-center space-x-2 rounded-lg border border-gray-300 px-3 py-2 text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900"
+                                    >
+                                        <Share className="h-4 w-4" />
+                                        <span>{shareLabel}</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                )}
 
                 {/* Preview Content */}
-                <div className="py-8">
+                <div className={previewMode ? 'py-8' : ''}>
                     <div className="flex justify-center">
                         <div
-                            className="bg-white shadow-lg relative mx-auto transition-all duration-300 ease-in-out min-h-screen"
+                            className={`relative mx-auto min-h-screen bg-white transition-all duration-300 ease-in-out ${previewMode ? 'shadow-lg' : ''}`}
                             style={{
                                 width: getDeviceWidth(),
                                 maxWidth: funnel.settings.maxWidth,
@@ -244,7 +246,7 @@ export default function FunnelPreview({ funnel }: FunnelPreviewProps) {
                             }}
                         >
                             {/* Render all sections, columns, and blocks */}
-                            {funnel.content.sections?.map(section => (
+                            {funnel.content.sections?.map((section) => (
                                 <div
                                     key={section.id}
                                     className="relative w-full"
@@ -255,21 +257,25 @@ export default function FunnelPreview({ funnel }: FunnelPreviewProps) {
                                     }}
                                 >
                                     <div
-                                        className="mx-auto flex flex-col md:flex-row gap-4"
+                                        className="mx-auto flex flex-col gap-4 md:flex-row"
                                         style={{
-                                            maxWidth: section.settings.fullWidth ? '100%' : '1200px'
+                                            maxWidth: section.settings.fullWidth ? '100%' : '1200px',
                                         }}
                                     >
-                                        {section.columns.map(column => (
+                                        {section.columns.map((column) => (
                                             <div
                                                 key={column.id}
-                                                className="flex flex-col gap-4 relative"
+                                                className="relative flex flex-col gap-4"
                                                 style={{
                                                     width: selectedDevice === 'mobile' ? '100%' : `${column.width}%`,
                                                     padding: column.settings.padding,
                                                     backgroundColor: column.settings.backgroundColor,
-                                                    justifyContent: column.settings.verticalAlign === 'middle' ? 'center' :
-                                                        column.settings.verticalAlign === 'bottom' ? 'flex-end' : 'flex-start'
+                                                    justifyContent:
+                                                        column.settings.verticalAlign === 'middle'
+                                                            ? 'center'
+                                                            : column.settings.verticalAlign === 'bottom'
+                                                              ? 'flex-end'
+                                                              : 'flex-start',
                                                 }}
                                             >
                                                 {column.blocks.map(renderBlock)}
@@ -281,20 +287,22 @@ export default function FunnelPreview({ funnel }: FunnelPreviewProps) {
 
                             {/* Empty State */}
                             {(!funnel.content.sections || funnel.content.sections.length === 0) && (
-                                <div className="flex items-center justify-center h-96 text-gray-500">
+                                <div className="flex h-96 items-center justify-center text-gray-500">
                                     <div className="text-center">
-                                        <div className="w-16 h-16 mx-auto mb-4 bg-gray-200 rounded-full flex items-center justify-center">
-                                            <Monitor className="w-8 h-8 text-gray-400" />
+                                        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-200">
+                                            <Monitor className="h-8 w-8 text-gray-400" />
                                         </div>
                                         <p className="text-lg font-medium">No content to preview</p>
                                         <p className="text-sm">This funnel doesn't have any content yet</p>
-                                        <Link
-                                            href={route('funnel-editor.edit', funnel.id)}
-                                            className="inline-flex items-center space-x-2 mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                                        >
-                                            <span>Start Building</span>
-                                            <ExternalLink className="w-4 h-4" />
-                                        </Link>
+                                        {previewMode && (
+                                            <Link
+                                                href={route('funnel-editor.edit', funnel.id)}
+                                                className="mt-4 inline-flex items-center space-x-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
+                                            >
+                                                <span>Start Building</span>
+                                                <ExternalLink className="h-4 w-4" />
+                                            </Link>
+                                        )}
                                     </div>
                                 </div>
                             )}
@@ -303,21 +311,27 @@ export default function FunnelPreview({ funnel }: FunnelPreviewProps) {
                 </div>
 
                 {/* Footer Info */}
-                <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-2">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="flex items-center justify-between text-sm text-gray-600">
-                            <div className="flex items-center space-x-4">
-                                <span>Viewing: {selectedDevice.charAt(0).toUpperCase() + selectedDevice.slice(1)} ({getDeviceWidth()})</span>
-                                <span>•</span>
-                                <span>{funnel.content.sections?.length || 0} section{(funnel.content.sections?.length !== 1) ? 's' : ''}</span>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                                <div className={`w-2 h-2 rounded-full ${funnel.status === 'published' ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
-                                <span className="capitalize">{funnel.status}</span>
+                {previewMode && (
+                    <div className="fixed right-0 bottom-0 left-0 border-t border-gray-200 bg-white py-2">
+                        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                            <div className="flex items-center justify-between text-sm text-gray-600">
+                                <div className="flex items-center space-x-4">
+                                    <span>
+                                        Viewing: {selectedDevice.charAt(0).toUpperCase() + selectedDevice.slice(1)} ({getDeviceWidth()})
+                                    </span>
+                                    <span>•</span>
+                                    <span>
+                                        {funnel.content.sections?.length || 0} section{funnel.content.sections?.length !== 1 ? 's' : ''}
+                                    </span>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <div className={`h-2 w-2 rounded-full ${funnel.status === 'published' ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
+                                    <span className="capitalize">{funnel.status}</span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                )}
             </div>
         </>
     );

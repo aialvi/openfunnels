@@ -28,6 +28,7 @@ namespace {
     use App\Models\Funnel;
     use App\Models\User;
     use Illuminate\Foundation\Testing\RefreshDatabase;
+    use Inertia\Testing\AssertableInertia as Assert;
     use Tests\DomainMappingDnsFake;
 
     uses(RefreshDatabase::class);
@@ -140,6 +141,46 @@ namespace {
             ->assertSee('funnel-preview', false);
 
         expect($funnel->fresh()->views)->toBe(1);
+    });
+
+    test('published funnels expose their verified custom domain as the canonical public url', function () {
+        config(['publishing.custom_domain_scheme' => 'https']);
+
+        $user = User::factory()->create();
+        $funnel = createFunnelFor($user, [
+            'status' => 'published',
+            'is_published' => true,
+            'published_at' => now(),
+        ]);
+
+        $funnel->domains()->create([
+            'domain' => 'offers.example.test',
+            'is_verified' => true,
+            'ssl_status' => 'active',
+        ]);
+
+        $this->withoutVite();
+
+        $this->actingAs($user)
+            ->get(route('funnel.preview', $funnel))
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('funnel-preview')
+                ->where('previewMode', true)
+                ->where('funnel.public_url', 'https://offers.example.test'));
+    });
+
+    test('draft funnels do not expose a shareable public url', function () {
+        $user = User::factory()->create();
+        $funnel = createFunnelFor($user);
+
+        $this->withoutVite();
+
+        $this->actingAs($user)
+            ->get(route('funnel.preview', $funnel))
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('funnel-preview')
+                ->where('previewMode', true)
+                ->where('funnel.public_url', null));
     });
 
     test('unverified custom domains are not served by the fallback route', function () {

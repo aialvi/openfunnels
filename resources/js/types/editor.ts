@@ -70,14 +70,7 @@ export interface Column {
 // Section
 // ---------------------------------------------------------------------------
 
-export type SectionLayout =
-    | 'single'
-    | 'two-column'
-    | 'three-column'
-    | 'two-column-66-33'
-    | 'two-column-33-66'
-    | 'four-column'
-    | 'custom';
+export type SectionLayout = 'single' | 'two-column' | 'three-column' | 'two-column-66-33' | 'two-column-33-66' | 'four-column' | 'custom';
 
 export interface SectionSettings {
     backgroundColor: string;
@@ -116,4 +109,5 @@ export interface Funnel {
     settings: FunnelSettings;
     status: 'draft' | 'published' | 'archived';
     is_published: boolean;
+    public_url?: string | null;
 }

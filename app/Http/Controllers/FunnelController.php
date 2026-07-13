@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Funnel;
+use App\Services\FunnelPublicUrlResolver;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -12,6 +13,8 @@ class FunnelController extends Controller
 {
     use AuthorizesRequests;
 
+    public function __construct(private readonly FunnelPublicUrlResolver $publicUrlResolver) {}
+
     /**
      * Display a listing of the resource.
      */
@@ -20,6 +23,8 @@ class FunnelController extends Controller
         $user = auth()->user();
 
         $funnels = $user->funnels()
+            ->with(['domains' => fn ($query) => $query->where('is_verified', true)->latest()])
+            ->withCount('contactSubmissions')
             ->orderBy('updated_at', 'desc')
             ->get();
 
@@ -40,8 +45,10 @@ class FunnelController extends Controller
                 'is_published' => $funnel->is_published,
                 'views' => $funnel->views,
                 'conversions' => $funnel->conversions,
+                'response_count' => $funnel->contact_submissions_count,
                 'conversion_rate' => $funnel->conversion_rate,
                 'updated_at' => $funnel->updated_at->format('M j, Y'),
+                'public_url' => $this->publicUrlResolver->resolve($funnel),
             ];
         });
 
@@ -76,7 +83,7 @@ class FunnelController extends Controller
         $slug = $baseSlug;
         $counter = 1;
 
-        while (auth()->user()->funnels()->where('slug', $slug)->exists()) {
+        while (Funnel::query()->where('slug', $slug)->exists()) {
             $slug = $baseSlug.'-'.$counter;
             $counter++;
         }
@@ -100,22 +107,15 @@ class FunnelController extends Controller
     {
         // Published funnels are publicly viewable; unpublished require ownership.
         if (! $funnel->is_published) {
+            abort_unless(auth()->check(), 404);
             $this->authorize('view', $funnel);
         }
 
         $funnel->incrementViews();
 
         return Inertia::render('funnel-preview', [
-            'funnel' => [
-                'id' => $funnel->id,
-                'name' => $funnel->name,
-                'slug' => $funnel->slug,
-                'description' => $funnel->description,
-                'content' => $funnel->content,
-                'settings' => $funnel->settings,
-                'status' => $funnel->status,
-                'is_published' => $funnel->is_published,
-            ],
+            'funnel' => $this->serializeFunnel($funnel),
+            'previewMode' => false,
         ]);
     }
 
@@ -145,6 +145,7 @@ class FunnelController extends Controller
                     'ssl_status' => $domain->ssl_status,
                     'created_at' => $domain->created_at?->toISOString(),
                 ]),
+                'public_url' => $this->publicUrlResolver->resolve($funnel),
             ],
             'domainMapping' => [
                 'cnameTarget' => config('services.domain_mapping.cname_target'),
@@ -161,16 +162,8 @@ class FunnelController extends Controller
         $this->authorize('view', $funnel);
 
         return Inertia::render('funnel-preview', [
-            'funnel' => [
-                'id' => $funnel->id,
-                'name' => $funnel->name,
-                'slug' => $funnel->slug,
-                'description' => $funnel->description,
-                'content' => $funnel->content,
-                'settings' => $funnel->settings,
-                'status' => $funnel->status,
-                'is_published' => $funnel->is_published,
-            ],
+            'funnel' => $this->serializeFunnel($funnel),
+            'previewMode' => true,
         ]);
     }
 
@@ -195,7 +188,7 @@ class FunnelController extends Controller
             $slug = $baseSlug;
             $counter = 1;
 
-            while (auth()->user()->funnels()->where('slug', $slug)->where('id', '!=', $funnel->id)->exists()) {
+            while (Funnel::query()->where('slug', $slug)->where('id', '!=', $funnel->id)->exists()) {
                 $slug = $baseSlug.'-'.$counter;
                 $counter++;
             }
@@ -266,5 +259,23 @@ class FunnelController extends Controller
 
         return redirect()->route('funnels.index')
             ->with('success', 'Funnel duplicated successfully!');
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function serializeFunnel(Funnel $funnel): array
+    {
+        return [
+            'id' => $funnel->id,
+            'name' => $funnel->name,
+            'slug' => $funnel->slug,
+            'description' => $funnel->description,
+            'content' => $funnel->content,
+            'settings' => $funnel->settings,
+            'status' => $funnel->status,
+            'is_published' => $funnel->is_published,
+            'public_url' => $this->publicUrlResolver->resolve($funnel),
+        ];
     }
 }

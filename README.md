@@ -91,6 +91,7 @@ The current MVP focuses on the first useful growth loop: build a funnel, publish
    # Custom domain DNS checks
    DOMAIN_MAPPING_CNAME_TARGET=cname.openfunnels.com
    DOMAIN_MAPPING_A_RECORD_IP=
+   FUNNEL_CUSTOM_DOMAIN_SCHEME=https
 
    # Lead capture operations
    LEAD_CAPTURE_NOTIFICATION_EMAIL=
@@ -119,6 +120,10 @@ Build frontend assets:
 ```bash
 pnpm run build
 ```
+
+## Self-hosting
+
+For a production VPS installation, including required services, deployment steps, workers, health checks, backups, and custom-domain responsibilities, see [Self-hosting OpenFunnels](docs/self-hosting.md).
 
 ## Testing And Quality
 
