@@ -233,3 +233,9 @@ Development guidelines:
 ## License
 
 This project is open source and available under the [MIT License](LICENSE).
+
+<p align="center">
+  <a href="https://www.buymeacoffee.com/aialvi" target="_blank">
+    <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me a Coffee" height="60">
+  </a>
+</p>
