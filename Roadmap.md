@@ -16,13 +16,14 @@ This roadmap is a planning aid for agents and contributors. It should guide prio
 - Custom domain mapping at the Laravel/React application layer.
 - CRM-lite contacts table, contacts page, contact detail page, notes, statuses, and submission timeline.
 - Funnel form submissions that capture leads and increment conversion counters.
+- Configurable form fields for contact details, custom answers, dropdowns, checkboxes, and hidden values.
 - Email notification and optional webhook for new lead submissions.
 - Exporter modules for multiple output targets.
 
 ## Near-Term Priorities
 
 - Harden funnel CRUD behavior with focused feature tests.
-- Improve lead capture form configuration in the editor.
+- Add conditional and multi-step forms, automatic UTM population, and redirect or download success actions.
 - Move starter layout definitions out of the editor page once the template library grows.
 - Add contact search, filters, CSV import/export, and duplicate management.
 - Add configurable lead notification settings in the UI.

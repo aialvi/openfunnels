@@ -1,4 +1,5 @@
-import { Funnel, Section, Column, Block } from '@/stores/funnelStore';
+import { Block, Column, Funnel, Section } from '@/stores/funnelStore';
+import { renderFormMarkup } from './form-export';
 import { Exporter } from './index';
 
 type TextContent = {
@@ -34,7 +35,7 @@ type CodeContent = {
 
 export class ReactExporter implements Exporter {
     export(funnel: Funnel): string {
-        const sectionsJsx = funnel.content.sections.map(section => this.renderSection(section)).join('\n');
+        const sectionsJsx = funnel.content.sections.map((section) => this.renderSection(section)).join('\n');
 
         return `import React from 'react';
 
@@ -58,7 +59,7 @@ export default function FunnelPage() {
             backgroundPosition: section.settings.backgroundImage ? 'center' : undefined,
         };
 
-        const columnsJsx = section.columns.map(column => this.renderColumn(column)).join('\n');
+        const columnsJsx = section.columns.map((column) => this.renderColumn(column)).join('\n');
 
         return `
             <section id="${section.id}" style={${JSON.stringify(style)}} className="w-full ${section.settings.fullWidth ? '' : 'max-w-7xl mx-auto'}">
@@ -78,7 +79,7 @@ export default function FunnelPage() {
         };
 
         const widthClass = this.getWidthClass(column.width);
-        const blocksJsx = column.blocks.map(block => this.renderBlock(block)).join('\n');
+        const blocksJsx = column.blocks.map((block) => this.renderBlock(block)).join('\n');
 
         return `
                     <div id="${column.id}" style={${JSON.stringify(style)}} className="${widthClass} px-2 mb-4">
@@ -122,6 +123,9 @@ export default function FunnelPage() {
                 contentJsx = `<a href="${btnContent.url}" style={${JSON.stringify(btnStyle)}}>${btnContent.text}</a>`;
                 break;
             }
+            case 'form':
+                contentJsx = renderFormMarkup(block.content, true);
+                break;
             case 'spacer': {
                 const spacerContent = block.content as Partial<SpacerContent>;
                 contentJsx = `<div style={{ height: '${spacerContent.height}' }} />`;
@@ -144,9 +148,12 @@ export default function FunnelPage() {
 
     private mapVerticalAlign(align: string): string {
         switch (align) {
-            case 'middle': return 'center';
-            case 'bottom': return 'flex-end';
-            default: return 'flex-start';
+            case 'middle':
+                return 'center';
+            case 'bottom':
+                return 'flex-end';
+            default:
+                return 'flex-start';
         }
     }
 

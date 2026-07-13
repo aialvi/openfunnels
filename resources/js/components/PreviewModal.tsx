@@ -1,3 +1,5 @@
+import FormFields from '@/components/funnel/FormFields';
+import { getFormFields } from '@/lib/form-fields';
 import { shareLink } from '@/lib/share';
 import { Block, Funnel } from '@/stores/funnelStore';
 import { BarChart3, ExternalLink, Maximize, Minimize, Monitor, Share, Smartphone, Tablet, X, ZoomIn, ZoomOut } from 'lucide-react';
@@ -137,11 +139,7 @@ export default function PreviewModal({ isOpen, onClose, funnel }: PreviewModalPr
                     <div key={block.id} {...commonProps} className={`${commonProps.className} min-w-64`}>
                         <div className="space-y-4">
                             <h3 className="font-semibold">{(block.content.title as string) || 'Subscribe to our newsletter'}</h3>
-                            <input
-                                type="email"
-                                placeholder={(block.content.placeholder as string) || 'Enter your email'}
-                                className="w-full rounded border border-gray-300 p-2"
-                            />
+                            <FormFields fields={getFormFields(block.content)} formId={`modal-${block.id}`} disabled />
                             <button className="w-full rounded bg-blue-600 p-2 text-white transition-colors hover:bg-blue-700">
                                 {(block.content.buttonText as string) || 'Subscribe'}
                             </button>

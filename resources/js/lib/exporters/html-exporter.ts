@@ -1,4 +1,5 @@
-import { Funnel, Section, Column, Block } from '@/stores/funnelStore';
+import { Block, Column, Funnel, Section } from '@/stores/funnelStore';
+import { renderFormMarkup } from './form-export';
 import { Exporter } from './index';
 
 type TextContent = {
@@ -34,7 +35,7 @@ type CodeContent = {
 
 export class HtmlExporter implements Exporter {
     export(funnel: Funnel): string {
-        const sectionsHtml = funnel.content.sections.map(section => this.renderSection(section)).join('\n');
+        const sectionsHtml = funnel.content.sections.map((section) => this.renderSection(section)).join('\n');
 
         return `<!DOCTYPE html>
 <html lang="en">
@@ -65,7 +66,7 @@ ${sectionsHtml}
             ${section.settings.backgroundImage ? `background-image: url(${section.settings.backgroundImage}); background-size: cover; background-position: center;` : ''}
         `;
 
-        const columnsHtml = section.columns.map(column => this.renderColumn(column)).join('\n');
+        const columnsHtml = section.columns.map((column) => this.renderColumn(column)).join('\n');
 
         return `
         <section id="${section.id}" style="${this.minifyStyle(style)}" class="w-full ${section.settings.fullWidth ? '' : 'max-w-7xl mx-auto'}">
@@ -85,7 +86,7 @@ ${columnsHtml}
         `;
 
         const widthClass = this.getWidthClass(column.width);
-        const blocksHtml = column.blocks.map(block => this.renderBlock(block)).join('\n');
+        const blocksHtml = column.blocks.map((block) => this.renderBlock(block)).join('\n');
 
         return `
                 <div id="${column.id}" style="${this.minifyStyle(style)}" class="${widthClass} px-2 mb-4">
@@ -129,6 +130,9 @@ ${blocksHtml}
                 contentHtml = `<a href="${btnContent.url}" style="${this.minifyStyle(btnStyle)}">${btnContent.text}</a>`;
                 break;
             }
+            case 'form':
+                contentHtml = renderFormMarkup(block.content);
+                break;
             case 'spacer': {
                 const spacerContent = block.content as Partial<SpacerContent>;
                 contentHtml = `<div style="height: ${spacerContent.height};"></div>`;
@@ -155,9 +159,12 @@ ${blocksHtml}
 
     private mapVerticalAlign(align: string): string {
         switch (align) {
-            case 'middle': return 'center';
-            case 'bottom': return 'flex-end';
-            default: return 'flex-start';
+            case 'middle':
+                return 'center';
+            case 'bottom':
+                return 'flex-end';
+            default:
+                return 'flex-start';
         }
     }
 

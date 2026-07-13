@@ -40,6 +40,19 @@ export interface BlockSettings {
     animation?: string;
 }
 
+export type FormFieldType = 'text' | 'email' | 'tel' | 'number' | 'url' | 'textarea' | 'select' | 'checkbox' | 'hidden';
+
+export interface FormField {
+    id: string;
+    name: string;
+    label: string;
+    type: FormFieldType;
+    placeholder?: string;
+    required: boolean;
+    options?: string[];
+    defaultValue?: string;
+}
+
 export interface Block {
     id: string;
     type: BlockType;

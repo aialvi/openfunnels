@@ -1,4 +1,5 @@
-import { Funnel, Section, Column, Block } from '@/stores/funnelStore';
+import { Block, Column, Funnel, Section } from '@/stores/funnelStore';
+import { renderFormMarkup } from './form-export';
 import { Exporter } from './index';
 
 type TextContent = {
@@ -34,7 +35,7 @@ type CodeContent = {
 
 export class VueExporter implements Exporter {
     export(funnel: Funnel): string {
-        const sectionsHtml = funnel.content.sections.map(section => this.renderSection(section)).join('\n');
+        const sectionsHtml = funnel.content.sections.map((section) => this.renderSection(section)).join('\n');
 
         return `<template>
   <main :style="mainStyle">
@@ -67,7 +68,7 @@ const mainStyle = computed(() => ({
             backgroundPosition: section.settings.backgroundImage ? 'center' : undefined,
         };
 
-        const columnsHtml = section.columns.map(column => this.renderColumn(column)).join('\n');
+        const columnsHtml = section.columns.map((column) => this.renderColumn(column)).join('\n');
 
         return `
     <section id="${section.id}" :style='${JSON.stringify(style)}' class="w-full ${section.settings.fullWidth ? '' : 'max-w-7xl mx-auto'}">
@@ -87,7 +88,7 @@ const mainStyle = computed(() => ({
         };
 
         const widthClass = this.getWidthClass(column.width);
-        const blocksHtml = column.blocks.map(block => this.renderBlock(block)).join('\n');
+        const blocksHtml = column.blocks.map((block) => this.renderBlock(block)).join('\n');
 
         return `
         <div id="${column.id}" :style='${JSON.stringify(style)}' class="${widthClass} px-2 mb-4">
@@ -131,6 +132,9 @@ const mainStyle = computed(() => ({
                 contentHtml = `<a href="${btnContent.url}" :style='${JSON.stringify(btnStyle)}'>${btnContent.text}</a>`;
                 break;
             }
+            case 'form':
+                contentHtml = renderFormMarkup(block.content);
+                break;
             case 'spacer': {
                 const spacerContent = block.content as Partial<SpacerContent>;
                 contentHtml = `<div style="height: ${spacerContent.height}"></div>`;
@@ -153,9 +157,12 @@ const mainStyle = computed(() => ({
 
     private mapVerticalAlign(align: string): string {
         switch (align) {
-            case 'middle': return 'center';
-            case 'bottom': return 'flex-end';
-            default: return 'flex-start';
+            case 'middle':
+                return 'center';
+            case 'bottom':
+                return 'flex-end';
+            default:
+                return 'flex-start';
         }
     }
 

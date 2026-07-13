@@ -18,19 +18,20 @@ OpenFunnels is currently positioned as an open-source funnel builder for launchi
 - Authenticated users can create, edit, duplicate, delete, publish, and unpublish funnels.
 - Funnels use the canonical editor tree: `funnel -> sections -> columns -> blocks`.
 - The enhanced editor includes a starter flow:
-  - Build from scratch.
-  - Select a premade template.
+    - Build from scratch.
+    - Select a premade template.
 - Template browser includes categories and visual thumbnails.
 - Current template categories:
-  - Lead capture
-  - Sales
-  - Events
-  - Services
-  - Industry
+    - Lead capture
+    - Sales
+    - Events
+    - Services
+    - Industry
 
 ### Lead Capture
 
 - Published funnel form blocks submit to `LeadCaptureController`.
+- Form blocks support reorderable standard, custom, dropdown, checkbox, and hidden fields configured in the editor.
 - Submissions create or update a contact for the funnel owner.
 - Each submission creates a separate `contact_submissions` record.
 - Funnel conversions increment on each successful submission.
@@ -40,19 +41,19 @@ OpenFunnels is currently positioned as an open-source funnel builder for launchi
 
 - Contacts index shows captured leads, source funnel, status, submission count, and last activity.
 - Contact detail page shows:
-  - Profile fields.
-  - Source funnel.
-  - Status.
-  - Submission timeline.
-  - Submitted fields.
-  - IP address and user agent.
-  - Notes.
+    - Profile fields.
+    - Source funnel.
+    - Status.
+    - Submission timeline.
+    - Submitted fields.
+    - IP address and user agent.
+    - Notes.
 - Supported lifecycle statuses:
-  - `new`
-  - `contacted`
-  - `qualified`
-  - `won`
-  - `lost`
+    - `new`
+    - `contacted`
+    - `qualified`
+    - `won`
+    - `lost`
 
 ### Notifications And Webhooks
 

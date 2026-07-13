@@ -1,3 +1,5 @@
+import FormFields from '@/components/funnel/FormFields';
+import { getFormFields } from '@/lib/form-fields';
 import { shareLink } from '@/lib/share';
 import type { Block, Funnel } from '@/types/editor';
 import { Head, Link, router } from '@inertiajs/react';
@@ -106,29 +108,7 @@ export default function FunnelPreview({ funnel, previewMode = false }: FunnelPre
                     <div key={block.id} {...commonProps} className={`${commonProps.className} min-w-64`}>
                         <form className="space-y-4" onSubmit={(event) => handleLeadSubmit(event, block)}>
                             <h3 className="font-semibold">{(block.content.title as string) || 'Subscribe to our newsletter'}</h3>
-                            {(block.content.showName as boolean | undefined) !== false && (
-                                <input
-                                    name="name"
-                                    type="text"
-                                    placeholder={(block.content.namePlaceholder as string) || 'Your name'}
-                                    className="w-full rounded border border-gray-300 p-2"
-                                />
-                            )}
-                            <input
-                                name="email"
-                                type="email"
-                                required
-                                placeholder={(block.content.placeholder as string) || 'Enter your email'}
-                                className="w-full rounded border border-gray-300 p-2"
-                            />
-                            {(block.content.showPhone as boolean | undefined) === true && (
-                                <input
-                                    name="phone"
-                                    type="tel"
-                                    placeholder={(block.content.phonePlaceholder as string) || 'Phone number'}
-                                    className="w-full rounded border border-gray-300 p-2"
-                                />
-                            )}
+                            <FormFields fields={getFormFields(block.content)} formId={`public-${block.id}`} />
                             <button
                                 type="submit"
                                 disabled={submittingBlockId === block.id}

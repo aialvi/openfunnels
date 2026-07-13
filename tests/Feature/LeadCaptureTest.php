@@ -108,6 +108,46 @@ test('repeat submissions update the existing contact for the account', function 
     expect($funnel->fresh()->conversions)->toBe(2);
 });
 
+test('configurable form fields are preserved on each submission', function () {
+    Mail::fake();
+
+    $user = User::factory()->create();
+    $funnel = createLeadCaptureFunnelFor($user);
+
+    $this->post(route('funnels.leads.store', $funnel), [
+        'name' => 'Ada Lovelace',
+        'email' => 'ada@example.com',
+        'form_id' => 'qualification-form',
+        'fields' => [
+            'name' => 'Ada Lovelace',
+            'email' => 'ada@example.com',
+            'company_size' => '11-50',
+            'project_details' => 'We need a configurable lead funnel.',
+            'utm_campaign' => 'summer-launch',
+        ],
+    ])->assertRedirect();
+
+    $submission = $user->contacts()->firstOrFail()->submissions()->firstOrFail();
+
+    expect($submission->form_id)->toBe('qualification-form')
+        ->and($submission->fields)->toMatchArray([
+            'company_size' => '11-50',
+            'project_details' => 'We need a configurable lead funnel.',
+            'utm_campaign' => 'summer-launch',
+        ]);
+});
+
+test('configurable form field payloads are bounded', function () {
+    $funnel = createLeadCaptureFunnelFor(User::factory()->create());
+
+    $this->post(route('funnels.leads.store', $funnel), [
+        'email' => 'ada@example.com',
+        'fields' => ['notes' => str_repeat('a', 5001)],
+    ])->assertSessionHasErrors('fields.notes');
+
+    $this->assertDatabaseMissing('contacts', ['email' => 'ada@example.com']);
+});
+
 test('guests cannot submit leads to unpublished funnels', function () {
     $user = User::factory()->create();
     $funnel = createLeadCaptureFunnelFor($user, [

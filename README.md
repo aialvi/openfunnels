@@ -21,7 +21,7 @@ The current MVP focuses on the first useful growth loop: build a funnel, publish
 - **Responsive preview**: Desktop, tablet, and mobile preview modes for editor layouts.
 - **Publishing**: Public funnel rendering, preview routes, publish/unpublish controls, and slug-based sharing.
 - **Custom domains**: Application-layer custom domain mapping with DNS verification for published funnels.
-- **Lead capture**: Public form submissions create or update contacts and increment funnel conversions.
+- **Lead capture**: Configurable form fields collect contact details and custom answers, create or update contacts, and increment funnel conversions.
 - **CRM-lite contacts**: Contact index and detail pages with source funnel, submissions, metadata, notes, and lifecycle status.
 - **Lead notifications**: Email notification on new leads, plus optional webhook delivery.
 - **Export modules**: Exporter structure for HTML, Laravel, React, Vue, WordPress, Shopify, and WooCommerce targets.
@@ -58,45 +58,45 @@ The current MVP focuses on the first useful growth loop: build a funnel, publish
 
 1. Clone the repository:
 
-   ```bash
-   git clone https://github.com/aialvi/openfunnels.git
-   cd openfunnels
-   ```
+    ```bash
+    git clone https://github.com/aialvi/openfunnels.git
+    cd openfunnels
+    ```
 
 2. Install dependencies:
 
-   ```bash
-   composer install
-   pnpm install
-   ```
+    ```bash
+    composer install
+    pnpm install
+    ```
 
 3. Configure the app:
 
-   ```bash
-   cp .env.example .env
-   php artisan key:generate
-   ```
+    ```bash
+    cp .env.example .env
+    php artisan key:generate
+    ```
 
 4. Create and migrate the local database:
 
-   ```bash
-   touch database/database.sqlite
-   php artisan migrate
-   php artisan db:seed
-   ```
+    ```bash
+    touch database/database.sqlite
+    php artisan migrate
+    php artisan db:seed
+    ```
 
 5. Optional environment settings:
 
-   ```env
-   # Custom domain DNS checks
-   DOMAIN_MAPPING_CNAME_TARGET=cname.openfunnels.com
-   DOMAIN_MAPPING_A_RECORD_IP=
-   FUNNEL_CUSTOM_DOMAIN_SCHEME=https
+    ```env
+    # Custom domain DNS checks
+    DOMAIN_MAPPING_CNAME_TARGET=cname.openfunnels.com
+    DOMAIN_MAPPING_A_RECORD_IP=
+    FUNNEL_CUSTOM_DOMAIN_SCHEME=https
 
-   # Lead capture operations
-   LEAD_CAPTURE_NOTIFICATION_EMAIL=
-   LEAD_CAPTURE_WEBHOOK_URL=
-   ```
+    # Lead capture operations
+    LEAD_CAPTURE_NOTIFICATION_EMAIL=
+    LEAD_CAPTURE_WEBHOOK_URL=
+    ```
 
 ## Development
 
@@ -192,19 +192,30 @@ docs/
 Completed foundation:
 
 - Laravel + Inertia application shell with authentication and settings.
-- Funnel CRUD, dashboard stats, editor, preview, publish, and public rendering.
-- Starter template flow with categorized premade layouts and visual thumbnails.
-- Custom domain mapping at the Laravel/React application layer.
-- Lead capture forms, contacts, contact details, submissions, notes, statuses, email notifications, and optional webhooks.
+- Funnel CRUD, aggregate dashboard stats, drag-and-drop editing, undo/redo, and responsive device previews.
+- Fifteen categorized starter templates with visual thumbnails and practical lead-capture forms.
+- Draft previews, published public rendering, publish/unpublish controls, and cross-browser sharing.
+- Canonical public URL resolution for app URLs and verified custom domains.
+- Globally unique self-hosted funnel slugs with automatic collision repair.
+- Custom domain mapping with DNS verification and verified-domain-only public rendering.
+- Lead capture forms that create or update contacts, preserve every submission, and track conversions.
+- Configurable form blocks with reorderable text, email, phone, number, URL, textarea, dropdown, checkbox, and hidden fields.
+- CRM-lite contact profiles with submission timelines, metadata, notes, and lifecycle statuses.
+- Funnel-specific response dashboards with totals, unique-lead counts, pagination, and submitted field details.
+- Response filtering by lead name, email, phone, lifecycle status, form, and date range.
+- New-lead email notifications and optional webhook delivery.
+- Exporter modules for HTML, Laravel, React, Vue, WordPress, Shopify, and WooCommerce.
+- MIT licensing and production VPS self-hosting documentation covering workers, backups, health checks, and domains.
 
 Near-term priorities:
 
-- Improve form field configuration in the editor.
-- Add contact search, filters, CSV import/export, and duplicate management.
+- Add conditional and multi-step forms, automatic UTM population, and redirect or download success actions.
+- Add contact-wide CRM search and filters, CSV import/export, and duplicate management.
 - Add UI-managed lead notification settings.
-- Improve autosave/manual save flows.
+- Improve autosave, save-state feedback, and manual recovery flows.
 - Move starter template definitions into a scalable template library module.
-- Add UTM/source attribution, analytics trends, and funnel drop-off reporting.
+- Add raw analytics events, UTM/source attribution, performance trends, and funnel drop-off reporting.
+- Expand focused CRUD, content-validation, and exporter test coverage.
 
 Longer-term tracks include automation workflows, SMS and email campaigns, calendar booking, agency sub-accounts, payments, A/B testing, and deeper analytics.
 

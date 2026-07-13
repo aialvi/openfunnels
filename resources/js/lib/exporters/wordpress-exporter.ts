@@ -1,4 +1,5 @@
-import { Funnel, Section, Column, Block } from '@/stores/funnelStore';
+import { Block, Column, Funnel, Section } from '@/stores/funnelStore';
+import { renderFormMarkup } from './form-export';
 import { Exporter } from './index';
 
 type TextContent = {
@@ -25,11 +26,11 @@ export class WordPressExporter implements Exporter {
     export(funnel: Funnel): string {
         // WordPress posts are essentially a list of blocks.
         // We will wrap sections in Group blocks.
-        return funnel.content.sections.map(section => this.renderSection(section)).join('\n\n');
+        return funnel.content.sections.map((section) => this.renderSection(section)).join('\n\n');
     }
 
     private renderSection(section: Section): string {
-        const columnsHtml = section.columns.map(column => this.renderColumn(column)).join('\n');
+        const columnsHtml = section.columns.map((column) => this.renderColumn(column)).join('\n');
 
         // Using wp:group to wrap sections
         return `<!-- wp:group {"layout":{"type":"constrained"}} -->
@@ -44,7 +45,7 @@ export class WordPressExporter implements Exporter {
     }
 
     private renderColumn(column: Column): string {
-        const blocksHtml = column.blocks.map(block => this.renderBlock(block)).join('\n');
+        const blocksHtml = column.blocks.map((block) => this.renderBlock(block)).join('\n');
 
         // Approximate width mapping for simple columns
         const widthVal = column.width < 100 ? `{"width":"${column.width}%"}` : '{}';
@@ -84,6 +85,11 @@ export class WordPressExporter implements Exporter {
 </div>
 <!-- /wp:buttons -->`;
             }
+
+            case 'form':
+                return `<!-- wp:html -->
+${renderFormMarkup(block.content)}
+<!-- /wp:html -->`;
 
             case 'code': {
                 const codeContent = block.content as Partial<CodeContent>;

@@ -25,7 +25,8 @@ class LeadCaptureController extends Controller
             'name' => ['nullable', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:50'],
             'form_id' => ['nullable', 'string', 'max:100'],
-            'fields' => ['nullable', 'array'],
+            'fields' => ['nullable', 'array', 'max:50'],
+            'fields.*' => ['nullable', 'string', 'max:5000'],
         ]);
 
         $email = strtolower($validated['email']);

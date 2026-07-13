@@ -1,4 +1,5 @@
-import { Funnel, Section, Column, Block } from '@/stores/funnelStore';
+import { Block, Column, Funnel, Section } from '@/stores/funnelStore';
+import { renderFormMarkup } from './form-export';
 import { Exporter } from './index';
 
 type TextContent = {
@@ -30,7 +31,7 @@ type WooCommerceProductContent = {
 
 export class LaravelExporter implements Exporter {
     export(funnel: Funnel): string {
-        const sectionsHtml = funnel.content.sections.map(section => this.renderSection(section)).join('\n');
+        const sectionsHtml = funnel.content.sections.map((section) => this.renderSection(section)).join('\n');
 
         return `@extends('layouts.app')
 
@@ -63,7 +64,7 @@ ${sectionsHtml}
             backgroundPosition: section.settings.backgroundImage ? 'center' : undefined,
         };
 
-        const columnsHtml = section.columns.map(column => this.renderColumn(column)).join('\n');
+        const columnsHtml = section.columns.map((column) => this.renderColumn(column)).join('\n');
 
         return `
     <section id="${section.id}" style="${this.styleToString(style)}" class="w-full ${section.settings.fullWidth ? '' : 'max-w-7xl mx-auto'}">
@@ -83,7 +84,7 @@ ${columnsHtml}
         };
 
         const widthClass = this.getWidthClass(column.width);
-        const blocksHtml = column.blocks.map(block => this.renderBlock(block)).join('\n');
+        const blocksHtml = column.blocks.map((block) => this.renderBlock(block)).join('\n');
 
         return `
             <div id="${column.id}" style="${this.styleToString(style)}" class="${widthClass} px-2 mb-4">
@@ -127,6 +128,9 @@ ${blocksHtml}
                 contentHtml = `<a href="${btnContent.url}" style="${this.styleToString(btnStyle)}">${btnContent.text}</a>`;
                 break;
             }
+            case 'form':
+                contentHtml = renderFormMarkup(block.content);
+                break;
             case 'woocommerce-product': {
                 const wooContent = block.content as Partial<WooCommerceProductContent>;
                 // Example of using a Blade component for WooCommerce product
@@ -147,15 +151,18 @@ ${blocksHtml}
     private styleToString(style: Record<string, string | undefined>): string {
         return Object.entries(style)
             .filter((entry) => entry[1] !== undefined)
-            .map(([key, value]) => `${key.replace(/[A-Z]/g, m => `-${m.toLowerCase()}`)}: ${value}`)
+            .map(([key, value]) => `${key.replace(/[A-Z]/g, (m) => `-${m.toLowerCase()}`)}: ${value}`)
             .join('; ');
     }
 
     private mapVerticalAlign(align: string): string {
         switch (align) {
-            case 'middle': return 'center';
-            case 'bottom': return 'flex-end';
-            default: return 'flex-start';
+            case 'middle':
+                return 'center';
+            case 'bottom':
+                return 'flex-end';
+            default:
+                return 'flex-start';
         }
     }
 
