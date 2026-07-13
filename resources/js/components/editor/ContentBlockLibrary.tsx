@@ -49,10 +49,14 @@ const CONTENT_BLOCKS = [
         description: 'Upload or link to images',
         category: 'Media',
         defaultContent: {
-            src: 'https://via.placeholder.com/400x300',
-            alt: 'Image',
+            src: '',
+            alt: 'Descriptive image text',
             width: '100%',
+            maxHeight: '500px',
             objectFit: 'cover',
+            imageBorderRadius: '8px',
+            linkUrl: '',
+            newTab: true,
         },
     },
     {
@@ -67,6 +71,7 @@ const CONTENT_BLOCKS = [
             variant: 'primary',
             size: 'medium',
             fullWidth: false,
+            newTab: false,
         },
     },
     {
@@ -93,6 +98,7 @@ const CONTENT_BLOCKS = [
         description: 'Embed YouTube, Vimeo, or upload videos',
         category: 'Media',
         defaultContent: {
+            title: 'Featured video',
             src: '',
             poster: '',
             autoplay: false,
@@ -143,9 +149,9 @@ const CONTENT_BLOCKS = [
         description: 'Event calendar and booking',
         category: 'Interactive',
         defaultContent: {
-            type: 'booking',
-            calendarId: '',
-            timeSlots: [],
+            title: 'Book a time',
+            embedUrl: '',
+            height: '650px',
         },
     },
     {
@@ -157,9 +163,10 @@ const CONTENT_BLOCKS = [
         defaultContent: {
             name: 'Product Name',
             price: '$99.99',
-            image: 'https://via.placeholder.com/300x300',
+            image: '',
             description: 'Product description here',
             buyUrl: '#',
+            buttonText: 'Buy now',
         },
     },
     {
@@ -173,7 +180,7 @@ const CONTENT_BLOCKS = [
                 {
                     name: 'Team Member',
                     position: 'Position',
-                    photo: 'https://via.placeholder.com/200x200',
+                    photo: '',
                     bio: 'Short bio here',
                 },
             ],
@@ -187,8 +194,12 @@ const CONTENT_BLOCKS = [
         category: 'Advanced',
         defaultContent: {
             type: 'bar',
-            data: [],
-            title: 'Chart Title',
+            data: [
+                { label: 'Visitors', value: 120 },
+                { label: 'Leads', value: 48 },
+                { label: 'Customers', value: 16 },
+            ],
+            title: 'Funnel performance',
         },
     },
     {
@@ -226,7 +237,11 @@ const CONTENT_BLOCKS = [
         description: 'Social media feeds and buttons',
         category: 'Social Proof',
         defaultContent: {
-            platforms: ['facebook', 'twitter', 'linkedin', 'instagram'],
+            links: [
+                { platform: 'facebook', url: '' },
+                { platform: 'instagram', url: '' },
+                { platform: 'linkedin', url: '' },
+            ],
             style: 'buttons',
         },
     },
@@ -248,9 +263,12 @@ const CONTENT_BLOCKS = [
         category: 'E-commerce',
         defaultContent: {
             productId: '',
-            showTitle: true,
-            showPrice: true,
-            showButton: true,
+            name: 'WooCommerce product',
+            price: '$99.00',
+            image: '',
+            description: 'Describe the product and why it is valuable.',
+            productUrl: '',
+            buttonText: 'View product',
         },
     },
     {
@@ -262,7 +280,12 @@ const CONTENT_BLOCKS = [
         defaultContent: {
             productId: '',
             shopDomain: '',
-            accessToken: '',
+            name: 'Shopify product',
+            price: '$99.00',
+            image: '',
+            description: 'Describe the product and why it is valuable.',
+            productUrl: '',
+            buttonText: 'Buy now',
         },
     },
 ];

@@ -1,107 +1,15 @@
-import { Block, Column, Funnel, Section } from '@/stores/funnelStore';
-import { renderFormMarkup } from './form-export';
-import { Exporter } from './index';
-
-type TextContent = {
-    text: string;
-    color: string;
-    fontSize: string;
-};
-
-type ImageContent = {
-    src: string;
-    alt?: string;
-};
-
-type ButtonContent = {
-    text: string;
-    url: string;
-};
-
-type CodeContent = {
-    code: string;
-};
+import type { Funnel } from '@/types/editor';
+import type { Exporter } from './index';
+import { countdownScript, escapeMarkup, portableStyles, renderPortableFunnel } from './portable-markup';
 
 export class WordPressExporter implements Exporter {
     export(funnel: Funnel): string {
-        // WordPress posts are essentially a list of blocks.
-        // We will wrap sections in Group blocks.
-        return funnel.content.sections.map((section) => this.renderSection(section)).join('\n\n');
-    }
-
-    private renderSection(section: Section): string {
-        const columnsHtml = section.columns.map((column) => this.renderColumn(column)).join('\n');
-
-        // Using wp:group to wrap sections
-        return `<!-- wp:group {"layout":{"type":"constrained"}} -->
-<div class="wp-block-group" style="padding:${section.settings.padding};background-color:${section.settings.backgroundColor}">
-    <!-- wp:columns -->
-    <div class="wp-block-columns">
-        ${columnsHtml}
-    </div>
-    <!-- /wp:columns -->
-</div>
-<!-- /wp:group -->`;
-    }
-
-    private renderColumn(column: Column): string {
-        const blocksHtml = column.blocks.map((block) => this.renderBlock(block)).join('\n');
-
-        // Approximate width mapping for simple columns
-        const widthVal = column.width < 100 ? `{"width":"${column.width}%"}` : '{}';
-
-        return `<!-- wp:column ${widthVal} -->
-<div class="wp-block-column" style="flex-basis:${column.width}%">
-    ${blocksHtml}
-</div>
-<!-- /wp:column -->`;
-    }
-
-    private renderBlock(block: Block): string {
-        switch (block.type) {
-            case 'text': {
-                const textContent = block.content as Partial<TextContent>;
-                // Simple paragraph or heading based on content? For now assume paragraph.
-                // In a real implementation we might inspect fontSize to decide between h1-h6 vs p.
-                return `<!-- wp:paragraph {"style":{"typography":{"fontSize":"${textContent.fontSize}"},"color":{"text":"${textContent.color}"}}} -->
-<p style="color:${textContent.color};font-size:${textContent.fontSize}">${textContent.text}</p>
-<!-- /wp:paragraph -->`;
-            }
-
-            case 'image': {
-                const imageContent = block.content as Partial<ImageContent>;
-                return `<!-- wp:image -->
-<figure class="wp-block-image"><img src="${imageContent.src}" alt="${imageContent.alt || ''}"/></figure>
-<!-- /wp:image -->`;
-            }
-
-            case 'button': {
-                const btnContent = block.content as Partial<ButtonContent>;
-                return `<!-- wp:buttons -->
-<div class="wp-block-buttons">
-    <!-- wp:button {"backgroundColor":"primary","textColor":"white"} -->
-    <div class="wp-block-button"><a class="wp-block-button__link has-white-color has-primary-background-color has-text-color has-background" href="${btnContent.url}">${btnContent.text}</a></div>
-    <!-- /wp:button -->
-</div>
-<!-- /wp:buttons -->`;
-            }
-
-            case 'form':
-                return `<!-- wp:html -->
-${renderFormMarkup(block.content)}
+        return `<!-- wp:html -->
+<style>${portableStyles}</style>
+<main class="of-page" style="font-family:${escapeMarkup(funnel.settings.fontFamily || 'Inter, sans-serif')};background:${escapeMarkup(funnel.settings.backgroundColor)}">
+${renderPortableFunnel(funnel, 'html')}
+</main>
+${countdownScript}
 <!-- /wp:html -->`;
-
-            case 'code': {
-                const codeContent = block.content as Partial<CodeContent>;
-                return `<!-- wp:html -->
-${codeContent.code}
-<!-- /wp:html -->`;
-            }
-
-            default:
-                return `<!-- wp:html -->
-<div>[Block type ${block.type} not fully supported in WP export yet]</div>
-<!-- /wp:html -->`;
-        }
     }
 }

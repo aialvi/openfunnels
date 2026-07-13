@@ -1,10 +1,9 @@
-import FormFields from '@/components/funnel/FormFields';
-import { getFormFields } from '@/lib/form-fields';
+import FunnelBlock from '@/components/funnel/FunnelBlock';
 import { shareLink } from '@/lib/share';
 import type { Block, Funnel } from '@/types/editor';
 import { Head, Link, router } from '@inertiajs/react';
 import { ArrowLeft, ExternalLink, Monitor, Share, Smartphone, Tablet } from 'lucide-react';
-import { type FormEvent, useState } from 'react';
+import { type CSSProperties, type FormEvent, useState } from 'react';
 
 interface FunnelPreviewProps {
     funnel: Funnel & { id: number; slug: string };
@@ -57,77 +56,15 @@ export default function FunnelPreview({ funnel, previewMode = false }: FunnelPre
         );
     };
 
-    const renderBlock = (block: Block) => {
-        const commonProps = {
-            'data-block-id': block.id,
-            className: 'w-full',
-            style: {
-                fontSize: (block.content.fontSize as string) || '16px',
-                color: (block.content.color as string) || '#000000',
-                backgroundColor: (block.content.backgroundColor as string) || 'transparent',
-                padding: (block.content.padding as string) || '8px',
-                borderRadius: (block.content.borderRadius as string) || '0px',
-                fontWeight: (block.content.fontWeight as string) || 'normal',
-                textAlign: (block.content.textAlign as React.CSSProperties['textAlign']) || 'left',
-            },
-        };
-
-        switch (block.type) {
-            case 'text':
-                return (
-                    <div key={block.id} {...commonProps}>
-                        {(block.content.text as string) || 'Enter text here'}
-                    </div>
-                );
-            case 'image':
-                return (
-                    <div key={block.id} {...commonProps}>
-                        <img
-                            src={(block.content.src as string) || 'https://via.placeholder.com/300x200?text=Image'}
-                            alt={(block.content.alt as string) || 'Image'}
-                            className="h-auto max-w-full"
-                            style={{
-                                borderRadius: (block.content.borderRadius as string) || '8px',
-                                width: (block.content.width as string) || '100%',
-                            }}
-                        />
-                    </div>
-                );
-            case 'button':
-                return (
-                    <button
-                        key={block.id}
-                        {...commonProps}
-                        className={`${commonProps.className} cursor-pointer px-4 py-2 font-medium transition-opacity hover:opacity-80`}
-                    >
-                        {(block.content.text as string) || 'Click Me'}
-                    </button>
-                );
-            case 'form':
-                return (
-                    <div key={block.id} {...commonProps} className={`${commonProps.className} min-w-64`}>
-                        <form className="space-y-4" onSubmit={(event) => handleLeadSubmit(event, block)}>
-                            <h3 className="font-semibold">{(block.content.title as string) || 'Subscribe to our newsletter'}</h3>
-                            <FormFields fields={getFormFields(block.content)} formId={`public-${block.id}`} />
-                            <button
-                                type="submit"
-                                disabled={submittingBlockId === block.id}
-                                className="w-full rounded bg-blue-600 p-2 text-white transition-colors hover:bg-blue-700 disabled:opacity-60"
-                            >
-                                {submittingBlockId === block.id ? 'Submitting...' : (block.content.buttonText as string) || 'Subscribe'}
-                            </button>
-                            {submittedBlockId === block.id && (
-                                <p className="text-sm font-medium text-green-600">
-                                    {(block.content.successMessage as string) || 'Thanks. Your information was submitted.'}
-                                </p>
-                            )}
-                        </form>
-                    </div>
-                );
-            default:
-                return null;
-        }
-    };
+    const renderBlock = (block: Block) => (
+        <FunnelBlock
+            key={block.id}
+            block={block}
+            formSubmitting={submittingBlockId === block.id}
+            formSubmitted={submittedBlockId === block.id}
+            onFormSubmit={handleLeadSubmit}
+        />
+    );
 
     const handleShare = async () => {
         if (!funnel.public_url) {
@@ -233,30 +170,37 @@ export default function FunnelPreview({ funnel, previewMode = false }: FunnelPre
                                     style={{
                                         backgroundColor: section.settings.backgroundColor,
                                         padding: section.settings.padding,
+                                        margin: section.settings.margin,
                                         minHeight: section.settings.minHeight,
+                                        backgroundImage: section.settings.backgroundImage ? `url(${section.settings.backgroundImage})` : undefined,
+                                        backgroundPosition: section.settings.backgroundImage ? 'center' : undefined,
+                                        backgroundSize: section.settings.backgroundImage ? 'cover' : undefined,
                                     }}
                                 >
                                     <div
                                         className="mx-auto flex flex-col gap-4 md:flex-row"
                                         style={{
-                                            maxWidth: section.settings.fullWidth ? '100%' : '1200px',
+                                            maxWidth: section.settings.fullWidth ? '100%' : funnel.settings.maxWidth,
                                         }}
                                     >
                                         {section.columns.map((column) => (
                                             <div
                                                 key={column.id}
-                                                className="relative flex flex-col gap-4"
-                                                style={{
-                                                    width: selectedDevice === 'mobile' ? '100%' : `${column.width}%`,
-                                                    padding: column.settings.padding,
-                                                    backgroundColor: column.settings.backgroundColor,
-                                                    justifyContent:
-                                                        column.settings.verticalAlign === 'middle'
-                                                            ? 'center'
-                                                            : column.settings.verticalAlign === 'bottom'
-                                                              ? 'flex-end'
-                                                              : 'flex-start',
-                                                }}
+                                                className={`relative flex flex-col gap-4 ${previewMode ? '' : 'w-full md:w-[var(--column-width)]'}`}
+                                                style={
+                                                    {
+                                                        width: previewMode ? (selectedDevice === 'mobile' ? '100%' : `${column.width}%`) : undefined,
+                                                        '--column-width': `${column.width}%`,
+                                                        padding: column.settings.padding,
+                                                        backgroundColor: column.settings.backgroundColor,
+                                                        justifyContent:
+                                                            column.settings.verticalAlign === 'middle'
+                                                                ? 'center'
+                                                                : column.settings.verticalAlign === 'bottom'
+                                                                  ? 'flex-end'
+                                                                  : 'flex-start',
+                                                    } as CSSProperties
+                                                }
                                             >
                                                 {column.blocks.map(renderBlock)}
                                             </div>

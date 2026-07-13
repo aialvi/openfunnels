@@ -15,6 +15,7 @@ import {
     Trash2,
     Type,
 } from 'lucide-react';
+import BlockContentInspector from './BlockContentInspector';
 
 interface PropertiesPanelProps {
     embedded?: boolean;
@@ -477,6 +478,9 @@ export default function PropertiesPanel({
                 </div>
 
                 {selectedBlock.type === 'form' && renderFormProperties()}
+                {selectedBlock.type !== 'form' && (
+                    <BlockContentInspector block={selectedBlock} onUpdate={(updates) => onBlockUpdate(selectedBlock.id, updates)} />
+                )}
 
                 <div className="space-y-3">
                     <div>

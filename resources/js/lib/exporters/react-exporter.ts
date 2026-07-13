@@ -1,168 +1,32 @@
-import { Block, Column, Funnel, Section } from '@/stores/funnelStore';
-import { renderFormMarkup } from './form-export';
-import { Exporter } from './index';
-
-type TextContent = {
-    text: string;
-    textAlign: string;
-    color: string;
-    fontSize: string;
-    fontWeight: string;
-};
-
-type ImageContent = {
-    src: string;
-    alt?: string;
-    width: string;
-    objectFit: string;
-};
-
-type ButtonContent = {
-    text: string;
-    url: string;
-    size?: 'small' | 'medium' | 'large';
-    variant?: 'primary' | 'secondary';
-    fullWidth?: boolean;
-};
-
-type SpacerContent = {
-    height: string;
-};
-
-type CodeContent = {
-    code: string;
-};
+import type { Funnel } from '@/types/editor';
+import type { Exporter } from './index';
+import { portableStyles, renderPortableFunnel } from './portable-markup';
 
 export class ReactExporter implements Exporter {
     export(funnel: Funnel): string {
-        const sectionsJsx = funnel.content.sections.map((section) => this.renderSection(section)).join('\n');
+        return `import { useEffect } from 'react';
 
-        return `import React from 'react';
+const styles = ${JSON.stringify(portableStyles)};
 
 export default function FunnelPage() {
+    useEffect(() => {
+        const tick = () => document.querySelectorAll<HTMLElement>('[data-countdown]').forEach((element) => {
+            const target = new Date(element.dataset.countdown || '').getTime();
+            const remaining = Number.isFinite(target) ? Math.max(0, target - Date.now()) : 0;
+            const values: Record<string, number> = { days: Math.floor(remaining / 86400000), hours: Math.floor(remaining / 3600000) % 24, minutes: Math.floor(remaining / 60000) % 60, seconds: Math.floor(remaining / 1000) % 60 };
+            element.querySelectorAll<HTMLElement>('[data-countdown-unit]').forEach((unit) => { const node = unit.querySelector('strong'); if (node) node.textContent = String(values[unit.dataset.countdownUnit || ''] || 0).padStart(2, '0'); });
+        });
+        tick();
+        const timer = window.setInterval(tick, 1000);
+        return () => window.clearInterval(timer);
+    }, []);
+
     return (
-        <main style={{ fontFamily: '${funnel.settings.fontFamily || 'Inter, sans-serif'}', backgroundColor: '${funnel.settings.backgroundColor}' }}>
-            ${sectionsJsx}
+        <main className="of-page" style={${JSON.stringify({ fontFamily: funnel.settings.fontFamily || 'Inter, sans-serif', background: funnel.settings.backgroundColor })}}>
+            <style>{styles}</style>
+            ${renderPortableFunnel(funnel, 'react')}
         </main>
     );
 }`;
-    }
-
-    private renderSection(section: Section): string {
-        const style = {
-            backgroundColor: section.settings.backgroundColor,
-            padding: section.settings.padding,
-            margin: section.settings.margin,
-            minHeight: section.settings.minHeight,
-            backgroundImage: section.settings.backgroundImage ? `url(${section.settings.backgroundImage})` : undefined,
-            backgroundSize: section.settings.backgroundImage ? 'cover' : undefined,
-            backgroundPosition: section.settings.backgroundImage ? 'center' : undefined,
-        };
-
-        const columnsJsx = section.columns.map((column) => this.renderColumn(column)).join('\n');
-
-        return `
-            <section id="${section.id}" style={${JSON.stringify(style)}} className="w-full ${section.settings.fullWidth ? '' : 'max-w-7xl mx-auto'}">
-                <div className="flex flex-wrap ${section.layout === 'single' ? '' : '-mx-2'}">
-                    ${columnsJsx}
-                </div>
-            </section>`;
-    }
-
-    private renderColumn(column: Column): string {
-        const style = {
-            padding: column.settings.padding,
-            backgroundColor: column.settings.backgroundColor,
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: this.mapVerticalAlign(column.settings.verticalAlign),
-        };
-
-        const widthClass = this.getWidthClass(column.width);
-        const blocksJsx = column.blocks.map((block) => this.renderBlock(block)).join('\n');
-
-        return `
-                    <div id="${column.id}" style={${JSON.stringify(style)}} className="${widthClass} px-2 mb-4">
-                        ${blocksJsx}
-                    </div>`;
-    }
-
-    private renderBlock(block: Block): string {
-        const style = {
-            padding: block.settings.padding,
-            margin: block.settings.margin,
-            backgroundColor: block.settings.backgroundColor,
-            borderRadius: block.settings.borderRadius,
-        };
-
-        let contentJsx = '';
-
-        switch (block.type) {
-            case 'text': {
-                const textContent = block.content as Partial<TextContent>;
-                contentJsx = `<div style={{ textAlign: '${textContent.textAlign}', color: '${textContent.color}', fontSize: '${textContent.fontSize}', fontWeight: '${textContent.fontWeight}' }}>${textContent.text}</div>`;
-                break;
-            }
-            case 'image': {
-                const imageContent = block.content as Partial<ImageContent>;
-                contentJsx = `<img src="${imageContent.src}" alt="${imageContent.alt || ''}" style={{ width: '${imageContent.width}', objectFit: '${imageContent.objectFit}', display: 'block', maxWidth: '100%' }} />`;
-                break;
-            }
-            case 'button': {
-                const btnContent = block.content as Partial<ButtonContent>;
-                const btnStyle = {
-                    display: 'inline-block',
-                    padding: btnContent.size === 'small' ? '8px 16px' : btnContent.size === 'large' ? '16px 32px' : '12px 24px',
-                    backgroundColor: btnContent.variant === 'secondary' ? '#4b5563' : '#3b82f6',
-                    color: 'white',
-                    textDecoration: 'none',
-                    borderRadius: '6px',
-                    width: btnContent.fullWidth ? '100%' : 'auto',
-                    textAlign: 'center',
-                };
-                contentJsx = `<a href="${btnContent.url}" style={${JSON.stringify(btnStyle)}}>${btnContent.text}</a>`;
-                break;
-            }
-            case 'form':
-                contentJsx = renderFormMarkup(block.content, true);
-                break;
-            case 'spacer': {
-                const spacerContent = block.content as Partial<SpacerContent>;
-                contentJsx = `<div style={{ height: '${spacerContent.height}' }} />`;
-                break;
-            }
-            case 'code': {
-                const codeContent = block.content as Partial<CodeContent>;
-                contentJsx = `<div dangerouslySetInnerHTML={{ __html: \`${codeContent.code}\` }} />`;
-                break;
-            }
-            default:
-                contentJsx = `{/* Block type "${block.type}" not yet supported in export */}`;
-        }
-
-        return `
-                        <div id="${block.id}" style={${JSON.stringify(style)}}>
-                            ${contentJsx}
-                        </div>`;
-    }
-
-    private mapVerticalAlign(align: string): string {
-        switch (align) {
-            case 'middle':
-                return 'center';
-            case 'bottom':
-                return 'flex-end';
-            default:
-                return 'flex-start';
-        }
-    }
-
-    private getWidthClass(width: number): string {
-        if (width >= 99) return 'w-full';
-        if (width >= 66) return 'w-full md:w-2/3';
-        if (width >= 50) return 'w-full md:w-1/2';
-        if (width >= 33) return 'w-full md:w-1/3';
-        if (width >= 25) return 'w-full md:w-1/4';
-        return `w-[${width}%]`; // Note: dynamic classes might not work with some setups, but strict mapping covers most
     }
 }

@@ -1,11 +1,13 @@
-import { Funnel } from '@/stores/funnelStore';
+import type { Funnel } from '@/types/editor';
 import { HtmlExporter } from './html-exporter';
-import { ReactExporter } from './react-exporter';
-import { VueExporter } from './vue-exporter';
-import { WordPressExporter } from './wordpress-exporter';
 import { LaravelExporter } from './laravel-exporter';
+import { ReactExporter } from './react-exporter';
+import { ShopifyExporter } from './shopify-exporter';
+import { VueExporter } from './vue-exporter';
+import { WooCommerceExporter } from './woocommerce-exporter';
+import { WordPressExporter } from './wordpress-exporter';
 
-export type ExportFormat = 'html' | 'react' | 'vue' | 'wordpress' | 'shopify' | 'laravel';
+export type ExportFormat = 'html' | 'react' | 'vue' | 'wordpress' | 'shopify' | 'woocommerce' | 'laravel';
 
 export interface Exporter {
     export(funnel: Funnel): string | Promise<string>;
@@ -26,8 +28,8 @@ class ExportSystem {
         this.register('vue', new VueExporter());
         this.register('wordpress', new WordPressExporter());
         this.register('laravel', new LaravelExporter());
-        // Placeholder for future exporters
-        // this.register('shopify', new ShopifyExporter());
+        this.register('shopify', new ShopifyExporter());
+        this.register('woocommerce', new WooCommerceExporter());
     }
 
     register(format: ExportFormat, exporter: Exporter) {

@@ -1,8 +1,7 @@
-import FormFields from '@/components/funnel/FormFields';
-import { getFormFields } from '@/lib/form-fields';
+import FunnelBlock from '@/components/funnel/FunnelBlock';
 import type { Block as ContentBlock, Column as LayoutColumn } from '@/types/editor';
 import { AlertCircle, Plus } from 'lucide-react';
-import React, { useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useDrop } from 'react-dnd';
 import { canAddChild, ContentBlockType, getAllowedChildren } from './validation/ContentValidation';
 
@@ -39,210 +38,42 @@ function createBlockFromDrop(dropItem: { type: string; defaultContent: Record<st
 // Render different block types
 function BlockRenderer({
     block,
-    onUpdate,
     onDelete,
     isSelected,
     onSelect,
 }: {
     block: ContentBlock;
-    onUpdate: (updates: Partial<ContentBlock>) => void;
     onDelete: () => void;
     isSelected: boolean;
     onSelect: () => void;
 }) {
-    const handleContentEdit = (e: React.FocusEvent<HTMLDivElement>) => {
-        if (block.type === 'text') {
-            onUpdate({
-                content: { ...block.content, text: e.target.textContent || '' },
-            });
-        }
-    };
-
-    const blockStyle = {
-        padding: block.settings.padding,
-        margin: block.settings.margin,
-        backgroundColor: block.settings.backgroundColor,
-        borderRadius: block.settings.borderRadius,
-    };
-
     const wrapperClass = `relative group ${isSelected ? 'ring-2 ring-primary' : 'hover:ring-1 hover:ring-primary/30'}`;
 
-    switch (block.type) {
-        case 'text':
-            return (
-                <div className={wrapperClass} style={blockStyle} onClick={onSelect}>
-                    <div
-                        contentEditable
-                        suppressContentEditableWarning
-                        onBlur={handleContentEdit}
-                        className="outline-none"
-                        style={{
-                            fontSize: (block.content.fontSize as string) || '16px',
-                            color: (block.content.color as string) || '#1f2937',
-                            textAlign: ((block.content.textAlign as string) || 'left') as React.CSSProperties['textAlign'],
-                            fontWeight: (block.content.fontWeight as string) || 'normal',
-                        }}
-                    >
-                        {(block.content.text as string) || 'Enter your text here'}
-                    </div>
-                    {isSelected && (
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onDelete();
-                            }}
-                            className="absolute top-0 right-0 -mt-2 -mr-2 h-6 w-6 rounded-full bg-destructive text-xs text-destructive-foreground hover:bg-destructive/90"
-                        >
-                            ×
-                        </button>
-                    )}
-                </div>
-            );
-
-        case 'image':
-            return (
-                <div className={wrapperClass} style={blockStyle} onClick={onSelect}>
-                    <img
-                        src={(block.content.src as string) || 'https://via.placeholder.com/400x300'}
-                        alt={(block.content.alt as string) || 'Image'}
-                        className="h-auto max-w-full rounded"
-                        style={{
-                            width: (block.content.width as string) || '100%',
-                            objectFit: ((block.content.objectFit as string) || 'cover') as React.CSSProperties['objectFit'],
-                        }}
-                    />
-                    {isSelected && (
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onDelete();
-                            }}
-                            className="absolute top-0 right-0 -mt-2 -mr-2 h-6 w-6 rounded-full bg-destructive text-xs text-destructive-foreground hover:bg-destructive/90"
-                        >
-                            ×
-                        </button>
-                    )}
-                </div>
-            );
-
-        case 'button':
-            return (
-                <div className={wrapperClass} style={blockStyle} onClick={onSelect}>
-                    <button
-                        className={`rounded px-6 py-3 font-medium transition-colors ${
-                            block.content.variant === 'primary'
-                                ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                                : 'bg-muted text-foreground hover:bg-muted/80'
-                        } ${block.content.fullWidth ? 'w-full' : ''}`}
-                        style={{
-                            fontSize: block.content.size === 'large' ? '18px' : block.content.size === 'small' ? '14px' : '16px',
-                        }}
-                    >
-                        {(block.content.text as string) || 'Click Me'}
-                    </button>
-                    {isSelected && (
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onDelete();
-                            }}
-                            className="absolute top-0 right-0 -mt-2 -mr-2 h-6 w-6 rounded-full bg-destructive text-xs text-destructive-foreground hover:bg-destructive/90"
-                        >
-                            ×
-                        </button>
-                    )}
-                </div>
-            );
-
-        case 'form':
-            return (
-                <div
-                    className={wrapperClass}
-                    style={blockStyle}
+    return (
+        <div
+            className={wrapperClass}
+            onClick={(event) => {
+                event.stopPropagation();
+                onSelect();
+            }}
+        >
+            <FunnelBlock block={block} formDisabled />
+            {isSelected && (
+                <button
                     onClick={(event) => {
                         event.stopPropagation();
-                        onSelect();
+                        onDelete();
                     }}
+                    className="absolute top-0 right-0 -mt-2 -mr-2 h-6 w-6 rounded-full bg-destructive text-xs text-destructive-foreground hover:bg-destructive/90"
                 >
-                    <div className="space-y-4 rounded-lg border border-border bg-white p-4 text-left">
-                        <h3 className="font-semibold text-gray-900">{(block.content.title as string) || 'Contact us'}</h3>
-                        <FormFields fields={getFormFields(block.content)} formId={`editor-${block.id}`} disabled />
-                        <button type="button" className="w-full rounded bg-blue-600 p-2 text-white">
-                            {(block.content.buttonText as string) || 'Submit'}
-                        </button>
-                    </div>
-                    {isSelected && (
-                        <button
-                            onClick={(event) => {
-                                event.stopPropagation();
-                                onDelete();
-                            }}
-                            className="absolute top-0 right-0 -mt-2 -mr-2 h-6 w-6 rounded-full bg-destructive text-xs text-destructive-foreground hover:bg-destructive/90"
-                        >
-                            ×
-                        </button>
-                    )}
-                </div>
-            );
-
-        case 'spacer':
-            return (
-                <div
-                    className={`${wrapperClass} border-2 border-dashed border-border`}
-                    style={{
-                        ...blockStyle,
-                        height: (block.content.height as string) || '50px',
-                        minHeight: '20px',
-                    }}
-                    onClick={onSelect}
-                >
-                    <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
-                        Spacer ({String(block.content.height)})
-                    </div>
-                    {isSelected && (
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onDelete();
-                            }}
-                            className="absolute top-0 right-0 -mt-2 -mr-2 h-6 w-6 rounded-full bg-destructive text-xs text-destructive-foreground hover:bg-destructive/90"
-                        >
-                            ×
-                        </button>
-                    )}
-                </div>
-            );
-
-        default:
-            return (
-                <div className={wrapperClass} style={blockStyle} onClick={onSelect}>
-                    <div className="rounded bg-muted p-4 text-center text-muted-foreground">{block.type} block (preview coming soon)</div>
-                    {isSelected && (
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onDelete();
-                            }}
-                            className="absolute top-0 right-0 -mt-2 -mr-2 h-6 w-6 rounded-full bg-destructive text-xs text-destructive-foreground hover:bg-destructive/90"
-                        >
-                            ×
-                        </button>
-                    )}
-                </div>
-            );
-    }
+                    ×
+                </button>
+            )}
+        </div>
+    );
 }
 
-export default function ColumnDropZone({
-    column,
-    onBlockAdd,
-    onBlockUpdate,
-    onBlockDelete,
-    isSelected,
-    onSelect,
-    selectedBlockId,
-    onSelectBlock,
-}: DropZoneProps) {
+export default function ColumnDropZone({ column, onBlockAdd, onBlockDelete, isSelected, onSelect, selectedBlockId, onSelectBlock }: DropZoneProps) {
     const dropRef = useRef<HTMLDivElement>(null);
     const [validationError, setValidationError] = useState<string | null>(null);
 
@@ -315,7 +146,6 @@ export default function ColumnDropZone({
                         <BlockRenderer
                             key={block.id}
                             block={block}
-                            onUpdate={(updates) => onBlockUpdate(column.id, block.id, updates)}
                             onDelete={() => onBlockDelete(column.id, block.id)}
                             isSelected={selectedBlockId === block.id}
                             onSelect={() => onSelectBlock?.(block.id)}
