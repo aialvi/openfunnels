@@ -1,4 +1,5 @@
 import { funnelExporter, type ExportFormat } from '@/lib/exporters';
+import { downloadTemplateManifest } from '@/lib/templates';
 import type { Funnel } from '@/types/editor';
 import { Check, Code, Copy, Download } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
@@ -106,6 +107,14 @@ export default function ExportModal({ isOpen, onClose, funnel }: ExportModalProp
                                 ))}
                             </div>
                         </div>
+
+                        <button
+                            onClick={() => downloadTemplateManifest(funnel)}
+                            className="flex w-full items-center justify-center gap-2 rounded-md border border-primary/40 px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/10"
+                        >
+                            <Download className="h-4 w-4" />
+                            Download template JSON
+                        </button>
 
                         <div className="mt-auto pt-4 text-xs text-muted-foreground">
                             <p>Export your funnel to your favorite platform. Code is generated based on your current design.</p>

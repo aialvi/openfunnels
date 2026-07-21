@@ -125,3 +125,19 @@ export interface Funnel {
     is_published: boolean;
     public_url?: string | null;
 }
+
+export interface TemplateManifest {
+    kind: 'openfunnels-template';
+    schemaVersion: 1;
+    metadata: {
+        name: string;
+        description?: string;
+        category: string;
+        author?: string;
+        tags: string[];
+    };
+    funnel: {
+        content: Funnel['content'];
+        settings: FunnelSettings;
+    };
+}

@@ -36,6 +36,7 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 
 import { useFunnelPersistence } from '@/hooks/useFunnelPersistence';
+import { parseTemplateManifest, templateManifestToFunnel } from '@/lib/templates';
 import { findBlockLocation, getSelectedBlock, getSelectedColumn, getSelectedSection, useFunnelStore } from '@/stores/funnelStore';
 import type { Block, Funnel, Section } from '@/types/editor';
 
@@ -1250,6 +1251,8 @@ export default function EnhancedFunnelEditor({ funnel: initialFunnel, domainMapp
     const [isStarterOpen, setIsStarterOpen] = useState(!initialFunnel);
     const [starterStep, setStarterStep] = useState<'choice' | 'templates'>('choice');
     const [starterCategory, setStarterCategory] = useState<StarterCategory>('All');
+    const [templateImportError, setTemplateImportError] = useState<string | null>(null);
+    const templateInputRef = useRef<HTMLInputElement>(null);
 
     // Content block library state
     const [blockSearchQuery, setBlockSearchQuery] = useState('');
@@ -1401,6 +1404,24 @@ export default function EnhancedFunnelEditor({ funnel: initialFunnel, domainMapp
         markDirty();
         setIsStarterOpen(false);
         setStarterStep('choice');
+    };
+
+    const handleTemplateImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        try {
+            const manifest = parseTemplateManifest(await file.text());
+            setFunnel(templateManifestToFunnel(manifest));
+            markDirty();
+            setTemplateImportError(null);
+            setIsStarterOpen(false);
+            setStarterStep('choice');
+        } catch (error) {
+            setTemplateImportError(error instanceof Error ? error.message : 'Unable to import this template.');
+        } finally {
+            event.target.value = '';
+        }
     };
 
     const openStarterTemplates = () => {
@@ -1789,6 +1810,24 @@ export default function EnhancedFunnelEditor({ funnel: initialFunnel, domainMapp
                                             <p className="text-sm text-muted-foreground">
                                                 {visibleStarterTemplates.length} layout{visibleStarterTemplates.length === 1 ? '' : 's'} available
                                             </p>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            {templateImportError && (
+                                                <span className="max-w-56 text-right text-xs text-destructive">{templateImportError}</span>
+                                            )}
+                                            <input
+                                                ref={templateInputRef}
+                                                type="file"
+                                                accept=".json,application/json"
+                                                className="hidden"
+                                                onChange={(event) => void handleTemplateImport(event)}
+                                            />
+                                            <button
+                                                onClick={() => templateInputRef.current?.click()}
+                                                className="rounded-md border border-border px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                                            >
+                                                Import template
+                                            </button>
                                         </div>
                                     </div>
 
