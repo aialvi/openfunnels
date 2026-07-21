@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Funnel;
+use App\Models\FunnelVariant;
 use App\Services\FunnelPublicUrlResolver;
 use App\Services\FunnelVariantResolver;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -323,7 +324,7 @@ class FunnelController extends Controller
     /**
      * @return array<string, mixed>
      */
-    private function serializeFunnel(Funnel $funnel, ?\App\Models\FunnelVariant $variant = null): array
+    private function serializeFunnel(Funnel $funnel, ?FunnelVariant $variant = null): array
     {
         return [
             'id' => $funnel->id,

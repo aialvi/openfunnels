@@ -4,9 +4,9 @@ This is the working guide for AI agents contributing to OpenFunnels. Read this b
 
 ## Project Snapshot
 
-OpenFunnels is a Laravel 12 + Inertia.js SaaS application for building and publishing drag-and-drop funnel pages.
+OpenFunnels is a Laravel 13 + Inertia.js SaaS application for building and publishing drag-and-drop funnel pages.
 
-- Backend: Laravel 12, PHP 8.2+, Eloquent, policies, Pest.
+- Backend: Laravel 13, PHP 8.3+, Eloquent, policies, Pest.
 - Frontend: React 19, TypeScript, Inertia.js 2, Vite, Tailwind CSS 4.
 - UI primitives: local shadcn-style components under `resources/js/components/ui`, Radix UI, lucide-react.
 - Editor state: Zustand + Immer in `resources/js/stores/funnelStore.ts`.

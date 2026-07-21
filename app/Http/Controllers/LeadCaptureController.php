@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Mail\NewLeadCaptured;
 use App\Models\Contact;
+use App\Models\ContactSubmission;
 use App\Models\Funnel;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
@@ -98,7 +99,7 @@ class LeadCaptureController extends Controller
         return back()->with('success', 'Thanks. Your information was submitted.');
     }
 
-    private function notifyLeadCaptured(Contact $contact, Funnel $funnel, \App\Models\ContactSubmission $submission): void
+    private function notifyLeadCaptured(Contact $contact, Funnel $funnel, ContactSubmission $submission): void
     {
         if ($funnel->user->is_demo) {
             return;

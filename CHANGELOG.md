@@ -17,5 +17,6 @@ OpenFunnels follows a rolling development model. Notable user-facing changes are
 
 ### Changed
 
+- Upgraded the backend runtime to Laravel 13, PHP 8.3+, Tinker 3, and Pest 4.
 - CI now runs non-mutating PHP and frontend quality checks.
 - The enhanced editor is the single canonical editor surface.

@@ -4,7 +4,7 @@ This roadmap is a planning aid for agents and contributors. It should guide prio
 
 ## Current Foundation
 
-- Laravel 12 + Inertia.js application shell.
+- Laravel 13 + Inertia.js application shell.
 - Authentication and settings from the Laravel React starter kit.
 - Funnel model, policy, migrations, and CRUD controller.
 - Funnel dashboard/listing with aggregate stats.

@@ -2,15 +2,19 @@
 
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\DemoController;
+use App\Http\Controllers\DomainController;
 use App\Http\Controllers\FunnelAnalyticsController;
 use App\Http\Controllers\FunnelController;
 use App\Http\Controllers\FunnelGenerationController;
 use App\Http\Controllers\FunnelResponseController;
 use App\Http\Controllers\FunnelVariantController;
 use App\Http\Controllers\LeadCaptureController;
+use App\Models\Domain;
 use App\Models\FunnelEvent;
 use App\Services\FunnelPublicUrlResolver;
 use App\Services\FunnelVariantResolver;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -104,9 +108,9 @@ Route::domain($appDomain)->group(function () {
         Route::delete('funnels/{funnel}/variants/{variant}', [FunnelVariantController::class, 'destroy'])->name('funnels.variants.destroy');
 
         // Domain Mapping routes
-        Route::post('funnels/{funnel}/domains', [\App\Http\Controllers\DomainController::class, 'store'])->name('domains.store');
-        Route::post('funnels/{funnel}/domains/{domain}/verify', [\App\Http\Controllers\DomainController::class, 'verify'])->name('domains.verify');
-        Route::delete('domains/{domain}', [\App\Http\Controllers\DomainController::class, 'destroy'])->name('domains.destroy');
+        Route::post('funnels/{funnel}/domains', [DomainController::class, 'store'])->name('domains.store');
+        Route::post('funnels/{funnel}/domains/{domain}/verify', [DomainController::class, 'verify'])->name('domains.verify');
+        Route::delete('domains/{domain}', [DomainController::class, 'destroy'])->name('domains.destroy');
     });
 
     require __DIR__.'/settings.php';
@@ -114,10 +118,10 @@ Route::domain($appDomain)->group(function () {
 });
 
 // Custom Domain Fallback Route
-Route::fallback(function (\Illuminate\Http\Request $request) {
+Route::fallback(function (Request $request) {
     $host = $request->getHost();
 
-    $domain = \App\Models\Domain::with('funnel')
+    $domain = Domain::with('funnel')
         ->where('domain', $host)
         ->where('is_verified', true)
         ->first();
@@ -130,7 +134,7 @@ Route::fallback(function (\Illuminate\Http\Request $request) {
 
     $assignment = app(FunnelVariantResolver::class)->resolve($domain->funnel, $request);
     $variant = $assignment['variant'];
-    \Illuminate\Support\Facades\Cookie::queue(
+    Cookie::queue(
         cookie($assignment['cookie'], $assignment['value'], 60 * 24 * 30, '/', null, false, false, false, 'lax'),
     );
 

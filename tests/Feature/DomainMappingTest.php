@@ -1,25 +1,12 @@
 <?php
 
 namespace App\Http\Controllers {
+    use Tests\DomainMappingDnsFake;
+
     if (! function_exists(__NAMESPACE__.'\dns_get_record')) {
         function dns_get_record(string $hostname, int $type): array|false
         {
-            return \Tests\DomainMappingDnsFake::records($hostname, $type);
-        }
-    }
-}
-
-namespace Tests {
-    class DomainMappingDnsFake
-    {
-        /**
-         * @var array<string, array<int, array<int, array<string, string>>>>
-         */
-        public static array $records = [];
-
-        public static function records(string $hostname, int $type): array|false
-        {
-            return self::$records[$hostname][$type] ?? false;
+            return DomainMappingDnsFake::records($hostname, $type);
         }
     }
 }

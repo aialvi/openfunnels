@@ -3,7 +3,7 @@
 [![Tests](https://github.com/aialvi/openfunnels/actions/workflows/tests.yml/badge.svg)](https://github.com/aialvi/openfunnels/actions/workflows/tests.yml)
 [![Quality](https://github.com/aialvi/openfunnels/actions/workflows/lint.yml/badge.svg)](https://github.com/aialvi/openfunnels/actions/workflows/lint.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-orange.svg)](LICENSE)
-[![PHP 8.2+](https://img.shields.io/badge/PHP-8.2%2B-777BB4.svg)](composer.json)
+[![PHP 8.3+](https://img.shields.io/badge/PHP-8.3%2B-777BB4.svg)](composer.json)
 [![React 19](https://img.shields.io/badge/React-19-61DAFB.svg)](package.json)
 [![Docker](https://img.shields.io/badge/Docker-ready-2496ED.svg)](docs/docker-evaluation.md)
 
@@ -51,8 +51,8 @@ Open `http://localhost:8000` and choose **Launch Demo** for an isolated editor s
 
 ### Backend
 
-- Laravel 12
-- PHP 8.2+
+- Laravel 13
+- PHP 8.3+
 - Inertia.js 2
 - Eloquent ORM
 - SQLite for local development
@@ -70,7 +70,7 @@ Open `http://localhost:8000` and choose **Launch Demo** for an isolated editor s
 
 ## Prerequisites
 
-- PHP 8.2 or higher
+- PHP 8.3 or higher
 - Composer
 - Node.js 18 or higher
 - pnpm

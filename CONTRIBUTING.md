@@ -4,7 +4,7 @@ Thanks for helping build an excellent self-hosted funnel platform. Focused fixes
 
 ## Local setup
 
-Use the installation steps in the README, or run `docker compose up --build` for the evaluation stack. For application development, use PHP 8.2+, Node 18+, Composer, and pnpm 10.13.1.
+Use the installation steps in the README, or run `docker compose up --build` for the evaluation stack. For application development, use PHP 8.3+, Node 18+, Composer, and pnpm 10.13.1.
 
 ```bash
 composer install

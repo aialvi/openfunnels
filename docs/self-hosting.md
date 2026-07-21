@@ -4,7 +4,7 @@ OpenFunnels can run as a standalone Laravel application on a VPS. The applicatio
 
 ## Production services
 
-- PHP 8.2 or newer with the extensions required by Laravel, PDO, and `dns_get_record()` support.
+- PHP 8.3 or newer with the extensions required by Laravel, PDO, and `dns_get_record()` support.
 - A supported web server or application platform with the document root set to `public/`.
 - PostgreSQL or MySQL for normal production installations. SQLite is suitable for small single-node installations when the database file is backed up carefully.
 - A process supervisor for `php artisan queue:work`.
