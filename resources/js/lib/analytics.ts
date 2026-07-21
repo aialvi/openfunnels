@@ -24,6 +24,7 @@ export function trackFunnelEvent(
     funnelId: number,
     eventType: FunnelEventType,
     options: { formId?: string; metadata?: Record<string, string> } = {},
+    variantId?: number | null,
 ): void {
     const token = document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content;
     void fetch(`/funnels/${funnelId}/events`, {
@@ -35,6 +36,7 @@ export function trackFunnelEvent(
             event_type: eventType,
             session_id: funnelSessionId(),
             form_id: options.formId,
+            variant_id: variantId,
             attribution: currentAttribution(),
             metadata: options.metadata,
         }),

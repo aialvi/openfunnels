@@ -78,6 +78,11 @@ class Funnel extends Model
         return $this->hasMany(FunnelEvent::class);
     }
 
+    public function variants(): HasMany
+    {
+        return $this->hasMany(FunnelVariant::class);
+    }
+
     public function incrementViews(): void
     {
         $this->increment('views');

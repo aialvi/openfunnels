@@ -10,6 +10,7 @@ class ContactSubmission extends Model
     protected $fillable = [
         'contact_id',
         'funnel_id',
+        'variant_id',
         'form_id',
         'fields',
         'attribution',

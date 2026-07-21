@@ -49,6 +49,7 @@ export default function FunnelPreview({ funnel, previewMode = false }: FunnelPre
                 fields: Object.fromEntries(formData.entries()),
                 attribution,
                 session_id: funnelSessionId(),
+                variant_id: funnel.variant_id,
             },
             {
                 preserveScroll: true,
@@ -70,8 +71,8 @@ export default function FunnelPreview({ funnel, previewMode = false }: FunnelPre
     };
 
     useEffect(() => {
-        if (!previewMode) trackFunnelEvent(funnel.id, 'view');
-    }, [funnel.id, previewMode]);
+        if (!previewMode) trackFunnelEvent(funnel.id, 'view', {}, funnel.variant_id);
+    }, [funnel.id, funnel.variant_id, previewMode]);
 
     const renderBlock = (block: Block) => (
         <FunnelBlock
@@ -80,7 +81,7 @@ export default function FunnelPreview({ funnel, previewMode = false }: FunnelPre
             formSubmitting={submittingBlockId === block.id}
             formSubmitted={submittedBlockId === block.id}
             onFormSubmit={handleLeadSubmit}
-            onAnalyticsEvent={(eventType, metadata) => trackFunnelEvent(funnel.id, eventType, { formId: block.id, metadata })}
+            onAnalyticsEvent={(eventType, metadata) => trackFunnelEvent(funnel.id, eventType, { formId: block.id, metadata }, funnel.variant_id)}
         />
     );
 

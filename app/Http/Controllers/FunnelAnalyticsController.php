@@ -17,11 +17,16 @@ class FunnelAnalyticsController extends Controller
             'event_type' => ['required', Rule::in(['view', 'cta_click', 'form_start', 'form_step'])],
             'session_id' => ['nullable', 'uuid'],
             'form_id' => ['nullable', 'string', 'max:100'],
+            'variant_id' => ['nullable', 'integer'],
             'attribution' => ['nullable', 'array'],
             'attribution.*' => ['nullable', 'string', 'max:255'],
             'metadata' => ['nullable', 'array', 'max:20'],
             'metadata.*' => ['nullable', 'string', 'max:500'],
         ]);
+
+        if (isset($validated['variant_id']) && ! $funnel->variants()->whereKey($validated['variant_id'])->exists()) {
+            abort(422, 'Invalid experiment variant.');
+        }
 
         $funnel->events()->create([
             ...$validated,

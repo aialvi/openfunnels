@@ -4,9 +4,11 @@ use App\Http\Controllers\ContactController;
 use App\Http\Controllers\FunnelAnalyticsController;
 use App\Http\Controllers\FunnelController;
 use App\Http\Controllers\FunnelResponseController;
+use App\Http\Controllers\FunnelVariantController;
 use App\Http\Controllers\LeadCaptureController;
 use App\Models\FunnelEvent;
 use App\Services\FunnelPublicUrlResolver;
+use App\Services\FunnelVariantResolver;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -93,6 +95,9 @@ Route::domain($appDomain)->group(function () {
         Route::post('funnels/{funnel}/publish', [FunnelController::class, 'publish'])->name('funnels.publish');
         Route::post('funnels/{funnel}/unpublish', [FunnelController::class, 'unpublish'])->name('funnels.unpublish');
         Route::post('funnels/{funnel}/duplicate', [FunnelController::class, 'duplicate'])->name('funnels.duplicate');
+        Route::post('funnels/{funnel}/variants', [FunnelVariantController::class, 'store'])->name('funnels.variants.store');
+        Route::patch('funnels/{funnel}/variants/{variant}', [FunnelVariantController::class, 'update'])->name('funnels.variants.update');
+        Route::delete('funnels/{funnel}/variants/{variant}', [FunnelVariantController::class, 'destroy'])->name('funnels.variants.destroy');
 
         // Domain Mapping routes
         Route::post('funnels/{funnel}/domains', [\App\Http\Controllers\DomainController::class, 'store'])->name('domains.store');
@@ -119,14 +124,21 @@ Route::fallback(function (\Illuminate\Http\Request $request) {
 
     $domain->funnel->incrementViews();
 
+    $assignment = app(FunnelVariantResolver::class)->resolve($domain->funnel, $request);
+    $variant = $assignment['variant'];
+    \Illuminate\Support\Facades\Cookie::queue(
+        cookie($assignment['cookie'], $assignment['value'], 60 * 24 * 30, '/', null, false, false, false, 'lax'),
+    );
+
     return Inertia::render('funnel-preview', [
         'funnel' => [
             'id' => $domain->funnel->id,
             'name' => $domain->funnel->name,
             'slug' => $domain->funnel->slug,
             'description' => $domain->funnel->description,
-            'content' => $domain->funnel->content,
-            'settings' => $domain->funnel->settings,
+            'content' => $variant?->content ?? $domain->funnel->content,
+            'settings' => $variant?->settings ?? $domain->funnel->settings,
+            'variant_id' => $variant?->id,
             'status' => $domain->funnel->status,
             'is_published' => $domain->funnel->is_published,
             'public_url' => app(FunnelPublicUrlResolver::class)->resolve($domain->funnel),

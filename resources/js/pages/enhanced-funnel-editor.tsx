@@ -1,4 +1,5 @@
 import ContentBlockLibrary from '@/components/editor/ContentBlockLibrary';
+import ExperimentModal, { type ExperimentVariant } from '@/components/editor/ExperimentModal';
 import ExportModal from '@/components/editor/ExportModal';
 import FunnelSettingsModal from '@/components/editor/FunnelSettingsModal';
 import LayoutBuilder from '@/components/editor/LayoutBuilder';
@@ -6,6 +7,7 @@ import PropertiesPanel from '@/components/editor/PropertiesPanel';
 import { Head, Link } from '@inertiajs/react';
 import {
     ArrowLeft,
+    Beaker,
     CalendarDays,
     ClipboardList,
     Download,
@@ -54,6 +56,7 @@ interface EnhancedFunnelEditorProps {
         revision: number;
         updated_at?: string;
         domains: DomainMapping[];
+        variants: ExperimentVariant[];
     };
     domainMapping?: DomainMappingSettings;
 }
@@ -1248,6 +1251,7 @@ export default function EnhancedFunnelEditor({ funnel: initialFunnel, domainMapp
     const [editorMode, setEditorMode] = useState<EditorMode>('editor');
     const [isExportModalOpen, setIsExportModalOpen] = useState(false);
     const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+    const [isExperimentModalOpen, setIsExperimentModalOpen] = useState(false);
     const [isStarterOpen, setIsStarterOpen] = useState(!initialFunnel);
     const [starterStep, setStarterStep] = useState<'choice' | 'templates'>('choice');
     const [starterCategory, setStarterCategory] = useState<StarterCategory>('All');
@@ -1638,6 +1642,15 @@ export default function EnhancedFunnelEditor({ funnel: initialFunnel, domainMapp
                                     <span>Domain Settings</span>
                                 </button>
                                 <button
+                                    onClick={() => setIsExperimentModalOpen(true)}
+                                    disabled={!initialFunnel?.id}
+                                    className="flex items-center space-x-2 rounded-lg bg-muted px-3 py-2 text-foreground transition-colors hover:bg-muted/80 disabled:cursor-not-allowed disabled:opacity-50"
+                                    title={initialFunnel?.id ? 'Manage A/B experiments' : 'Save the funnel first to create experiments'}
+                                >
+                                    <Beaker className="h-4 w-4" />
+                                    <span>Experiments</span>
+                                </button>
+                                <button
                                     onClick={() => void saveFunnel()}
                                     disabled={isSaving}
                                     className={`flex items-center space-x-2 rounded-lg px-4 py-2 transition-colors ${
@@ -1872,6 +1885,15 @@ export default function EnhancedFunnelEditor({ funnel: initialFunnel, domainMapp
             )}
 
             <ExportModal isOpen={isExportModalOpen} onClose={() => setIsExportModalOpen(false)} funnel={funnel} />
+            {initialFunnel?.id && (
+                <ExperimentModal
+                    isOpen={isExperimentModalOpen}
+                    onClose={() => setIsExperimentModalOpen(false)}
+                    funnelId={initialFunnel.id}
+                    funnel={funnel}
+                    variants={initialFunnel.variants || []}
+                />
+            )}
             {initialFunnel?.id && (
                 <FunnelSettingsModal
                     isOpen={isSettingsModalOpen}

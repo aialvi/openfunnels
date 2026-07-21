@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Funnel;
 use App\Services\FunnelPublicUrlResolver;
+use App\Services\FunnelVariantResolver;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 
@@ -14,7 +16,10 @@ class FunnelController extends Controller
 {
     use AuthorizesRequests;
 
-    public function __construct(private readonly FunnelPublicUrlResolver $publicUrlResolver) {}
+    public function __construct(
+        private readonly FunnelPublicUrlResolver $publicUrlResolver,
+        private readonly FunnelVariantResolver $variantResolver,
+    ) {}
 
     /**
      * Display a listing of the resource.
@@ -104,7 +109,7 @@ class FunnelController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Funnel $funnel)
+    public function show(Request $request, Funnel $funnel)
     {
         // Published funnels are publicly viewable; unpublished require ownership.
         if (! $funnel->is_published) {
@@ -114,8 +119,12 @@ class FunnelController extends Controller
 
         $funnel->incrementViews();
 
+        $assignment = $this->variantResolver->resolve($funnel, $request);
+
+        Cookie::queue(cookie($assignment['cookie'], $assignment['value'], 60 * 24 * 30, '/', null, false, false, false, 'lax'));
+
         return Inertia::render('funnel-preview', [
-            'funnel' => $this->serializeFunnel($funnel),
+            'funnel' => $this->serializeFunnel($funnel, $assignment['variant']),
             'previewMode' => false,
         ]);
     }
@@ -128,6 +137,10 @@ class FunnelController extends Controller
         $this->authorize('update', $funnel);
 
         $funnel->load(['domains' => fn ($query) => $query->orderByDesc('created_at')]);
+        $funnel->load(['variants' => fn ($query) => $query->withCount([
+            'events as views_count' => fn ($events) => $events->where('event_type', 'view'),
+            'events as conversions_count' => fn ($events) => $events->where('event_type', 'conversion'),
+        ])->orderBy('id')]);
 
         return Inertia::render('enhanced-funnel-editor', [
             'funnel' => [
@@ -149,6 +162,14 @@ class FunnelController extends Controller
                     'created_at' => $domain->created_at?->toISOString(),
                 ]),
                 'public_url' => $this->publicUrlResolver->resolve($funnel),
+                'variants' => $funnel->variants->map(fn ($variant) => [
+                    'id' => $variant->id,
+                    'name' => $variant->name,
+                    'weight' => $variant->weight,
+                    'is_active' => $variant->is_active,
+                    'views' => $variant->views_count,
+                    'conversions' => $variant->conversions_count,
+                ]),
             ],
             'domainMapping' => [
                 'cnameTarget' => config('services.domain_mapping.cname_target'),
@@ -302,15 +323,16 @@ class FunnelController extends Controller
     /**
      * @return array<string, mixed>
      */
-    private function serializeFunnel(Funnel $funnel): array
+    private function serializeFunnel(Funnel $funnel, ?\App\Models\FunnelVariant $variant = null): array
     {
         return [
             'id' => $funnel->id,
             'name' => $funnel->name,
             'slug' => $funnel->slug,
             'description' => $funnel->description,
-            'content' => $funnel->content,
-            'settings' => $funnel->settings,
+            'content' => $variant?->content ?? $funnel->content,
+            'settings' => $variant?->settings ?? $funnel->settings,
+            'variant_id' => $variant?->id,
             'revision' => $funnel->revision,
             'updated_at' => $funnel->updated_at?->toISOString(),
             'status' => $funnel->status,

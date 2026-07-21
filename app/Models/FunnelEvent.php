@@ -9,6 +9,7 @@ class FunnelEvent extends Model
 {
     protected $fillable = [
         'funnel_id',
+        'variant_id',
         'event_type',
         'session_id',
         'form_id',
@@ -26,5 +27,10 @@ class FunnelEvent extends Model
     public function funnel(): BelongsTo
     {
         return $this->belongsTo(Funnel::class);
+    }
+
+    public function variant(): BelongsTo
+    {
+        return $this->belongsTo(FunnelVariant::class, 'variant_id');
     }
 }

@@ -136,6 +136,7 @@ export interface Funnel {
     status: 'draft' | 'published' | 'archived';
     is_published: boolean;
     public_url?: string | null;
+    variant_id?: number | null;
 }
 
 export interface TemplateManifest {

@@ -35,7 +35,12 @@ class LeadCaptureController extends Controller
             'attribution.utm_content' => ['nullable', 'string', 'max:255'],
             'attribution.referrer' => ['nullable', 'url', 'max:2000'],
             'session_id' => ['nullable', 'uuid'],
+            'variant_id' => ['nullable', 'integer'],
         ]);
+
+        if (isset($validated['variant_id']) && ! $funnel->variants()->whereKey($validated['variant_id'])->exists()) {
+            abort(422, 'Invalid experiment variant.');
+        }
 
         $email = strtolower($validated['email']);
         $contact = Contact::firstOrNew([
@@ -69,6 +74,7 @@ class LeadCaptureController extends Controller
         $contact->save();
         $submission = $contact->submissions()->create([
             'funnel_id' => $funnel->id,
+            'variant_id' => $validated['variant_id'] ?? null,
             'form_id' => $validated['form_id'] ?? null,
             'fields' => $validated['fields'] ?? [],
             'attribution' => $validated['attribution'] ?? [],
@@ -81,6 +87,7 @@ class LeadCaptureController extends Controller
         $funnel->incrementConversions();
         $funnel->events()->create([
             'event_type' => 'conversion',
+            'variant_id' => $validated['variant_id'] ?? null,
             'session_id' => isset($validated['session_id']) ? hash('sha256', $validated['session_id']) : null,
             'form_id' => $validated['form_id'] ?? null,
             'attribution' => $validated['attribution'] ?? [],
