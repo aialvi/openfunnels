@@ -16,6 +16,7 @@ class Funnel extends Model
         'description',
         'content',
         'settings',
+        'revision',
         'is_published',
         'status',
         'views',
@@ -27,6 +28,7 @@ class Funnel extends Model
     protected $casts = [
         'content' => 'array',
         'settings' => 'array',
+        'revision' => 'integer',
         'is_published' => 'boolean',
         'views' => 'integer',
         'conversions' => 'integer',

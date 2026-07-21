@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Funnel;
 use App\Services\FunnelPublicUrlResolver;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -136,6 +137,8 @@ class FunnelController extends Controller
                 'description' => $funnel->description,
                 'content' => $funnel->content,
                 'settings' => $funnel->settings,
+                'revision' => $funnel->revision,
+                'updated_at' => $funnel->updated_at?->toISOString(),
                 'status' => $funnel->status,
                 'is_published' => $funnel->is_published,
                 'domains' => $funnel->domains->map(fn ($domain) => [
@@ -203,6 +206,41 @@ class FunnelController extends Controller
         ]);
 
         return back()->with('success', 'Funnel updated successfully!');
+    }
+
+    public function autosave(Request $request, Funnel $funnel): JsonResponse
+    {
+        $this->authorize('update', $funnel);
+
+        $validated = $request->validate([
+            'revision' => ['required', 'integer', 'min:1'],
+            'name' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string', 'max:1000'],
+            'content' => ['required', 'array'],
+            'content.sections' => ['present', 'array', 'max:200'],
+            'settings' => ['present', 'array'],
+        ]);
+
+        if ((int) $funnel->revision !== (int) $validated['revision']) {
+            return response()->json([
+                'message' => 'This funnel was updated in another session.',
+                'revision' => $funnel->revision,
+                'updated_at' => $funnel->updated_at?->toISOString(),
+            ], 409);
+        }
+
+        $funnel->update([
+            'name' => $validated['name'],
+            'description' => $validated['description'] ?? null,
+            'content' => $validated['content'],
+            'settings' => $validated['settings'],
+            'revision' => $funnel->revision + 1,
+        ]);
+
+        return response()->json([
+            'revision' => $funnel->revision,
+            'updated_at' => $funnel->updated_at?->toISOString(),
+        ]);
     }
 
     /**
@@ -273,6 +311,8 @@ class FunnelController extends Controller
             'description' => $funnel->description,
             'content' => $funnel->content,
             'settings' => $funnel->settings,
+            'revision' => $funnel->revision,
+            'updated_at' => $funnel->updated_at?->toISOString(),
             'status' => $funnel->status,
             'is_published' => $funnel->is_published,
             'public_url' => $this->publicUrlResolver->resolve($funnel),

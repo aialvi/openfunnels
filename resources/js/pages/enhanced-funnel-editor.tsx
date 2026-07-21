@@ -3,7 +3,7 @@ import ExportModal from '@/components/editor/ExportModal';
 import FunnelSettingsModal from '@/components/editor/FunnelSettingsModal';
 import LayoutBuilder from '@/components/editor/LayoutBuilder';
 import PropertiesPanel from '@/components/editor/PropertiesPanel';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import {
     ArrowLeft,
     CalendarDays,
@@ -35,7 +35,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 
-import { useLayoutPersistence } from '@/hooks/useLayoutPersistence';
+import { useFunnelPersistence } from '@/hooks/useFunnelPersistence';
 import { findBlockLocation, getSelectedBlock, getSelectedColumn, getSelectedSection, useFunnelStore } from '@/stores/funnelStore';
 import type { Block, Funnel, Section } from '@/types/editor';
 
@@ -50,6 +50,8 @@ interface EnhancedFunnelEditorProps {
         status: string;
         is_published: boolean;
         public_url?: string | null;
+        revision: number;
+        updated_at?: string;
         domains: DomainMapping[];
     };
     domainMapping?: DomainMappingSettings;
@@ -1271,9 +1273,7 @@ export default function EnhancedFunnelEditor({ funnel: initialFunnel, domainMapp
     const redo = useFunnelStore((s) => s.redo);
     const canUndo = useFunnelStore((s) => s.canUndo);
     const canRedo = useFunnelStore((s) => s.canRedo);
-    const markClean = useFunnelStore((s) => s.markClean);
     const markDirty = useFunnelStore((s) => s.markDirty);
-    const setSaving = useFunnelStore((s) => s.setSaving);
     const selectSection = useFunnelStore((s) => s.selectSection);
     const selectColumn = useFunnelStore((s) => s.selectColumn);
     const selectBlock = useFunnelStore((s) => s.selectBlock);
@@ -1285,12 +1285,15 @@ export default function EnhancedFunnelEditor({ funnel: initialFunnel, domainMapp
     const updateSectionAction = useFunnelStore((s) => s.updateSection);
     const updateColumnAction = useFunnelStore((s) => s.updateColumn);
 
-    // Auto-save functionality (disabled since we handle saving manually)
-    const { lastSaved } = useLayoutPersistence({
-        funnelId: initialFunnel?.id,
-        sections: funnel.content.sections,
-        isDirty: false, // Disable auto-save, handle saving manually
-    });
+    const {
+        saveFunnel,
+        status: saveStatus,
+        lastSaved,
+        hasRecovery,
+        restoreRecovery,
+        discardRecovery,
+        downloadRecovery,
+    } = useFunnelPersistence(initialFunnel?.id, initialFunnel?.revision, initialFunnel?.updated_at);
 
     // Name editing state
     const [isEditingName, setIsEditingName] = useState(false);
@@ -1319,6 +1322,7 @@ export default function EnhancedFunnelEditor({ funnel: initialFunnel, domainMapp
                 status: initialFunnel.status as 'draft' | 'published' | 'archived',
                 is_published: initialFunnel.is_published,
                 public_url: initialFunnel.public_url,
+                revision: initialFunnel.revision,
             });
             setIsStarterOpen(false);
         } else {
@@ -1613,71 +1617,7 @@ export default function EnhancedFunnelEditor({ funnel: initialFunnel, domainMapp
                                     <span>Domain Settings</span>
                                 </button>
                                 <button
-                                    onClick={async () => {
-                                        try {
-                                            setSaving(true);
-
-                                            await new Promise<void>((resolve, reject) => {
-                                                const currentFunnel = useFunnelStore.getState().funnel;
-                                                const payload = {
-                                                    name: currentFunnel.name,
-                                                    description: currentFunnel.description,
-                                                    content: JSON.stringify({
-                                                        sections: currentFunnel.content.sections.map((section: Section) => ({
-                                                            id: section.id,
-                                                            type: section.type,
-                                                            layout: section.layout,
-                                                            settings: section.settings,
-                                                            columns: section.columns.map((column) => ({
-                                                                id: column.id,
-                                                                type: column.type,
-                                                                width: column.width,
-                                                                settings: column.settings,
-                                                                blocks: column.blocks.map((block) => ({
-                                                                    id: block.id,
-                                                                    type: block.type,
-                                                                    content: block.content,
-                                                                    settings: block.settings,
-                                                                })),
-                                                            })),
-                                                        })),
-                                                    }),
-                                                    settings: JSON.stringify(currentFunnel.settings),
-                                                };
-
-                                                if (initialFunnel?.id) {
-                                                    router.put(`/funnels/${initialFunnel.id}`, payload, {
-                                                        preserveScroll: true,
-                                                        preserveState: true,
-                                                        onSuccess: () => {
-                                                            markClean();
-                                                            resolve();
-                                                        },
-                                                        onError: (errors) => {
-                                                            console.error('Failed to update:', errors);
-                                                            reject(new Error('Failed to update funnel'));
-                                                        },
-                                                    });
-                                                } else {
-                                                    router.post(`/funnels`, payload, {
-                                                        preserveScroll: true,
-                                                        onSuccess: () => {
-                                                            markClean();
-                                                            resolve();
-                                                        },
-                                                        onError: (errors) => {
-                                                            console.error('Failed to create:', errors);
-                                                            reject(new Error('Failed to create funnel'));
-                                                        },
-                                                    });
-                                                }
-                                            });
-                                        } catch (error) {
-                                            console.error('Save error:', error);
-                                        } finally {
-                                            setSaving(false);
-                                        }
-                                    }}
+                                    onClick={() => void saveFunnel()}
                                     disabled={isSaving}
                                     className={`flex items-center space-x-2 rounded-lg px-4 py-2 transition-colors ${
                                         isSaving
@@ -1686,18 +1626,63 @@ export default function EnhancedFunnelEditor({ funnel: initialFunnel, domainMapp
                                               ? 'bg-primary text-primary-foreground hover:bg-primary/90'
                                               : 'bg-chart-2 text-white hover:bg-chart-2/90'
                                     }`}
-                                    title={isDirty ? 'Save changes' : 'All changes saved'}
+                                    title={
+                                        saveStatus === 'conflict'
+                                            ? 'Resolve the save conflict before continuing'
+                                            : isDirty
+                                              ? 'Save changes'
+                                              : 'All changes saved'
+                                    }
                                 >
                                     <Save className="h-4 w-4" />
-                                    <span>{isSaving ? 'Saving...' : isDirty ? 'Save' : 'Saved'}</span>
+                                    <span>
+                                        {isSaving
+                                            ? 'Saving...'
+                                            : saveStatus === 'offline'
+                                              ? 'Offline'
+                                              : saveStatus === 'error'
+                                                ? 'Retry save'
+                                                : saveStatus === 'conflict'
+                                                  ? 'Conflict'
+                                                  : isDirty
+                                                    ? 'Save'
+                                                    : 'Saved'}
+                                    </span>
                                 </button>
 
                                 {/* Save Status */}
-                                {lastSaved && <div className="text-xs text-muted-foreground">Last saved: {lastSaved.toLocaleTimeString()}</div>}
+                                {lastSaved && saveStatus === 'saved' && (
+                                    <div className="text-xs text-muted-foreground">Last saved: {lastSaved.toLocaleTimeString()}</div>
+                                )}
                             </div>
                         </div>
                     </div>
                 </div>
+
+                {(hasRecovery || saveStatus === 'conflict') && (
+                    <div className="flex items-center justify-between border-b border-amber-500/30 bg-amber-500/10 px-6 py-2 text-sm text-amber-700 dark:text-amber-300">
+                        <span>
+                            {saveStatus === 'conflict'
+                                ? 'This funnel changed in another session. Download your local copy, then reload to review the server version.'
+                                : 'A newer local recovery copy is available for this funnel.'}
+                        </span>
+                        <div className="flex items-center gap-2">
+                            {hasRecovery && (
+                                <button className="rounded bg-amber-500 px-3 py-1 font-medium text-black" onClick={restoreRecovery}>
+                                    Restore
+                                </button>
+                            )}
+                            <button className="rounded border border-amber-500/40 px-3 py-1" onClick={downloadRecovery}>
+                                Download copy
+                            </button>
+                            {hasRecovery && (
+                                <button className="px-2 py-1" onClick={discardRecovery}>
+                                    Dismiss
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                )}
 
                 {/* Main Editor Area */}
                 <div className="flex flex-1 overflow-hidden">

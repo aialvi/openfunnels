@@ -54,6 +54,7 @@ Route::domain($appDomain)->group(function () {
         Route::patch('contacts/{contact}', [ContactController::class, 'update'])->name('contacts.update');
         Route::post('contacts/{contact}/notes', [ContactController::class, 'storeNote'])->name('contacts.notes.store');
         Route::resource('funnels', FunnelController::class)->except(['show']);
+        Route::put('funnels/{funnel}/autosave', [FunnelController::class, 'autosave'])->name('funnels.autosave');
         Route::get('funnels/{funnel}/responses', [FunnelResponseController::class, 'index'])->name('funnels.responses');
         Route::get('funnel-editor', [FunnelController::class, 'create'])->name('funnel-editor');
         Route::get('funnel-editor/{funnel}', [FunnelController::class, 'edit'])->name('funnel-editor.edit');

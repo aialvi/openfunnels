@@ -114,6 +114,7 @@ export interface FunnelSettings {
 
 export interface Funnel {
     id?: number;
+    revision?: number;
     name: string;
     description?: string;
     content: {
