@@ -1,8 +1,23 @@
 # OpenFunnels
 
-OpenFunnels is an open-source funnel builder and CRM-lite app for launching lead-capture funnels quickly. It combines a visual drag-and-drop editor, premade starter templates, custom domain mapping, lead capture forms, contact records, and operational lead notifications.
+[![Tests](https://github.com/aialvi/openfunnels/actions/workflows/tests.yml/badge.svg)](https://github.com/aialvi/openfunnels/actions/workflows/tests.yml)
+[![Quality](https://github.com/aialvi/openfunnels/actions/workflows/lint.yml/badge.svg)](https://github.com/aialvi/openfunnels/actions/workflows/lint.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-orange.svg)](LICENSE)
+[![PHP 8.2+](https://img.shields.io/badge/PHP-8.2%2B-777BB4.svg)](composer.json)
+[![React 19](https://img.shields.io/badge/React-19-61DAFB.svg)](package.json)
+[![Docker](https://img.shields.io/badge/Docker-ready-2496ED.svg)](docs/docker-evaluation.md)
 
-The current MVP focuses on the first useful growth loop: build a funnel, publish or preview it, capture leads, notify the owner, and review each contact's submissions, notes, metadata, and status.
+OpenFunnels is a self-hosted, open-source Funnel OS for building, publishing, measuring, and improving conversion journeys without handing customer data to a closed platform.
+
+It combines a visual React editor, conversion forms, lightweight CRM, attribution analytics, native experiments, portable templates, optional AI-assisted generation, custom domains, and production-friendly Laravel foundations.
+
+## Try It in One Command
+
+```bash
+docker compose up --build
+```
+
+Open `http://localhost:8000` and choose **Launch Demo** for an isolated editor sandbox with seeded funnel, contact, and analytics data. See the [Docker evaluation guide](docs/docker-evaluation.md) for logs, reset, and persistence commands.
 
 ## Screenshots
 
@@ -18,12 +33,18 @@ The current MVP focuses on the first useful growth loop: build a funnel, publish
 
 - **Visual funnel editor**: Drag-and-drop section, column, and block editing with undo/redo support.
 - **Starter templates**: Build from scratch or choose from 15 premade layouts with categories and visual thumbnails.
+- **Portable template packs**: Import and export validated, versioned `.openfunnels.json` community templates.
 - **Responsive preview**: Desktop, tablet, and mobile preview modes for editor layouts.
 - **Publishing**: Public funnel rendering, preview routes, publish/unpublish controls, and slug-based sharing.
 - **Custom domains**: Application-layer custom domain mapping with DNS verification for published funnels.
 - **Lead capture**: Configurable form fields collect contact details and custom answers, create or update contacts, and increment funnel conversions.
+- **Conversion forms**: Multi-step flows, conditional fields, automatic UTM/referrer attribution, and safe message, redirect, or download actions.
 - **CRM-lite contacts**: Contact index and detail pages with source funnel, submissions, metadata, notes, and lifecycle status.
 - **Lead notifications**: Email notification on new leads, plus optional webhook delivery.
+- **Analytics and experiments**: Privacy-conscious event trends, source attribution, drop-off events, stable variant assignment, and per-variant results.
+- **Resilient editing**: Debounced autosave, optimistic concurrency, offline recovery, and downloadable conflict copies.
+- **Optional AI drafts**: Provider-neutral generation contract with a Responses-compatible driver and canonical content validation.
+- **Guest sandbox**: Expiring, isolated demo accounts with outbound and administrative actions disabled.
 - **Export modules**: Exporter structure for HTML, Laravel, React, Vue, WordPress, Shopify, and WooCommerce targets.
 
 ## Tech Stack
@@ -96,6 +117,14 @@ The current MVP focuses on the first useful growth loop: build a funnel, publish
     # Lead capture operations
     LEAD_CAPTURE_NOTIFICATION_EMAIL=
     LEAD_CAPTURE_WEBHOOK_URL=
+
+    # Optional sandbox
+    DEMO_MODE=false
+
+    # Optional AI generation
+    FUNNEL_AI_DRIVER=disabled
+    FUNNEL_AI_API_KEY=
+    FUNNEL_AI_MODEL=gpt-5.6-luna
     ```
 
 ## Development
@@ -186,6 +215,8 @@ docs/
 - `docs/prds/mvp-funnel-crm.md`: MVP funnel builder and CRM-lite requirements.
 - `docs/prds/domain-mapping.md`: custom domain mapping requirements.
 - `docs/ai-instructions/domain-mapping-agent-rules.md`: implementation rules for domain mapping.
+- `docs/template-format.md`: portable community template format and contribution guide.
+- `docs/docker-evaluation.md`: one-command local evaluation stack.
 
 ## Current Roadmap
 
@@ -209,32 +240,18 @@ Completed foundation:
 
 Near-term priorities:
 
-- Add conditional and multi-step forms, automatic UTM population, and redirect or download success actions.
+- Expand conditional form operators and reusable form-step presets.
 - Add contact-wide CRM search and filters, CSV import/export, and duplicate management.
 - Add UI-managed lead notification settings.
-- Improve autosave, save-state feedback, and manual recovery flows.
 - Move starter template definitions into a scalable template library module.
-- Add raw analytics events, UTM/source attribution, performance trends, and funnel drop-off reporting.
-- Expand focused CRUD, content-validation, and exporter test coverage.
+- Add cohort retention, revenue attribution, and statistical guidance for experiments.
+- Expand focused exporter, accessibility, and browser test coverage.
 
-Longer-term tracks include automation workflows, SMS and email campaigns, calendar booking, agency sub-accounts, payments, A/B testing, and deeper analytics.
+Longer-term tracks include automation workflows, SMS and email campaigns, calendar booking, agency sub-accounts, payments, and deeper analytics.
 
 ## Contributing
 
-1. Fork the repository.
-2. Create a feature branch.
-3. Make focused changes.
-4. Run the relevant tests and checks.
-5. Update documentation when behavior, commands, or architecture changes.
-6. Open a pull request.
-
-Development guidelines:
-
-- Follow Laravel conventions and PSR-12 style for PHP.
-- Use TypeScript for frontend code.
-- Reuse existing UI primitives and editor types before adding new abstractions.
-- Add tests for behavior touching routing, authorization, validation, persistence, or public rendering.
-- Keep generated build output out of commits unless production assets are explicitly requested.
+Read [CONTRIBUTING.md](CONTRIBUTING.md) for setup, architecture boundaries, pull-request expectations, and test commands. Bug reports, feature proposals, documentation improvements, and community templates are welcome.
 
 ## Support
 

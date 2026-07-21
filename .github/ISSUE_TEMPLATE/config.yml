@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions and ideas
+    url: https://github.com/aialvi/openfunnels/discussions
+    about: Ask for help or discuss an early idea before writing a full proposal.
+  - name: Private security report
+    url: https://github.com/aialvi/openfunnels/security/advisories/new
+    about: Report vulnerabilities privately rather than opening a public issue.

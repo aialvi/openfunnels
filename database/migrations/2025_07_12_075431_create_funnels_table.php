@@ -26,7 +26,7 @@ return new class extends Migration
             $table->decimal('conversion_rate', 5, 2)->default(0.00);
             $table->timestamp('published_at')->nullable();
             $table->timestamps();
-            
+
             $table->index(['user_id', 'status']);
             $table->index('slug');
         });

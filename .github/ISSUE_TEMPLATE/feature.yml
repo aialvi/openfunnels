@@ -1,0 +1,27 @@
+name: Feature proposal
+description: Propose a focused product or contributor improvement.
+title: "[Feature]: "
+labels: [enhancement]
+body:
+  - type: textarea
+    attributes:
+      label: Problem
+      description: Who experiences this problem, and what are they trying to accomplish?
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Proposed behavior
+      description: Describe the user-visible outcome without prescribing unnecessary implementation detail.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Alternatives and constraints
+      description: Note workarounds, compatibility needs, or security/privacy considerations.
+  - type: dropdown
+    attributes:
+      label: Area
+      options: [Editor, Forms, CRM, Analytics, Experiments, Publishing, Integrations, Self-hosting, Contributor experience]
+    validations:
+      required: true

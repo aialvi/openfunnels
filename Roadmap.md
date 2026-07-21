@@ -19,11 +19,18 @@ This roadmap is a planning aid for agents and contributors. It should guide prio
 - Configurable form fields for contact details, custom answers, dropdowns, checkboxes, and hidden values.
 - Email notification and optional webhook for new lead submissions.
 - Exporter modules for multiple output targets.
+- Resilient autosave with local recovery and optimistic concurrency.
+- Portable, versioned community template import and export.
+- Multi-step conditional forms with UTM attribution and success actions.
+- Privacy-conscious raw events, performance trends, and source reporting.
+- Native snapshot experiments with stable traffic assignment.
+- Optional provider-neutral AI funnel generation.
+- Isolated expiring guest sandbox and Docker evaluation stack.
 
 ## Near-Term Priorities
 
 - Harden funnel CRUD behavior with focused feature tests.
-- Add conditional and multi-step forms, automatic UTM population, and redirect or download success actions.
+- Expand conditional operators and add reusable form-step presets.
 - Move starter layout definitions out of the editor page once the template library grows.
 - Add contact search, filters, CSV import/export, and duplicate management.
 - Add configurable lead notification settings in the UI.
@@ -96,8 +103,7 @@ This roadmap is a planning aid for agents and contributors. It should guide prio
 - Track views and conversions without polluting previews.
 - Add dashboard trends and per-funnel performance views.
 - Keep conversion-rate calculations consistent and test-covered.
-- Add source attribution, UTM reporting, and funnel-step drop-off.
-- Add A/B testing for pages, forms, and CTAs.
+- Add cohort retention, revenue attribution, and statistical guidance for experiments.
 
 ### Exporting
 

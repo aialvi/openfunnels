@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::table('funnels', function (Blueprint $table) {
             // Drop the existing unique constraint on slug
             $table->dropUnique(['slug']);
-            
+
             // Add a composite unique constraint for user_id and slug
             $table->unique(['user_id', 'slug']);
         });
@@ -28,7 +28,7 @@ return new class extends Migration
         Schema::table('funnels', function (Blueprint $table) {
             // Drop the composite unique constraint
             $table->dropUnique(['user_id', 'slug']);
-            
+
             // Add back the original unique constraint on slug
             $table->unique('slug');
         });

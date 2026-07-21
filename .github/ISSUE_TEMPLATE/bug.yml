@@ -1,0 +1,34 @@
+name: Bug report
+description: Report reproducible incorrect behavior.
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: checkboxes
+    attributes:
+      label: Before reporting
+      options:
+        - label: I searched existing issues and discussions.
+          required: true
+        - label: I can reproduce this on the latest main branch.
+          required: true
+  - type: textarea
+    attributes:
+      label: Reproduction
+      description: Provide the smallest reliable sequence of steps.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Expected and actual behavior
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Environment
+      placeholder: OS, browser, PHP, Node, database, deployment method
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Logs or screenshots
+      description: Remove secrets and personal data before attaching output.

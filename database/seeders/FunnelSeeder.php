@@ -2,9 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\Funnel;
 use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class FunnelSeeder extends Seeder
@@ -16,8 +14,8 @@ class FunnelSeeder extends Seeder
     {
         // Get the first user or create one for testing
         $user = User::first();
-        
-        if (!$user) {
+
+        if (! $user) {
             $user = User::factory()->create([
                 'name' => 'Test User',
                 'email' => 'test@example.com',
@@ -101,11 +99,11 @@ class FunnelSeeder extends Seeder
 
         foreach ($funnels as $funnelData) {
             $funnel = $user->funnels()->create($funnelData);
-            
+
             // Update conversion rate
             if ($funnel->views > 0) {
                 $funnel->update([
-                    'conversion_rate' => ($funnel->conversions / $funnel->views) * 100
+                    'conversion_rate' => ($funnel->conversions / $funnel->views) * 100,
                 ]);
             }
         }
