@@ -1,0 +1,60 @@
+name: openfunnels
+
+x-openfunnels-environment: &openfunnels-environment
+  APP_NAME: OpenFunnels
+  APP_ENV: local
+  APP_KEY: base64:b29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb28=
+  APP_DEBUG: "false"
+  APP_URL: http://localhost:8000
+  DB_CONNECTION: sqlite
+  DB_DATABASE: /data/database.sqlite
+  CACHE_STORE: database
+  SESSION_DRIVER: database
+  QUEUE_CONNECTION: database
+  MAIL_MAILER: log
+  DEMO_MODE: "true"
+  DEMO_LIFETIME_HOURS: "24"
+
+services:
+  web:
+    build:
+      context: .
+    environment: *openfunnels-environment
+    ports:
+      - "8000:8000"
+    volumes:
+      - openfunnels-data:/data
+    healthcheck:
+      test: ["CMD", "php", "-r", "$$s=@fsockopen('127.0.0.1',8000); exit($$s?0:1);"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
+    restart: unless-stopped
+
+  queue:
+    build:
+      context: .
+    command: ["queue"]
+    environment: *openfunnels-environment
+    volumes:
+      - openfunnels-data:/data
+    depends_on:
+      web:
+        condition: service_healthy
+    restart: unless-stopped
+
+  scheduler:
+    build:
+      context: .
+    command: ["scheduler"]
+    environment: *openfunnels-environment
+    volumes:
+      - openfunnels-data:/data
+    depends_on:
+      web:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  openfunnels-data:
