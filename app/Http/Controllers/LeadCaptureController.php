@@ -100,6 +100,10 @@ class LeadCaptureController extends Controller
 
     private function notifyLeadCaptured(Contact $contact, Funnel $funnel, \App\Models\ContactSubmission $submission): void
     {
+        if ($funnel->user->is_demo) {
+            return;
+        }
+
         $recipient = config('services.lead_capture.notification_email') ?: $funnel->user->email;
 
         if ($recipient) {

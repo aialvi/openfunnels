@@ -46,6 +46,11 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
+            'demo' => [
+                'enabled' => (bool) config('demo.enabled'),
+                'active' => (bool) $request->user()?->is_demo,
+                'expires_at' => $request->user()?->demo_expires_at?->toISOString(),
+            ],
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
                 'domain' => fn () => $request->session()->get('domain'),

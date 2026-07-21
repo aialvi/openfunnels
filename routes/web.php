@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\DemoController;
 use App\Http\Controllers\FunnelAnalyticsController;
 use App\Http\Controllers\FunnelController;
 use App\Http\Controllers\FunnelGenerationController;
@@ -24,6 +25,7 @@ Route::domain($appDomain)->group(function () {
     Route::get('/', function () {
         return Inertia::render('welcome');
     })->name('home');
+    Route::get('/demo', DemoController::class)->middleware('throttle:20,1')->name('demo');
 
     // Public funnel view — accessible without authentication.
     // Published funnels are open to all; unpublished funnels require ownership (enforced in controller).

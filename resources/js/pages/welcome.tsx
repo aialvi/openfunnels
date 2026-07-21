@@ -208,11 +208,14 @@ export default function Welcome() {
                                             </div>
                                         </div>
                                         <div className="mt-6 text-center">
-                                            <button className="rounded-lg bg-primary px-6 py-2 font-medium text-primary-foreground transition-colors hover:bg-primary/90">
+                                            <Link
+                                                href={route('demo')}
+                                                className="inline-flex rounded-lg bg-primary px-6 py-2 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                                            >
                                                 Launch Demo
-                                            </button>
+                                            </Link>
                                             <p className="mt-2 text-xs text-muted-foreground">
-                                                * Interactive demo coming soon. The actual editor will be fully functional.
+                                                Open an isolated, editable sandbox. No signup required.
                                             </p>
                                         </div>
                                     </div>

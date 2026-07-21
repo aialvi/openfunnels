@@ -1,3 +1,4 @@
+import DemoBanner from '@/components/demo-banner';
 import AiFunnelModal from '@/components/editor/AiFunnelModal';
 import ContentBlockLibrary from '@/components/editor/ContentBlockLibrary';
 import ExperimentModal, { type ExperimentVariant } from '@/components/editor/ExperimentModal';
@@ -1521,6 +1522,7 @@ export default function EnhancedFunnelEditor({ funnel: initialFunnel, domainMapp
             <Head title={`Edit: ${funnel.name} - OpenFunnels`} />
 
             <div className="flex h-screen flex-col bg-background">
+                <DemoBanner />
                 {/* Top Toolbar */}
                 <div className="border-b border-border bg-card px-6 py-4">
                     <div className="flex items-center justify-between">

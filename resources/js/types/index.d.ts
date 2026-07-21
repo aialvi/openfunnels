@@ -28,6 +28,7 @@ export interface SharedData {
     auth: Auth;
     ziggy: Config & { location: string };
     sidebarOpen: boolean;
+    demo: { enabled: boolean; active: boolean; expires_at: string | null };
     [key: string]: unknown;
 }
 
@@ -39,5 +40,6 @@ export interface User {
     email_verified_at: string | null;
     created_at: string;
     updated_at: string;
+    is_demo: boolean;
     [key: string]: unknown; // This allows for additional properties...
 }
