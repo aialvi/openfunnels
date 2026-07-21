@@ -3,6 +3,7 @@
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\FunnelAnalyticsController;
 use App\Http\Controllers\FunnelController;
+use App\Http\Controllers\FunnelGenerationController;
 use App\Http\Controllers\FunnelResponseController;
 use App\Http\Controllers\FunnelVariantController;
 use App\Http\Controllers\LeadCaptureController;
@@ -90,6 +91,7 @@ Route::domain($appDomain)->group(function () {
         Route::put('funnels/{funnel}/autosave', [FunnelController::class, 'autosave'])->name('funnels.autosave');
         Route::get('funnels/{funnel}/responses', [FunnelResponseController::class, 'index'])->name('funnels.responses');
         Route::get('funnel-editor', [FunnelController::class, 'create'])->name('funnel-editor');
+        Route::post('funnels/generate', FunnelGenerationController::class)->middleware('throttle:10,1')->name('funnels.generate');
         Route::get('funnel-editor/{funnel}', [FunnelController::class, 'edit'])->name('funnel-editor.edit');
         Route::get('funnel/{funnel}/preview', [FunnelController::class, 'preview'])->name('funnel.preview');
         Route::post('funnels/{funnel}/publish', [FunnelController::class, 'publish'])->name('funnels.publish');

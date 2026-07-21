@@ -1,3 +1,4 @@
+import AiFunnelModal from '@/components/editor/AiFunnelModal';
 import ContentBlockLibrary from '@/components/editor/ContentBlockLibrary';
 import ExperimentModal, { type ExperimentVariant } from '@/components/editor/ExperimentModal';
 import ExportModal from '@/components/editor/ExportModal';
@@ -1250,6 +1251,7 @@ export default function EnhancedFunnelEditor({ funnel: initialFunnel, domainMapp
     // Editor state
     const [editorMode, setEditorMode] = useState<EditorMode>('editor');
     const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+    const [isAiModalOpen, setIsAiModalOpen] = useState(false);
     const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
     const [isExperimentModalOpen, setIsExperimentModalOpen] = useState(false);
     const [isStarterOpen, setIsStarterOpen] = useState(!initialFunnel);
@@ -1286,6 +1288,7 @@ export default function EnhancedFunnelEditor({ funnel: initialFunnel, domainMapp
     const selectBlock = useFunnelStore((s) => s.selectBlock);
     const selectDevice = useFunnelStore((s) => s.selectDevice);
     const setSections = useFunnelStore((s) => s.setSections);
+    const updateFunnelSettings = useFunnelStore((s) => s.updateFunnelSettings);
     const addBlockAction = useFunnelStore((s) => s.addBlock);
     const updateBlockAction = useFunnelStore((s) => s.updateBlock);
     const deleteBlockAction = useFunnelStore((s) => s.deleteBlock);
@@ -1576,6 +1579,14 @@ export default function EnhancedFunnelEditor({ funnel: initialFunnel, domainMapp
 
                             {/* Action Buttons */}
                             <div className="flex items-center space-x-2">
+                                <button
+                                    onClick={() => setIsAiModalOpen(true)}
+                                    className="flex items-center space-x-2 rounded-lg bg-primary/10 px-3 py-2 text-primary transition-colors hover:bg-primary/20"
+                                    title="Generate a funnel draft with your configured AI provider"
+                                >
+                                    <Sparkles className="h-4 w-4" />
+                                    <span>AI draft</span>
+                                </button>
                                 <button
                                     onClick={undo}
                                     disabled={!canUndo()}
@@ -1885,6 +1896,14 @@ export default function EnhancedFunnelEditor({ funnel: initialFunnel, domainMapp
             )}
 
             <ExportModal isOpen={isExportModalOpen} onClose={() => setIsExportModalOpen(false)} funnel={funnel} />
+            <AiFunnelModal
+                isOpen={isAiModalOpen}
+                onClose={() => setIsAiModalOpen(false)}
+                onApply={(generated) => {
+                    setSections(generated.content.sections);
+                    updateFunnelSettings(generated.settings);
+                }}
+            />
             {initialFunnel?.id && (
                 <ExperimentModal
                     isOpen={isExperimentModalOpen}
