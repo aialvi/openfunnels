@@ -2,9 +2,9 @@ import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/react';
-import { Plus, Zap, Eye, BarChart3, Users, TrendingUp } from 'lucide-react';
-import { useEffect } from 'react';
 import gsap from 'gsap';
+import { BarChart3, Eye, Plus, TrendingUp, Users, Zap } from 'lucide-react';
+import { useEffect } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -46,15 +46,16 @@ export default function Dashboard({ stats, recentContacts }: DashboardProps) {
 
     useEffect(() => {
         const ctx = gsap.context(() => {
-            gsap.fromTo('.dashboard-card',
+            gsap.fromTo(
+                '.dashboard-card',
                 { opacity: 0, y: 20 },
                 {
                     opacity: 1,
                     y: 0,
                     duration: 0.6,
                     stagger: 0.1,
-                    ease: 'power3.out'
-                }
+                    ease: 'power3.out',
+                },
             );
         });
 
@@ -64,7 +65,7 @@ export default function Dashboard({ stats, recentContacts }: DashboardProps) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
-            <div className="flex h-full flex-1 flex-col gap-6 rounded-xl p-6 overflow-x-auto">
+            <div className="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-6">
                 {/* Quick Stats */}
                 <div className="grid auto-rows-min gap-4 md:grid-cols-4">
                     <div className="dashboard-card relative overflow-hidden rounded-xl border border-border bg-card p-6">
@@ -116,13 +117,13 @@ export default function Dashboard({ stats, recentContacts }: DashboardProps) {
                 <div className="grid gap-6 md:grid-cols-2">
                     {/* Quick Actions */}
                     <div className="dashboard-card rounded-xl border border-border bg-card p-6">
-                        <h3 className="text-lg font-semibold text-foreground mb-4">Quick Actions</h3>
+                        <h3 className="mb-4 text-lg font-semibold text-foreground">Quick Actions</h3>
                         <div className="space-y-3">
                             <Link
                                 href="/funnel-editor"
-                                className="flex items-center p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors group"
+                                className="group flex items-center rounded-lg border border-border p-3 transition-colors hover:bg-muted/50"
                             >
-                                <div className="bg-primary/10 p-2 rounded-lg mr-3 group-hover:bg-primary/20 transition-colors">
+                                <div className="mr-3 rounded-lg bg-primary/10 p-2 transition-colors group-hover:bg-primary/20">
                                     <Plus className="h-5 w-5 text-primary" />
                                 </div>
                                 <div>
@@ -133,9 +134,9 @@ export default function Dashboard({ stats, recentContacts }: DashboardProps) {
 
                             <Link
                                 href="/funnels"
-                                className="flex items-center p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors group"
+                                className="group flex items-center rounded-lg border border-border p-3 transition-colors hover:bg-muted/50"
                             >
-                                <div className="bg-chart-2/10 p-2 rounded-lg mr-3 group-hover:bg-chart-2/20 transition-colors">
+                                <div className="mr-3 rounded-lg bg-chart-2/10 p-2 transition-colors group-hover:bg-chart-2/20">
                                     <Zap className="h-5 w-5 text-chart-2" />
                                 </div>
                                 <div>
@@ -146,9 +147,9 @@ export default function Dashboard({ stats, recentContacts }: DashboardProps) {
 
                             <Link
                                 href="/contacts"
-                                className="flex items-center p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors group"
+                                className="group flex items-center rounded-lg border border-border p-3 transition-colors hover:bg-muted/50"
                             >
-                                <div className="bg-chart-3/10 p-2 rounded-lg mr-3 group-hover:bg-chart-3/20 transition-colors">
+                                <div className="mr-3 rounded-lg bg-chart-3/10 p-2 transition-colors group-hover:bg-chart-3/20">
                                     <Users className="h-5 w-5 text-chart-3" />
                                 </div>
                                 <div>
@@ -157,8 +158,8 @@ export default function Dashboard({ stats, recentContacts }: DashboardProps) {
                                 </div>
                             </Link>
 
-                            <div className="flex items-center p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors group cursor-pointer">
-                                <div className="bg-chart-3/10 p-2 rounded-lg mr-3 group-hover:bg-chart-3/20 transition-colors">
+                            <div className="group flex cursor-pointer items-center rounded-lg border border-border p-3 transition-colors hover:bg-muted/50">
+                                <div className="mr-3 rounded-lg bg-chart-3/10 p-2 transition-colors group-hover:bg-chart-3/20">
                                     <BarChart3 className="h-5 w-5 text-chart-3" />
                                 </div>
                                 <div>
@@ -171,11 +172,11 @@ export default function Dashboard({ stats, recentContacts }: DashboardProps) {
 
                     {/* Recent Contacts */}
                     <div className="dashboard-card rounded-xl border border-border bg-card p-6">
-                        <h3 className="text-lg font-semibold text-foreground mb-4">Recent Contacts</h3>
+                        <h3 className="mb-4 text-lg font-semibold text-foreground">Recent Contacts</h3>
                         <div className="space-y-3">
                             {recentContacts.map((contact) => (
-                                <div key={contact.id} className="flex items-center p-3 rounded-lg bg-muted/50">
-                                    <div className="bg-chart-3/10 p-2 rounded-lg mr-3">
+                                <div key={contact.id} className="flex items-center rounded-lg bg-muted/50 p-3">
+                                    <div className="mr-3 rounded-lg bg-chart-3/10 p-2">
                                         <Users className="h-4 w-4 text-chart-3" />
                                     </div>
                                     <div className="min-w-0 flex-1">
@@ -199,13 +200,13 @@ export default function Dashboard({ stats, recentContacts }: DashboardProps) {
                 </div>
 
                 {/* Performance Chart Placeholder */}
-                <div className="dashboard-card relative min-h-[400px] flex-1 overflow-hidden rounded-xl border border-border md:min-h-min bg-card p-6">
-                    <h3 className="text-lg font-semibold text-foreground mb-4">Performance Overview</h3>
+                <div className="dashboard-card relative min-h-[400px] flex-1 overflow-hidden rounded-xl border border-border bg-card p-6 md:min-h-min">
+                    <h3 className="mb-4 text-lg font-semibold text-foreground">Performance Overview</h3>
                     <div className="relative h-full">
                         <PlaceholderPattern className="absolute inset-0 size-full stroke-muted-foreground/10" />
                         <div className="absolute inset-0 flex items-center justify-center">
                             <div className="text-center">
-                                <BarChart3 className="h-12 w-12 text-muted-foreground/50 mx-auto mb-2" />
+                                <BarChart3 className="mx-auto mb-2 h-12 w-12 text-muted-foreground/50" />
                                 <p className="text-muted-foreground">Conversion rate: {conversionRate.toFixed(1)}%</p>
                                 <p className="text-sm text-muted-foreground/70">Time-series analytics and attribution are planned.</p>
                             </div>

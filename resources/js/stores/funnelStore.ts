@@ -1,15 +1,9 @@
+import type { Block, Column, Funnel, FunnelSettings, Section } from '@/types/editor';
+import { current, produce } from 'immer';
 import { create } from 'zustand';
-import { produce, current } from 'immer';
-import type {
-    Funnel,
-    Section,
-    Column,
-    Block,
-    FunnelSettings,
-} from '@/types/editor';
 
 // Re-export canonical types so existing `import { Block } from '@/stores/funnelStore'` still works.
-export type { Funnel, Section, Column, Block } from '@/types/editor';
+export type { Block, Column, Funnel, Section } from '@/types/editor';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -170,211 +164,203 @@ export const useFunnelStore = create<FunnelStore>()((set, get) => ({
         }),
 
     updateFunnelName: (name) =>
-        set(immerSet((draft) => {
-            pushHistory(draft);
-            draft.funnel.name = name;
-        })),
+        set(
+            immerSet((draft) => {
+                draft.funnel.name = name;
+                pushHistory(draft);
+            }),
+        ),
 
     updateFunnelDescription: (description) =>
-        set(immerSet((draft) => {
-            pushHistory(draft);
-            draft.funnel.description = description;
-        })),
+        set(
+            immerSet((draft) => {
+                draft.funnel.description = description;
+                pushHistory(draft);
+            }),
+        ),
 
     updateFunnelSettings: (settings) =>
-        set(immerSet((draft) => {
-            pushHistory(draft);
-            Object.assign(draft.funnel.settings, settings);
-        })),
+        set(
+            immerSet((draft) => {
+                Object.assign(draft.funnel.settings, settings);
+                pushHistory(draft);
+            }),
+        ),
 
     setSections: (sections) =>
-        set(immerSet((draft) => {
-            pushHistory(draft);
-            draft.funnel.content.sections = sections;
-        })),
+        set(
+            immerSet((draft) => {
+                draft.funnel.content.sections = sections;
+                pushHistory(draft);
+            }),
+        ),
 
     // ── Section actions ──────────────────────────────────────────────
 
     addSection: (section) =>
-        set(immerSet((draft) => {
-            pushHistory(draft);
-            draft.funnel.content.sections.push(section);
-            draft.selectedSectionId = section.id;
-        })),
+        set(
+            immerSet((draft) => {
+                draft.funnel.content.sections.push(section);
+                draft.selectedSectionId = section.id;
+                pushHistory(draft);
+            }),
+        ),
 
     updateSection: (sectionId, updates) =>
-        set(immerSet((draft) => {
-            pushHistory(draft);
-            const section = draft.funnel.content.sections.find(
-                (s) => s.id === sectionId,
-            );
-            if (section) {
-                Object.assign(section, updates);
-            }
-        })),
+        set(
+            immerSet((draft) => {
+                const section = draft.funnel.content.sections.find((s) => s.id === sectionId);
+                if (section) {
+                    Object.assign(section, updates);
+                    pushHistory(draft);
+                }
+            }),
+        ),
 
     deleteSection: (sectionId) =>
-        set(immerSet((draft) => {
-            pushHistory(draft);
-            draft.funnel.content.sections =
-                draft.funnel.content.sections.filter(
-                    (s) => s.id !== sectionId,
-                );
-            if (draft.selectedSectionId === sectionId) {
-                draft.selectedSectionId = null;
-                draft.selectedColumnId = null;
-                draft.selectedBlockId = null;
-            }
-        })),
+        set(
+            immerSet((draft) => {
+                draft.funnel.content.sections = draft.funnel.content.sections.filter((s) => s.id !== sectionId);
+                if (draft.selectedSectionId === sectionId) {
+                    draft.selectedSectionId = null;
+                    draft.selectedColumnId = null;
+                    draft.selectedBlockId = null;
+                }
+                pushHistory(draft);
+            }),
+        ),
 
     duplicateSection: (sectionId) =>
-        set(immerSet((draft) => {
-            const idx = draft.funnel.content.sections.findIndex(
-                (s) => s.id === sectionId,
-            );
-            if (idx === -1) return;
+        set(
+            immerSet((draft) => {
+                const idx = draft.funnel.content.sections.findIndex((s) => s.id === sectionId);
+                if (idx === -1) return;
 
-            pushHistory(draft);
-
-            const original = current(draft.funnel.content.sections[idx]);
-            const dup: Section = JSON.parse(JSON.stringify(original)) as Section;
-            dup.id = generateId('section');
-            dup.columns.forEach((col) => {
-                col.id = generateId('column');
-                col.blocks.forEach((b) => {
-                    b.id = generateId('block');
+                const original = current(draft.funnel.content.sections[idx]);
+                const dup: Section = JSON.parse(JSON.stringify(original)) as Section;
+                dup.id = generateId('section');
+                dup.columns.forEach((col) => {
+                    col.id = generateId('column');
+                    col.blocks.forEach((b) => {
+                        b.id = generateId('block');
+                    });
                 });
-            });
 
-            draft.funnel.content.sections.splice(idx + 1, 0, dup);
-            draft.selectedSectionId = dup.id;
-        })),
+                draft.funnel.content.sections.splice(idx + 1, 0, dup);
+                draft.selectedSectionId = dup.id;
+                pushHistory(draft);
+            }),
+        ),
 
     moveSection: (fromIndex, toIndex) =>
-        set(immerSet((draft) => {
-            if (fromIndex === toIndex) return;
-            pushHistory(draft);
-            const sections = draft.funnel.content.sections;
-            const [removed] = sections.splice(fromIndex, 1);
-            sections.splice(toIndex, 0, removed);
-        })),
+        set(
+            immerSet((draft) => {
+                if (fromIndex === toIndex) return;
+                const sections = draft.funnel.content.sections;
+                const [removed] = sections.splice(fromIndex, 1);
+                sections.splice(toIndex, 0, removed);
+                pushHistory(draft);
+            }),
+        ),
 
     // ── Column actions ───────────────────────────────────────────────
 
     updateColumn: (sectionId, columnId, updates) =>
-        set(immerSet((draft) => {
-            const section = draft.funnel.content.sections.find(
-                (s) => s.id === sectionId,
-            );
-            if (!section) return;
-            const column = section.columns.find(
-                (c) => c.id === columnId,
-            );
-            if (!column) return;
+        set(
+            immerSet((draft) => {
+                const section = draft.funnel.content.sections.find((s) => s.id === sectionId);
+                if (!section) return;
+                const column = section.columns.find((c) => c.id === columnId);
+                if (!column) return;
 
-            pushHistory(draft);
-            Object.assign(column, updates);
-        })),
+                Object.assign(column, updates);
+                pushHistory(draft);
+            }),
+        ),
 
     // ── Block actions ────────────────────────────────────────────────
 
     addBlock: (sectionId, columnId, block, index) =>
-        set(immerSet((draft) => {
-            const section = draft.funnel.content.sections.find(
-                (s) => s.id === sectionId,
-            );
-            if (!section) return;
-            const column = section.columns.find(
-                (c) => c.id === columnId,
-            );
-            if (!column) return;
+        set(
+            immerSet((draft) => {
+                const section = draft.funnel.content.sections.find((s) => s.id === sectionId);
+                if (!section) return;
+                const column = section.columns.find((c) => c.id === columnId);
+                if (!column) return;
 
-            pushHistory(draft);
-            if (index !== undefined) {
-                column.blocks.splice(index, 0, block);
-            } else {
-                column.blocks.push(block);
-            }
-            draft.selectedBlockId = block.id;
-        })),
+                if (index !== undefined) {
+                    column.blocks.splice(index, 0, block);
+                } else {
+                    column.blocks.push(block);
+                }
+                draft.selectedBlockId = block.id;
+                pushHistory(draft);
+            }),
+        ),
 
     updateBlock: (sectionId, columnId, blockId, updates) =>
-        set(immerSet((draft) => {
-            const section = draft.funnel.content.sections.find(
-                (s) => s.id === sectionId,
-            );
-            if (!section) return;
-            const column = section.columns.find(
-                (c) => c.id === columnId,
-            );
-            if (!column) return;
-            const block = column.blocks.find(
-                (b) => b.id === blockId,
-            );
-            if (!block) return;
+        set(
+            immerSet((draft) => {
+                const section = draft.funnel.content.sections.find((s) => s.id === sectionId);
+                if (!section) return;
+                const column = section.columns.find((c) => c.id === columnId);
+                if (!column) return;
+                const block = column.blocks.find((b) => b.id === blockId);
+                if (!block) return;
 
-            pushHistory(draft);
-            Object.assign(block, updates);
-        })),
+                Object.assign(block, updates);
+                pushHistory(draft);
+            }),
+        ),
 
     deleteBlock: (sectionId, columnId, blockId) =>
-        set(immerSet((draft) => {
-            const section = draft.funnel.content.sections.find(
-                (s) => s.id === sectionId,
-            );
-            if (!section) return;
-            const column = section.columns.find(
-                (c) => c.id === columnId,
-            );
-            if (!column) return;
+        set(
+            immerSet((draft) => {
+                const section = draft.funnel.content.sections.find((s) => s.id === sectionId);
+                if (!section) return;
+                const column = section.columns.find((c) => c.id === columnId);
+                if (!column) return;
 
-            pushHistory(draft);
-            column.blocks = column.blocks.filter(
-                (b) => b.id !== blockId,
-            );
-            if (draft.selectedBlockId === blockId) {
-                draft.selectedBlockId = null;
-            }
-        })),
+                column.blocks = column.blocks.filter((b) => b.id !== blockId);
+                if (draft.selectedBlockId === blockId) {
+                    draft.selectedBlockId = null;
+                }
+                pushHistory(draft);
+            }),
+        ),
 
     duplicateBlock: (sectionId, columnId, blockId) =>
-        set(immerSet((draft) => {
-            const section = draft.funnel.content.sections.find(
-                (s) => s.id === sectionId,
-            );
-            if (!section) return;
-            const column = section.columns.find(
-                (c) => c.id === columnId,
-            );
-            if (!column) return;
-            const blockIdx = column.blocks.findIndex(
-                (b) => b.id === blockId,
-            );
-            if (blockIdx === -1) return;
+        set(
+            immerSet((draft) => {
+                const section = draft.funnel.content.sections.find((s) => s.id === sectionId);
+                if (!section) return;
+                const column = section.columns.find((c) => c.id === columnId);
+                if (!column) return;
+                const blockIdx = column.blocks.findIndex((b) => b.id === blockId);
+                if (blockIdx === -1) return;
 
-            pushHistory(draft);
-            const dup: Block = JSON.parse(JSON.stringify(current(column.blocks[blockIdx]))) as Block;
-            dup.id = generateId('block');
-            column.blocks.splice(blockIdx + 1, 0, dup);
-            draft.selectedBlockId = dup.id;
-        })),
+                const dup: Block = JSON.parse(JSON.stringify(current(column.blocks[blockIdx]))) as Block;
+                dup.id = generateId('block');
+                column.blocks.splice(blockIdx + 1, 0, dup);
+                draft.selectedBlockId = dup.id;
+                pushHistory(draft);
+            }),
+        ),
 
     moveBlock: (sectionId, columnId, fromIndex, toIndex) =>
-        set(immerSet((draft) => {
-            if (fromIndex === toIndex) return;
-            const section = draft.funnel.content.sections.find(
-                (s) => s.id === sectionId,
-            );
-            if (!section) return;
-            const column = section.columns.find(
-                (c) => c.id === columnId,
-            );
-            if (!column) return;
+        set(
+            immerSet((draft) => {
+                if (fromIndex === toIndex) return;
+                const section = draft.funnel.content.sections.find((s) => s.id === sectionId);
+                if (!section) return;
+                const column = section.columns.find((c) => c.id === columnId);
+                if (!column) return;
 
-            pushHistory(draft);
-            const [removed] = column.blocks.splice(fromIndex, 1);
-            column.blocks.splice(toIndex, 0, removed);
-        })),
+                const [removed] = column.blocks.splice(fromIndex, 1);
+                column.blocks.splice(toIndex, 0, removed);
+                pushHistory(draft);
+            }),
+        ),
 
     // ── Selection ────────────────────────────────────────────────────
 
@@ -391,11 +377,9 @@ export const useFunnelStore = create<FunnelStore>()((set, get) => ({
             selectedBlockId: null,
         }),
 
-    selectBlock: (blockId) =>
-        set({ selectedBlockId: blockId }),
+    selectBlock: (blockId) => set({ selectedBlockId: blockId }),
 
-    selectDevice: (device) =>
-        set({ selectedDevice: device }),
+    selectDevice: (device) => set({ selectedDevice: device }),
 
     clearSelection: () =>
         set({
@@ -406,8 +390,7 @@ export const useFunnelStore = create<FunnelStore>()((set, get) => ({
 
     // ── Drag and drop ────────────────────────────────────────────────
 
-    setDraggedBlock: (block) =>
-        set({ draggedBlock: block }),
+    setDraggedBlock: (block) => set({ draggedBlock: block }),
 
     // ── History ──────────────────────────────────────────────────────
 
@@ -461,11 +444,7 @@ export const useFunnelStore = create<FunnelStore>()((set, get) => ({
 
 export function getSelectedSection(state: FunnelStore): Section | null {
     if (!state.selectedSectionId) return null;
-    return (
-        state.funnel.content.sections.find(
-            (s) => s.id === state.selectedSectionId,
-        ) ?? null
-    );
+    return state.funnel.content.sections.find((s) => s.id === state.selectedSectionId) ?? null;
 }
 
 export function getSelectedColumn(state: FunnelStore): Column | null {
@@ -479,9 +458,7 @@ export function getSelectedBlock(state: FunnelStore): Block | null {
     // Walk the whole tree — the block could be in any section/column.
     for (const section of state.funnel.content.sections) {
         for (const column of section.columns) {
-            const block = column.blocks.find(
-                (b) => b.id === state.selectedBlockId,
-            );
+            const block = column.blocks.find((b) => b.id === state.selectedBlockId);
             if (block) return block;
         }
     }
@@ -493,10 +470,7 @@ export function getSelectedBlock(state: FunnelStore): Block | null {
  * Useful when a component only knows the block but needs parent context
  * to call store actions like updateBlock(sectionId, columnId, blockId, ...).
  */
-export function findBlockLocation(
-    state: FunnelStore,
-    blockId: string,
-): { sectionId: string; columnId: string } | null {
+export function findBlockLocation(state: FunnelStore, blockId: string): { sectionId: string; columnId: string } | null {
     for (const section of state.funnel.content.sections) {
         for (const column of section.columns) {
             if (column.blocks.some((b) => b.id === blockId)) {
@@ -510,10 +484,7 @@ export function findBlockLocation(
 /**
  * Given a columnId, find which sectionId it belongs to.
  */
-export function findColumnSection(
-    state: FunnelStore,
-    columnId: string,
-): string | null {
+export function findColumnSection(state: FunnelStore, columnId: string): string | null {
     for (const section of state.funnel.content.sections) {
         if (section.columns.some((c) => c.id === columnId)) {
             return section.id;

@@ -206,7 +206,10 @@ export default function FunnelSettingsModal({ isOpen, onClose, funnel, domainMap
                         <div className="space-y-2">
                             <h3 className="text-sm font-medium text-foreground">Mapped domains</h3>
                             {funnel.domains.map((mappedDomain) => (
-                                <div key={mappedDomain.id} className="flex items-center justify-between rounded-lg border border-border bg-background px-3 py-2">
+                                <div
+                                    key={mappedDomain.id}
+                                    className="flex items-center justify-between rounded-lg border border-border bg-background px-3 py-2"
+                                >
                                     <button
                                         onClick={() => {
                                             setSelectedDomain(mappedDomain);
@@ -219,7 +222,8 @@ export default function FunnelSettingsModal({ isOpen, onClose, funnel, domainMap
                                     >
                                         <div className="truncate text-sm font-medium text-foreground">{mappedDomain.domain}</div>
                                         <div className="text-xs text-muted-foreground">
-                                            {mappedDomain.is_verified ? 'Verified' : 'Pending verification'} | SSL {mappedDomain.ssl_status || 'pending'}
+                                            {mappedDomain.is_verified ? 'Verified' : 'Pending verification'} | SSL{' '}
+                                            {mappedDomain.ssl_status || 'pending'}
                                         </div>
                                     </button>
                                     <button
@@ -228,7 +232,11 @@ export default function FunnelSettingsModal({ isOpen, onClose, funnel, domainMap
                                         className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-destructive disabled:opacity-50"
                                         title="Remove domain"
                                     >
-                                        {deletingDomainId === mappedDomain.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                                        {deletingDomainId === mappedDomain.id ? (
+                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                        ) : (
+                                            <Trash2 className="h-4 w-4" />
+                                        )}
                                     </button>
                                 </div>
                             ))}
@@ -245,7 +253,7 @@ export default function FunnelSettingsModal({ isOpen, onClose, funnel, domainMap
                                     placeholder="promo.yourbrand.com"
                                     value={domainInput}
                                     onChange={(event) => setDomainInput(event.target.value)}
-                                    className="w-full rounded-lg border border-border bg-background px-4 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                                    className="w-full rounded-lg border border-border bg-background px-4 py-2 text-foreground focus:ring-2 focus:ring-primary focus:outline-none"
                                 />
                             </div>
                             <div className="flex justify-end pt-4">
@@ -265,7 +273,9 @@ export default function FunnelSettingsModal({ isOpen, onClose, funnel, domainMap
                         <div className="space-y-4">
                             <div>
                                 <h3 className="mb-1 font-medium text-foreground">Configure DNS Records</h3>
-                                <p className="text-sm text-muted-foreground">Add this DNS record at your domain registrar, then verify the connection.</p>
+                                <p className="text-sm text-muted-foreground">
+                                    Add this DNS record at your domain registrar, then verify the connection.
+                                </p>
                             </div>
 
                             <div className="space-y-3 rounded-lg border border-border bg-muted p-4 font-mono text-sm">
@@ -295,7 +305,10 @@ export default function FunnelSettingsModal({ isOpen, onClose, funnel, domainMap
                             )}
 
                             <div className="flex justify-between pt-4">
-                                <button onClick={() => setStep(1)} className="px-4 py-2 text-muted-foreground transition-colors hover:text-foreground">
+                                <button
+                                    onClick={() => setStep(1)}
+                                    className="px-4 py-2 text-muted-foreground transition-colors hover:text-foreground"
+                                >
                                     Back
                                 </button>
                                 <button
@@ -319,7 +332,10 @@ export default function FunnelSettingsModal({ isOpen, onClose, funnel, domainMap
                             <p className="mb-6 text-muted-foreground">
                                 {selectedDomain?.domain} is mapped. SSL provisioning is handled by the platform and may take a few minutes.
                             </p>
-                            <button onClick={onClose} className="rounded-lg bg-muted px-6 py-2 font-medium text-foreground transition-colors hover:bg-muted/80">
+                            <button
+                                onClick={onClose}
+                                className="rounded-lg bg-muted px-6 py-2 font-medium text-foreground transition-colors hover:bg-muted/80"
+                            >
                                 Close
                             </button>
                         </div>

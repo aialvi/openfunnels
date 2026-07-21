@@ -77,7 +77,10 @@ export default function ContactDetail({ contact, statusOptions }: ContactDetailP
             <div className="flex h-full flex-1 flex-col gap-6 rounded-xl p-6">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                        <Link href="/contacts" className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
+                        <Link
+                            href="/contacts"
+                            className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                        >
                             <ArrowLeft className="h-5 w-5" />
                         </Link>
                         <div>
@@ -192,10 +195,12 @@ export default function ContactDetail({ contact, statusOptions }: ContactDetailP
                                             </div>
                                         ))}
                                     </div>
-                                    {submission.url && <div className="mt-3 break-all text-xs text-muted-foreground">{submission.url}</div>}
+                                    {submission.url && <div className="mt-3 text-xs break-all text-muted-foreground">{submission.url}</div>}
                                 </div>
                             ))}
-                            {contact.submissions.length === 0 && <div className="p-8 text-center text-sm text-muted-foreground">No submissions recorded.</div>}
+                            {contact.submissions.length === 0 && (
+                                <div className="p-8 text-center text-sm text-muted-foreground">No submissions recorded.</div>
+                            )}
                         </div>
                     </div>
                 </div>

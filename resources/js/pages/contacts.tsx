@@ -95,7 +95,7 @@ export default function Contacts({ contacts, stats }: ContactsPageProps) {
                 </div>
 
                 <div className="overflow-hidden rounded-xl border border-border bg-card">
-                    <div className="grid grid-cols-[minmax(220px,1.3fr)_minmax(160px,1fr)_120px_160px] gap-4 border-b border-border px-5 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    <div className="grid grid-cols-[minmax(220px,1.3fr)_minmax(160px,1fr)_120px_160px] gap-4 border-b border-border px-5 py-3 text-xs font-medium tracking-wide text-muted-foreground uppercase">
                         <div>Contact</div>
                         <div>Funnel</div>
                         <div>Status</div>
@@ -132,7 +132,9 @@ export default function Contacts({ contacts, stats }: ContactsPageProps) {
                                 ) : (
                                     'Unknown funnel'
                                 )}
-                                <div>{contact.submission_count} submission{contact.submission_count === 1 ? '' : 's'}</div>
+                                <div>
+                                    {contact.submission_count} submission{contact.submission_count === 1 ? '' : 's'}
+                                </div>
                             </div>
                             <div>
                                 <span className="rounded-full border border-green-500/20 bg-green-500/10 px-2 py-1 text-xs font-medium text-green-500">

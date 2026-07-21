@@ -1,6 +1,5 @@
-import React from 'react';
-import { BarChart3, TrendingUp, Users, MousePointer } from 'lucide-react';
 import { Funnel } from '@/stores/funnelStore';
+import { BarChart3, MousePointer, TrendingUp, Users } from 'lucide-react';
 
 interface AnalyticsPreviewProps {
     funnel: Funnel;
@@ -28,25 +27,25 @@ export default function AnalyticsPreview({ funnel }: AnalyticsPreviewProps) {
     };
 
     return (
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-            <div className="flex items-center space-x-2 mb-4">
-                <BarChart3 className="w-5 h-5 text-blue-600" />
+        <div className="rounded-lg border border-gray-200 bg-white p-4">
+            <div className="mb-4 flex items-center space-x-2">
+                <BarChart3 className="h-5 w-5 text-blue-600" />
                 <h3 className="text-lg font-semibold text-gray-900">Analytics Preview</h3>
-                <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">Demo Data</span>
+                <span className="rounded bg-gray-100 px-2 py-1 text-xs text-gray-500">Demo Data</span>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 mb-4">
+            <div className="mb-4 grid grid-cols-2 gap-4">
                 <div className="text-center">
-                    <div className="flex items-center justify-center space-x-1 mb-1">
-                        <Users className="w-4 h-4 text-gray-500" />
+                    <div className="mb-1 flex items-center justify-center space-x-1">
+                        <Users className="h-4 w-4 text-gray-500" />
                         <span className="text-sm text-gray-500">Views</span>
                     </div>
                     <div className="text-2xl font-bold text-gray-900">{mockAnalytics.views.toLocaleString()}</div>
                 </div>
 
                 <div className="text-center">
-                    <div className="flex items-center justify-center space-x-1 mb-1">
-                        <MousePointer className="w-4 h-4 text-gray-500" />
+                    <div className="mb-1 flex items-center justify-center space-x-1">
+                        <MousePointer className="h-4 w-4 text-gray-500" />
                         <span className="text-sm text-gray-500">Conversions</span>
                     </div>
                     <div className="text-2xl font-bold text-gray-900">{mockAnalytics.conversions}</div>
@@ -78,17 +77,19 @@ export default function AnalyticsPreview({ funnel }: AnalyticsPreviewProps) {
                     <div className="text-right">
                         <div className="font-semibold text-gray-900">{funnel.content.sections?.length || 0}</div>
                         <div className="text-xs text-gray-500">
-                            {(!funnel.content.sections || funnel.content.sections.length === 0) ? 'Add sections' :
-                                funnel.content.sections.length < 3 ? 'Consider more content' :
-                                    'Good content density'}
+                            {!funnel.content.sections || funnel.content.sections.length === 0
+                                ? 'Add sections'
+                                : funnel.content.sections.length < 3
+                                  ? 'Consider more content'
+                                  : 'Good content density'}
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div className="mt-4 pt-4 border-t border-gray-200">
+            <div className="mt-4 border-t border-gray-200 pt-4">
                 <div className="flex items-center space-x-2 text-sm text-gray-500">
-                    <TrendingUp className="w-4 h-4" />
+                    <TrendingUp className="h-4 w-4" />
                     <span>Analytics will be available after publishing</span>
                 </div>
             </div>

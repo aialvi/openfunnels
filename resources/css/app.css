@@ -79,15 +79,15 @@
 
 :root {
     /* Force Dark Mode Defaults (Launch UI Style) */
-    --background: oklch(0.1 0 0);       /* Deep Black */
-    --foreground: oklch(0.985 0 0);     /* White */
-    --card: oklch(0.13 0 0);            /* Slightly lighter black for cards */
+    --background: oklch(0.1 0 0); /* Deep Black */
+    --foreground: oklch(0.985 0 0); /* White */
+    --card: oklch(0.13 0 0); /* Slightly lighter black for cards */
     --card-foreground: oklch(0.985 0 0);
     --popover: oklch(0.1 0 0);
     --popover-foreground: oklch(0.985 0 0);
     --primary: oklch(0.623 0.214 36.376); /* Vibrant Orange */
     --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.18 0 0);       /* Dark Gray */
+    --secondary: oklch(0.18 0 0); /* Dark Gray */
     --secondary-foreground: oklch(0.985 0 0);
     --muted: oklch(0.18 0 0);
     --muted-foreground: oklch(0.7 0 0);
@@ -95,16 +95,16 @@
     --accent-foreground: oklch(0.985 0 0);
     --destructive: oklch(0.577 0.245 27.325);
     --destructive-foreground: oklch(0.985 0 0);
-    --border: oklch(0.2 0 0);           /* Subtle Dark Border */
+    --border: oklch(0.2 0 0); /* Subtle Dark Border */
     --input: oklch(0.2 0 0);
-    --ring: oklch(0.623 0.214 36.376);  /* Orange Ring */
+    --ring: oklch(0.623 0.214 36.376); /* Orange Ring */
     --chart-1: oklch(0.623 0.214 36.376); /* Orange */
     --chart-2: oklch(0.6 0.118 184.704);
     --chart-3: oklch(0.398 0.07 227.392);
     --chart-4: oklch(0.828 0.189 84.429);
     --chart-5: oklch(0.769 0.188 70.08);
     --radius: 0.625rem;
-    --sidebar: oklch(0.1 0 0);          /* Match Background */
+    --sidebar: oklch(0.1 0 0); /* Match Background */
     --sidebar-foreground: oklch(0.985 0 0);
     --sidebar-primary: oklch(0.623 0.214 36.376);
     --sidebar-primary-foreground: oklch(0.985 0 0);

@@ -1,5 +1,5 @@
-import { router } from '@inertiajs/react';
 import { useFunnelStore } from '@/stores/funnelStore';
+import { router } from '@inertiajs/react';
 import { useCallback, useEffect } from 'react';
 
 export const useFunnelPersistence = (funnelId?: number) => {
