@@ -12,6 +12,7 @@ class ContactSubmission extends Model
         'funnel_id',
         'form_id',
         'fields',
+        'attribution',
         'source',
         'url',
         'ip_address',
@@ -20,6 +21,7 @@ class ContactSubmission extends Model
 
     protected $casts = [
         'fields' => 'array',
+        'attribution' => 'array',
     ];
 
     public function contact(): BelongsTo

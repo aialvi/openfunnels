@@ -10,7 +10,7 @@ import {
     productCheckoutUrl,
     videoEmbedUrl,
 } from '@/lib/block-content';
-import { getFormFields } from '@/lib/form-fields';
+import { fieldConditionMatches, getFormSteps } from '@/lib/form-fields';
 import type { Block } from '@/types/editor';
 import { CalendarDays, Code2, ExternalLink, MapPin, ShoppingCart, Star, Users } from 'lucide-react';
 import { type FormEvent, useEffect, useMemo, useState } from 'react';
@@ -72,6 +72,96 @@ function CountdownBlock({ block }: { block: Block }) {
                     ))}
             </div>
         </div>
+    );
+}
+
+function FunnelForm({
+    block,
+    disabled,
+    submitting,
+    submitted,
+    onSubmit,
+}: {
+    block: Block;
+    disabled: boolean;
+    submitting: boolean;
+    submitted: boolean;
+    onSubmit?: (event: FormEvent<HTMLFormElement>, block: Block) => void;
+}) {
+    const steps = getFormSteps(block.content);
+    const [stepIndex, setStepIndex] = useState(0);
+    const [values, setValues] = useState<Record<string, string>>({});
+    const isLastStep = stepIndex === steps.length - 1;
+
+    const goNext = (event: React.MouseEvent<HTMLButtonElement>) => {
+        const panel = event.currentTarget.closest('[data-form-step]');
+        const inputs = panel?.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>('input, textarea, select');
+        if (inputs && !Array.from(inputs).every((input) => input.reportValidity())) return;
+        setStepIndex((current) => Math.min(current + 1, steps.length - 1));
+    };
+
+    return (
+        <form className="space-y-4" onSubmit={onSubmit ? (event) => onSubmit(event, block) : (event) => event.preventDefault()}>
+            <h3 className="font-semibold text-gray-900">{contentString(block.content, 'title', 'Contact us')}</h3>
+            {steps.length > 1 && (
+                <div className="space-y-2">
+                    <div className="flex justify-between text-xs font-medium text-gray-500">
+                        <span>Step {stepIndex + 1}</span>
+                        <span>{steps.length} steps</span>
+                    </div>
+                    <div className="h-1.5 overflow-hidden rounded-full bg-gray-200">
+                        <div
+                            className="h-full rounded-full bg-blue-600 transition-all"
+                            style={{ width: `${((stepIndex + 1) / steps.length) * 100}%` }}
+                        />
+                    </div>
+                </div>
+            )}
+            {steps.map((stepFields, index) => {
+                const visibleFields = stepFields.filter((field) => fieldConditionMatches(field, values));
+                return (
+                    <div key={index} data-form-step hidden={index !== stepIndex} className="space-y-4">
+                        <FormFields
+                            fields={visibleFields}
+                            formId={`funnel-${block.id}-step-${index + 1}`}
+                            disabled={disabled}
+                            values={values}
+                            onValueChange={(name, value) => setValues((current) => ({ ...current, [name]: value }))}
+                            enforceRequired={index === stepIndex}
+                        />
+                        <div className="flex gap-2">
+                            {index > 0 && (
+                                <button
+                                    type="button"
+                                    onClick={() => setStepIndex((current) => Math.max(0, current - 1))}
+                                    className="w-1/3 rounded border border-gray-300 p-2 text-gray-700"
+                                >
+                                    Back
+                                </button>
+                            )}
+                            {isLastStep ? (
+                                <button
+                                    type="submit"
+                                    disabled={disabled || submitting}
+                                    className="flex-1 rounded bg-blue-600 p-2 text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+                                >
+                                    {submitting ? 'Submitting...' : contentString(block.content, 'buttonText', 'Submit')}
+                                </button>
+                            ) : (
+                                <button type="button" onClick={goNext} className="flex-1 rounded bg-blue-600 p-2 text-white">
+                                    Continue
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                );
+            })}
+            {submitted && (
+                <p className="text-sm font-medium text-green-600">
+                    {contentString(block.content, 'successMessage', 'Thanks. Your information was submitted.')}
+                </p>
+            )}
+        </form>
     );
 }
 
@@ -147,22 +237,7 @@ export default function FunnelBlock({ block, formDisabled = false, formSubmittin
 
             case 'form':
                 return (
-                    <form className="space-y-4" onSubmit={onFormSubmit ? (event) => onFormSubmit(event, block) : (event) => event.preventDefault()}>
-                        <h3 className="font-semibold text-gray-900">{contentString(block.content, 'title', 'Contact us')}</h3>
-                        <FormFields fields={getFormFields(block.content)} formId={`funnel-${block.id}`} disabled={formDisabled} />
-                        <button
-                            type="submit"
-                            disabled={formDisabled || formSubmitting}
-                            className="w-full rounded bg-blue-600 p-2 text-white transition-opacity hover:opacity-90 disabled:opacity-60"
-                        >
-                            {formSubmitting ? 'Submitting...' : contentString(block.content, 'buttonText', 'Submit')}
-                        </button>
-                        {formSubmitted && (
-                            <p className="text-sm font-medium text-green-600">
-                                {contentString(block.content, 'successMessage', 'Thanks. Your information was submitted.')}
-                            </p>
-                        )}
-                    </form>
+                    <FunnelForm block={block} disabled={formDisabled} submitting={formSubmitting} submitted={formSubmitted} onSubmit={onFormSubmit} />
                 );
 
             case 'video': {

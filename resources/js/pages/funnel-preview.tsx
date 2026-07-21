@@ -1,4 +1,5 @@
 import FunnelBlock from '@/components/funnel/FunnelBlock';
+import { getSuccessAction } from '@/lib/form-fields';
 import { shareLink } from '@/lib/share';
 import type { Block, Funnel } from '@/types/editor';
 import { Head, Link, router } from '@inertiajs/react';
@@ -33,6 +34,13 @@ export default function FunnelPreview({ funnel, previewMode = false }: FunnelPre
 
         const form = event.currentTarget;
         const formData = new FormData(form);
+        const search = new URLSearchParams(window.location.search);
+        const attribution = Object.fromEntries(
+            ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content']
+                .map((key) => [key, search.get(key)] as const)
+                .filter((entry): entry is [string, string] => entry[1] !== null),
+        );
+        if (document.referrer) attribution.referrer = document.referrer;
 
         setSubmittingBlockId(block.id);
 
@@ -44,12 +52,21 @@ export default function FunnelPreview({ funnel, previewMode = false }: FunnelPre
                 phone: formData.get('phone') || undefined,
                 form_id: block.id,
                 fields: Object.fromEntries(formData.entries()),
+                attribution,
             },
             {
                 preserveScroll: true,
                 onSuccess: () => {
                     form.reset();
                     setSubmittedBlockId(block.id);
+                    const action = getSuccessAction(block.content);
+                    if (action.type === 'redirect') window.location.assign(action.url);
+                    if (action.type === 'download') {
+                        const anchor = document.createElement('a');
+                        anchor.href = action.url;
+                        anchor.rel = 'noreferrer';
+                        anchor.click();
+                    }
                 },
                 onFinish: () => setSubmittingBlockId(null),
             },

@@ -27,6 +27,13 @@ class LeadCaptureController extends Controller
             'form_id' => ['nullable', 'string', 'max:100'],
             'fields' => ['nullable', 'array', 'max:50'],
             'fields.*' => ['nullable', 'string', 'max:5000'],
+            'attribution' => ['nullable', 'array'],
+            'attribution.utm_source' => ['nullable', 'string', 'max:255'],
+            'attribution.utm_medium' => ['nullable', 'string', 'max:255'],
+            'attribution.utm_campaign' => ['nullable', 'string', 'max:255'],
+            'attribution.utm_term' => ['nullable', 'string', 'max:255'],
+            'attribution.utm_content' => ['nullable', 'string', 'max:255'],
+            'attribution.referrer' => ['nullable', 'url', 'max:2000'],
         ]);
 
         $email = strtolower($validated['email']);
@@ -51,6 +58,7 @@ class LeadCaptureController extends Controller
                 'last_form_id' => $validated['form_id'] ?? null,
                 'last_fields' => $validated['fields'] ?? [],
                 'last_url' => $request->headers->get('referer'),
+                'last_attribution' => $validated['attribution'] ?? [],
             ],
             'ip_address' => $request->ip(),
             'user_agent' => (string) $request->userAgent(),
@@ -62,6 +70,7 @@ class LeadCaptureController extends Controller
             'funnel_id' => $funnel->id,
             'form_id' => $validated['form_id'] ?? null,
             'fields' => $validated['fields'] ?? [],
+            'attribution' => $validated['attribution'] ?? [],
             'source' => 'funnel_form',
             'url' => $request->headers->get('referer'),
             'ip_address' => $request->ip(),

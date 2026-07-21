@@ -1,5 +1,5 @@
 import { configurableFieldTypes, createFormField, getFormFields, normalizeFieldName } from '@/lib/form-fields';
-import type { Block as ContentBlock, FormField, Column as LayoutColumn, Section as LayoutSection } from '@/types/editor';
+import type { Block as ContentBlock, FormConditionOperator, FormField, Column as LayoutColumn, Section as LayoutSection } from '@/types/editor';
 import {
     ChevronDown,
     ChevronUp,
@@ -307,6 +307,41 @@ export default function PropertiesPanel({
                                 className="w-full rounded border border-border bg-background px-2 py-1.5 text-xs text-foreground"
                             />
                         </div>
+                        <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <input
+                                type="checkbox"
+                                checked={selectedBlock.content.multiStep === true}
+                                onChange={(event) => updateContent({ multiStep: event.target.checked })}
+                                className="accent-primary"
+                            />
+                            Split fields into multiple steps
+                        </label>
+                        <div className="grid grid-cols-2 gap-2">
+                            <label>
+                                <span className="mb-1 block text-[11px] text-muted-foreground">After submission</span>
+                                <select
+                                    value={(selectedBlock.content.successAction as string) || 'message'}
+                                    onChange={(event) => updateContent({ successAction: event.target.value })}
+                                    className="w-full rounded border border-border bg-background px-2 py-1.5 text-xs text-foreground"
+                                >
+                                    <option value="message">Show message</option>
+                                    <option value="redirect">Redirect</option>
+                                    <option value="download">Offer download</option>
+                                </select>
+                            </label>
+                            {selectedBlock.content.successAction !== 'message' && selectedBlock.content.successAction !== undefined && (
+                                <label>
+                                    <span className="mb-1 block text-[11px] text-muted-foreground">Safe HTTPS URL</span>
+                                    <input
+                                        type="url"
+                                        value={(selectedBlock.content.successUrl as string) || ''}
+                                        onChange={(event) => updateContent({ successUrl: event.target.value })}
+                                        placeholder="https://example.com/next"
+                                        className="w-full rounded border border-border bg-background px-2 py-1.5 text-xs text-foreground"
+                                    />
+                                </label>
+                            )}
+                        </div>
                     </div>
 
                     <div>
@@ -457,6 +492,70 @@ export default function PropertiesPanel({
                                             />
                                             Required
                                         </label>
+                                        {selectedBlock.content.multiStep === true && (
+                                            <label className="mt-2 block text-xs text-muted-foreground">
+                                                Step
+                                                <input
+                                                    type="number"
+                                                    min={1}
+                                                    max={10}
+                                                    value={field.step ?? 1}
+                                                    onChange={(event) => updateField(field.id, { step: Number(event.target.value) })}
+                                                    className="ml-2 w-16 rounded border border-border bg-background px-2 py-1 text-xs text-foreground"
+                                                />
+                                            </label>
+                                        )}
+                                        {!isEmail && (
+                                            <div className="mt-3 grid grid-cols-3 gap-1 border-t border-border pt-3">
+                                                <input
+                                                    value={field.condition?.field || ''}
+                                                    onChange={(event) =>
+                                                        updateField(field.id, {
+                                                            condition: event.target.value
+                                                                ? {
+                                                                      field: normalizeFieldName(event.target.value),
+                                                                      operator: field.condition?.operator ?? 'equals',
+                                                                      value: field.condition?.value ?? '',
+                                                                  }
+                                                                : undefined,
+                                                        })
+                                                    }
+                                                    placeholder="Show if field"
+                                                    className="rounded border border-border bg-background px-1.5 py-1 text-[11px] text-foreground"
+                                                />
+                                                <select
+                                                    value={field.condition?.operator || 'equals'}
+                                                    onChange={(event) =>
+                                                        updateField(field.id, {
+                                                            condition: {
+                                                                field: field.condition?.field ?? '',
+                                                                operator: event.target.value as FormConditionOperator,
+                                                                value: field.condition?.value ?? '',
+                                                            },
+                                                        })
+                                                    }
+                                                    className="rounded border border-border bg-background px-1 py-1 text-[11px] text-foreground"
+                                                >
+                                                    <option value="equals">equals</option>
+                                                    <option value="not_equals">not equal</option>
+                                                    <option value="contains">contains</option>
+                                                </select>
+                                                <input
+                                                    value={field.condition?.value || ''}
+                                                    onChange={(event) =>
+                                                        updateField(field.id, {
+                                                            condition: {
+                                                                field: field.condition?.field ?? '',
+                                                                operator: field.condition?.operator ?? 'equals',
+                                                                value: event.target.value,
+                                                            },
+                                                        })
+                                                    }
+                                                    placeholder="value"
+                                                    className="rounded border border-border bg-background px-1.5 py-1 text-[11px] text-foreground"
+                                                />
+                                            </div>
+                                        )}
                                         {duplicateName && <p className="mt-1 text-[11px] text-destructive">Field names must be unique.</p>}
                                     </div>
                                 );

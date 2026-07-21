@@ -137,6 +137,29 @@ test('configurable form fields are preserved on each submission', function () {
         ]);
 });
 
+test('lead capture stores bounded campaign attribution', function () {
+    Mail::fake();
+    $user = User::factory()->create();
+    $funnel = createLeadCaptureFunnelFor($user);
+
+    $this->post(route('funnels.leads.store', $funnel), [
+        'email' => 'campaign@example.com',
+        'attribution' => [
+            'utm_source' => 'newsletter',
+            'utm_medium' => 'email',
+            'utm_campaign' => 'product-launch',
+            'referrer' => 'https://example.com/article',
+        ],
+    ])->assertRedirect();
+
+    $submission = $user->contacts()->firstOrFail()->submissions()->firstOrFail();
+
+    expect($submission->attribution)->toMatchArray([
+        'utm_source' => 'newsletter',
+        'utm_campaign' => 'product-launch',
+    ])->and(data_get($submission->contact->metadata, 'last_attribution.utm_medium'))->toBe('email');
+});
+
 test('configurable form field payloads are bounded', function () {
     $funnel = createLeadCaptureFunnelFor(User::factory()->create());
 

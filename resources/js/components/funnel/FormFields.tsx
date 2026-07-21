@@ -4,11 +4,14 @@ interface FormFieldsProps {
     fields: FormField[];
     formId: string;
     disabled?: boolean;
+    values?: Record<string, string>;
+    onValueChange?: (name: string, value: string) => void;
+    enforceRequired?: boolean;
 }
 
 const inputClass = 'w-full rounded border border-gray-300 bg-white p-2 text-gray-900 placeholder:text-gray-400 disabled:bg-gray-50';
 
-export default function FormFields({ fields, formId, disabled = false }: FormFieldsProps) {
+export default function FormFields({ fields, formId, disabled = false, values = {}, onValueChange, enforceRequired = true }: FormFieldsProps) {
     return fields.map((field) => {
         const inputId = `${formId}-${field.id}`;
 
@@ -24,7 +27,8 @@ export default function FormFields({ fields, formId, disabled = false }: FormFie
                         name={field.name}
                         type="checkbox"
                         value={field.defaultValue || 'yes'}
-                        required={field.required}
+                        required={field.required && enforceRequired}
+                        onChange={(event) => onValueChange?.(field.name, event.target.checked ? event.target.value : '')}
                         disabled={disabled}
                         className="mt-0.5 h-4 w-4 rounded border-gray-300"
                     />
@@ -47,20 +51,22 @@ export default function FormFields({ fields, formId, disabled = false }: FormFie
                         id={inputId}
                         name={field.name}
                         placeholder={field.placeholder}
-                        required={field.required}
+                        required={field.required && enforceRequired}
                         disabled={disabled}
-                        defaultValue={field.defaultValue}
+                        defaultValue={values[field.name] ?? field.defaultValue}
                         rows={4}
                         className={inputClass}
+                        onChange={(event) => onValueChange?.(field.name, event.target.value)}
                     />
                 ) : field.type === 'select' ? (
                     <select
                         id={inputId}
                         name={field.name}
-                        required={field.required}
+                        required={field.required && enforceRequired}
                         disabled={disabled}
-                        defaultValue={field.defaultValue || ''}
+                        defaultValue={values[field.name] ?? field.defaultValue ?? ''}
                         className={inputClass}
+                        onChange={(event) => onValueChange?.(field.name, event.target.value)}
                     >
                         <option value="" disabled={field.required}>
                             {field.placeholder || 'Select an option'}
@@ -77,10 +83,11 @@ export default function FormFields({ fields, formId, disabled = false }: FormFie
                         name={field.name}
                         type={field.type}
                         placeholder={field.placeholder}
-                        required={field.required}
+                        required={field.required && enforceRequired}
                         disabled={disabled}
-                        defaultValue={field.defaultValue}
+                        defaultValue={values[field.name] ?? field.defaultValue}
                         className={inputClass}
+                        onChange={(event) => onValueChange?.(field.name, event.target.value)}
                     />
                 )}
             </label>

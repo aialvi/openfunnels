@@ -1,4 +1,4 @@
-import type { FormField, FormFieldType } from '@/types/editor';
+import type { FormField, FormFieldCondition, FormFieldType, FormSuccessAction } from '@/types/editor';
 
 const FIELD_TYPES: FormFieldType[] = ['text', 'email', 'tel', 'number', 'url', 'textarea', 'select', 'checkbox', 'hidden'];
 
@@ -63,9 +63,17 @@ function parseConfiguredFields(value: unknown): FormField[] {
                 required: name === 'email' ? true : item.required === true,
                 options: Array.isArray(item.options) ? item.options.filter((option): option is string => typeof option === 'string') : undefined,
                 defaultValue: typeof item.defaultValue === 'string' ? item.defaultValue : undefined,
+                step: typeof item.step === 'number' ? Math.max(1, Math.min(10, Math.floor(item.step))) : 1,
+                condition: parseCondition(item.condition),
             } satisfies FormField,
         ];
     });
+}
+
+function parseCondition(value: unknown): FormFieldCondition | undefined {
+    if (!isRecord(value) || typeof value.field !== 'string' || typeof value.value !== 'string') return undefined;
+    if (value.operator !== 'equals' && value.operator !== 'not_equals' && value.operator !== 'contains') return undefined;
+    return { field: normalizeFieldName(value.field), operator: value.operator, value: value.value };
 }
 
 function legacyFields(content: Record<string, unknown>): FormField[] {
@@ -132,5 +140,30 @@ export function createFormField(fields: FormField[]): FormField {
         type: 'text',
         placeholder: 'Enter a value',
         required: false,
+        step: Math.max(1, ...fields.map((field) => field.step ?? 1)),
     };
+}
+
+export function fieldConditionMatches(field: FormField, values: Record<string, string>): boolean {
+    if (!field.condition?.field) return true;
+    const actual = values[field.condition.field] ?? '';
+    const expected = field.condition.value;
+
+    if (field.condition.operator === 'not_equals') return actual !== expected;
+    if (field.condition.operator === 'contains') return actual.toLowerCase().includes(expected.toLowerCase());
+    return actual === expected;
+}
+
+export function getFormSteps(content: Record<string, unknown>): FormField[][] {
+    const fields = getFormFields(content);
+    if (content.multiStep !== true) return [fields];
+    const count = Math.max(1, ...fields.map((field) => field.step ?? 1));
+    return Array.from({ length: count }, (_, index) => fields.filter((field) => (field.step ?? 1) === index + 1)).filter((step) => step.length > 0);
+}
+
+export function getSuccessAction(content: Record<string, unknown>): FormSuccessAction {
+    const type = content.successAction;
+    const url = typeof content.successUrl === 'string' ? content.successUrl : '';
+    if ((type === 'redirect' || type === 'download') && /^https?:\/\//i.test(url)) return { type, url };
+    return { type: 'message' };
 }

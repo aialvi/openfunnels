@@ -51,7 +51,19 @@ export interface FormField {
     required: boolean;
     options?: string[];
     defaultValue?: string;
+    step?: number;
+    condition?: FormFieldCondition;
 }
+
+export type FormConditionOperator = 'equals' | 'not_equals' | 'contains';
+
+export interface FormFieldCondition {
+    field: string;
+    operator: FormConditionOperator;
+    value: string;
+}
+
+export type FormSuccessAction = { type: 'message' } | { type: 'redirect'; url: string } | { type: 'download'; url: string };
 
 export interface Block {
     id: string;
