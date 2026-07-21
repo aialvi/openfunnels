@@ -1,10 +1,11 @@
 import FunnelBlock from '@/components/funnel/FunnelBlock';
+import { currentAttribution, funnelSessionId, trackFunnelEvent } from '@/lib/analytics';
 import { getSuccessAction } from '@/lib/form-fields';
 import { shareLink } from '@/lib/share';
 import type { Block, Funnel } from '@/types/editor';
 import { Head, Link, router } from '@inertiajs/react';
 import { ArrowLeft, ExternalLink, Monitor, Share, Smartphone, Tablet } from 'lucide-react';
-import { type CSSProperties, type FormEvent, useState } from 'react';
+import { type CSSProperties, type FormEvent, useEffect, useState } from 'react';
 
 interface FunnelPreviewProps {
     funnel: Funnel & { id: number; slug: string };
@@ -34,13 +35,7 @@ export default function FunnelPreview({ funnel, previewMode = false }: FunnelPre
 
         const form = event.currentTarget;
         const formData = new FormData(form);
-        const search = new URLSearchParams(window.location.search);
-        const attribution = Object.fromEntries(
-            ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content']
-                .map((key) => [key, search.get(key)] as const)
-                .filter((entry): entry is [string, string] => entry[1] !== null),
-        );
-        if (document.referrer) attribution.referrer = document.referrer;
+        const attribution = currentAttribution();
 
         setSubmittingBlockId(block.id);
 
@@ -53,6 +48,7 @@ export default function FunnelPreview({ funnel, previewMode = false }: FunnelPre
                 form_id: block.id,
                 fields: Object.fromEntries(formData.entries()),
                 attribution,
+                session_id: funnelSessionId(),
             },
             {
                 preserveScroll: true,
@@ -73,6 +69,10 @@ export default function FunnelPreview({ funnel, previewMode = false }: FunnelPre
         );
     };
 
+    useEffect(() => {
+        if (!previewMode) trackFunnelEvent(funnel.id, 'view');
+    }, [funnel.id, previewMode]);
+
     const renderBlock = (block: Block) => (
         <FunnelBlock
             key={block.id}
@@ -80,6 +80,7 @@ export default function FunnelPreview({ funnel, previewMode = false }: FunnelPre
             formSubmitting={submittingBlockId === block.id}
             formSubmitted={submittedBlockId === block.id}
             onFormSubmit={handleLeadSubmit}
+            onAnalyticsEvent={(eventType, metadata) => trackFunnelEvent(funnel.id, eventType, { formId: block.id, metadata })}
         />
     );
 

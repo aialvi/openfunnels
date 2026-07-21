@@ -1,9 +1,11 @@
 <?php
 
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\FunnelAnalyticsController;
 use App\Http\Controllers\FunnelController;
 use App\Http\Controllers\FunnelResponseController;
 use App\Http\Controllers\LeadCaptureController;
+use App\Models\FunnelEvent;
 use App\Services\FunnelPublicUrlResolver;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -11,6 +13,9 @@ use Inertia\Inertia;
 $appDomain = parse_url(config('app.url'), PHP_URL_HOST) ?? 'localhost';
 
 Route::post('funnels/{funnel}/leads', [LeadCaptureController::class, 'store'])->name('funnels.leads.store');
+Route::post('funnels/{funnel}/events', [FunnelAnalyticsController::class, 'store'])
+    ->middleware('throttle:120,1')
+    ->name('funnels.events.store');
 
 Route::domain($appDomain)->group(function () {
     Route::get('/', function () {
@@ -25,6 +30,28 @@ Route::domain($appDomain)->group(function () {
         Route::get('dashboard', function () {
             $user = auth()->user();
             $funnels = $user->funnels();
+
+            $events = FunnelEvent::query()
+                ->whereIn('funnel_id', (clone $funnels)->select('id'))
+                ->where('occurred_at', '>=', now()->subDays(13)->startOfDay())
+                ->get(['event_type', 'attribution', 'occurred_at']);
+            $daily = collect(range(13, 0))->map(function (int $daysAgo) use ($events) {
+                $date = now()->subDays($daysAgo)->toDateString();
+                $dayEvents = $events->filter(fn (FunnelEvent $event) => $event->occurred_at->toDateString() === $date);
+
+                return [
+                    'date' => $date,
+                    'views' => $dayEvents->where('event_type', 'view')->count(),
+                    'conversions' => $dayEvents->where('event_type', 'conversion')->count(),
+                ];
+            });
+            $sources = $events
+                ->filter(fn (FunnelEvent $event) => $event->event_type === 'conversion')
+                ->countBy(fn (FunnelEvent $event) => data_get($event->attribution, 'utm_source', 'Direct'))
+                ->sortDesc()
+                ->take(5)
+                ->map(fn (int $conversions, string $source) => compact('source', 'conversions'))
+                ->values();
 
             return Inertia::render('dashboard', [
                 'stats' => [
@@ -45,6 +72,10 @@ Route::domain($appDomain)->group(function () {
                         'funnel' => $contact->funnel?->name,
                         'last_submitted_at' => $contact->last_submitted_at?->diffForHumans(),
                     ]),
+                'analytics' => [
+                    'daily' => $daily,
+                    'sources' => $sources,
+                ],
             ]);
         })->name('dashboard');
 

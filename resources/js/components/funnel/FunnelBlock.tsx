@@ -13,7 +13,7 @@ import {
 import { fieldConditionMatches, getFormSteps } from '@/lib/form-fields';
 import type { Block } from '@/types/editor';
 import { CalendarDays, Code2, ExternalLink, MapPin, ShoppingCart, Star, Users } from 'lucide-react';
-import { type FormEvent, useEffect, useMemo, useState } from 'react';
+import { type FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 
 interface FunnelBlockProps {
     block: Block;
@@ -21,6 +21,7 @@ interface FunnelBlockProps {
     formSubmitting?: boolean;
     formSubmitted?: boolean;
     onFormSubmit?: (event: FormEvent<HTMLFormElement>, block: Block) => void;
+    onAnalyticsEvent?: (eventType: 'cta_click' | 'form_start' | 'form_step', metadata?: Record<string, string>) => void;
 }
 
 function EmptyBlock({ icon, message }: { icon: React.ReactNode; message: string }) {
@@ -81,27 +82,40 @@ function FunnelForm({
     submitting,
     submitted,
     onSubmit,
+    onAnalyticsEvent,
 }: {
     block: Block;
     disabled: boolean;
     submitting: boolean;
     submitted: boolean;
     onSubmit?: (event: FormEvent<HTMLFormElement>, block: Block) => void;
+    onAnalyticsEvent?: FunnelBlockProps['onAnalyticsEvent'];
 }) {
     const steps = getFormSteps(block.content);
     const [stepIndex, setStepIndex] = useState(0);
     const [values, setValues] = useState<Record<string, string>>({});
     const isLastStep = stepIndex === steps.length - 1;
+    const startedRef = useRef(false);
 
     const goNext = (event: React.MouseEvent<HTMLButtonElement>) => {
         const panel = event.currentTarget.closest('[data-form-step]');
         const inputs = panel?.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>('input, textarea, select');
         if (inputs && !Array.from(inputs).every((input) => input.reportValidity())) return;
+        onAnalyticsEvent?.('form_step', { step: String(stepIndex + 1) });
         setStepIndex((current) => Math.min(current + 1, steps.length - 1));
     };
 
     return (
-        <form className="space-y-4" onSubmit={onSubmit ? (event) => onSubmit(event, block) : (event) => event.preventDefault()}>
+        <form
+            className="space-y-4"
+            onFocus={() => {
+                if (!startedRef.current) {
+                    startedRef.current = true;
+                    onAnalyticsEvent?.('form_start');
+                }
+            }}
+            onSubmit={onSubmit ? (event) => onSubmit(event, block) : (event) => event.preventDefault()}
+        >
             <h3 className="font-semibold text-gray-900">{contentString(block.content, 'title', 'Contact us')}</h3>
             {steps.length > 1 && (
                 <div className="space-y-2">
@@ -165,7 +179,14 @@ function FunnelForm({
     );
 }
 
-export default function FunnelBlock({ block, formDisabled = false, formSubmitting = false, formSubmitted = false, onFormSubmit }: FunnelBlockProps) {
+export default function FunnelBlock({
+    block,
+    formDisabled = false,
+    formSubmitting = false,
+    formSubmitted = false,
+    onFormSubmit,
+    onAnalyticsEvent,
+}: FunnelBlockProps) {
     const wrapperStyle: React.CSSProperties = {
         padding: block.settings.padding,
         margin: block.settings.margin,
@@ -228,6 +249,7 @@ export default function FunnelBlock({ block, formDisabled = false, formSubmittin
                         href={isSafeHttpUrl(url) ? url : '#'}
                         target={contentBoolean(block.content, 'newTab') ? '_blank' : undefined}
                         rel="noreferrer"
+                        onClick={() => onAnalyticsEvent?.('cta_click', { block_id: block.id, destination: url })}
                         className={`inline-flex items-center justify-center rounded-lg font-semibold transition-opacity hover:opacity-90 ${variant === 'secondary' ? 'bg-gray-200 text-gray-900' : 'bg-blue-600 text-white'} ${size === 'small' ? 'px-3 py-2 text-sm' : size === 'large' ? 'px-7 py-4 text-lg' : 'px-5 py-3'} ${contentBoolean(block.content, 'fullWidth') ? 'w-full' : ''}`}
                     >
                         {contentString(block.content, 'text', 'Learn more')}
@@ -237,7 +259,14 @@ export default function FunnelBlock({ block, formDisabled = false, formSubmittin
 
             case 'form':
                 return (
-                    <FunnelForm block={block} disabled={formDisabled} submitting={formSubmitting} submitted={formSubmitted} onSubmit={onFormSubmit} />
+                    <FunnelForm
+                        block={block}
+                        disabled={formDisabled}
+                        submitting={formSubmitting}
+                        submitted={formSubmitted}
+                        onSubmit={onFormSubmit}
+                        onAnalyticsEvent={onAnalyticsEvent}
+                    />
                 );
 
             case 'video': {

@@ -1,4 +1,3 @@
-import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/react';
@@ -27,6 +26,10 @@ interface DashboardProps {
         funnel: string | null;
         last_submitted_at: string | null;
     }>;
+    analytics: {
+        daily: Array<{ date: string; views: number; conversions: number }>;
+        sources: Array<{ source: string; conversions: number }>;
+    };
 }
 
 function formatNumber(value: number): string {
@@ -41,8 +44,9 @@ function formatNumber(value: number): string {
     return value.toString();
 }
 
-export default function Dashboard({ stats, recentContacts }: DashboardProps) {
+export default function Dashboard({ stats, recentContacts, analytics }: DashboardProps) {
     const conversionRate = stats.total_views > 0 ? (stats.total_conversions / stats.total_views) * 100 : 0;
+    const maxDailyViews = Math.max(1, ...analytics.daily.map((day) => day.views));
 
     useEffect(() => {
         const ctx = gsap.context(() => {
@@ -199,17 +203,46 @@ export default function Dashboard({ stats, recentContacts }: DashboardProps) {
                     </div>
                 </div>
 
-                {/* Performance Chart Placeholder */}
-                <div className="dashboard-card relative min-h-[400px] flex-1 overflow-hidden rounded-xl border border-border bg-card p-6 md:min-h-min">
-                    <h3 className="mb-4 text-lg font-semibold text-foreground">Performance Overview</h3>
-                    <div className="relative h-full">
-                        <PlaceholderPattern className="absolute inset-0 size-full stroke-muted-foreground/10" />
-                        <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="text-center">
-                                <BarChart3 className="mx-auto mb-2 h-12 w-12 text-muted-foreground/50" />
-                                <p className="text-muted-foreground">Conversion rate: {conversionRate.toFixed(1)}%</p>
-                                <p className="text-sm text-muted-foreground/70">Time-series analytics and attribution are planned.</p>
+                <div className="dashboard-card grid gap-6 rounded-xl border border-border bg-card p-6 lg:grid-cols-[minmax(0,2fr)_minmax(240px,1fr)]">
+                    <div>
+                        <div className="mb-6 flex items-center justify-between">
+                            <div>
+                                <h3 className="text-lg font-semibold text-foreground">Last 14 days</h3>
+                                <p className="text-sm text-muted-foreground">Views and attributed conversions</p>
                             </div>
+                            <span className="rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
+                                {conversionRate.toFixed(1)}% overall
+                            </span>
+                        </div>
+                        <div className="flex h-56 items-end gap-2 border-b border-border">
+                            {analytics.daily.map((day) => (
+                                <div
+                                    key={day.date}
+                                    className="group flex h-full min-w-0 flex-1 items-end gap-0.5"
+                                    title={`${day.date}: ${day.views} views, ${day.conversions} conversions`}
+                                >
+                                    <div
+                                        className="min-h-1 flex-1 rounded-t bg-chart-2/70 transition-colors group-hover:bg-chart-2"
+                                        style={{ height: `${Math.max(2, (day.views / maxDailyViews) * 100)}%` }}
+                                    />
+                                    <div
+                                        className="min-h-1 flex-1 rounded-t bg-primary/70 transition-colors group-hover:bg-primary"
+                                        style={{ height: `${Math.max(2, (day.conversions / maxDailyViews) * 100)}%` }}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    <div className="border-border lg:border-l lg:pl-6">
+                        <h3 className="mb-4 text-sm font-semibold tracking-wide text-muted-foreground uppercase">Top conversion sources</h3>
+                        <div className="space-y-3">
+                            {analytics.sources.map((source) => (
+                                <div key={source.source} className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2">
+                                    <span className="truncate text-sm font-medium text-foreground">{source.source}</span>
+                                    <span className="text-sm text-muted-foreground tabular-nums">{source.conversions}</span>
+                                </div>
+                            ))}
+                            {analytics.sources.length === 0 && <p className="text-sm text-muted-foreground">No attributed conversions yet.</p>}
                         </div>
                     </div>
                 </div>

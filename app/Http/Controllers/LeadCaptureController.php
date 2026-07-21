@@ -34,6 +34,7 @@ class LeadCaptureController extends Controller
             'attribution.utm_term' => ['nullable', 'string', 'max:255'],
             'attribution.utm_content' => ['nullable', 'string', 'max:255'],
             'attribution.referrer' => ['nullable', 'url', 'max:2000'],
+            'session_id' => ['nullable', 'uuid'],
         ]);
 
         $email = strtolower($validated['email']);
@@ -78,6 +79,13 @@ class LeadCaptureController extends Controller
         ]);
 
         $funnel->incrementConversions();
+        $funnel->events()->create([
+            'event_type' => 'conversion',
+            'session_id' => isset($validated['session_id']) ? hash('sha256', $validated['session_id']) : null,
+            'form_id' => $validated['form_id'] ?? null,
+            'attribution' => $validated['attribution'] ?? [],
+            'occurred_at' => now(),
+        ]);
         $this->notifyLeadCaptured($contact, $funnel, $submission);
 
         return back()->with('success', 'Thanks. Your information was submitted.');
