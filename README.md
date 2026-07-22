@@ -7,263 +7,190 @@
 [![React 19](https://img.shields.io/badge/React-19-61DAFB.svg)](package.json)
 [![Docker](https://img.shields.io/badge/Docker-ready-2496ED.svg)](docs/docker-evaluation.md)
 
-OpenFunnels is a self-hosted, open-source Funnel OS for building, publishing, measuring, and improving conversion journeys without handing customer data to a closed platform.
+OpenFunnels is a self-hosted, open-source funnel builder for creating, publishing, and improving conversion journeys while keeping customer data under your control.
 
-It combines a visual React editor, conversion forms, lightweight CRM, attribution analytics, native experiments, portable templates, optional AI-assisted generation, custom domains, and production-friendly Laravel foundations.
-
-## Try It in One Command
-
-```bash
-docker compose up --build
-```
-
-Open `http://localhost:8000` and choose **Launch Demo** for an isolated editor sandbox with seeded funnel, contact, and analytics data. See the [Docker evaluation guide](docs/docker-evaluation.md) for logs, reset, and persistence commands.
+It combines a visual page editor with lead-capture forms, a lightweight CRM, attribution analytics, A/B experiments, custom domains, portable templates, and optional AI-assisted drafts. The application is built on Laravel, Inertia, React, and TypeScript.
 
 ## Screenshots
 
-### Homepage
+| Homepage                                                                                                                             | Funnel editor                                                                                                                      |
+| ------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
+| <img width="760" alt="OpenFunnels homepage" src="https://github.com/user-attachments/assets/312f379f-c452-428a-b930-8aa41410e4cb" /> | <img width="760" alt="OpenFunnels editor" src="https://github.com/user-attachments/assets/8306072d-9686-48ec-acc8-d4c7ea0326a2" /> |
 
-<img width="1511" height="855" alt="OpenFunnels homepage" src="https://github.com/user-attachments/assets/312f379f-c452-428a-b930-8aa41410e4cb" />
+## Quick Start With Docker
 
-### Editor
+The evaluation stack is the fastest way to try OpenFunnels. It requires Docker with Compose v2.
 
-<img width="1511" height="856" alt="OpenFunnels editor" src="https://github.com/user-attachments/assets/8306072d-9686-48ec-acc8-d4c7ea0326a2" />
+```bash
+git clone https://github.com/aialvi/openfunnels.git
+cd openfunnels
+docker compose up --build
+```
 
-## Features
+Open [http://localhost:8000](http://localhost:8000) and select **Launch Demo**. You can also register a persistent local account.
 
-- **Visual funnel editor**: Drag-and-drop section, column, and block editing with undo/redo support.
-- **Starter templates**: Build from scratch or choose from 15 premade layouts with categories and visual thumbnails.
-- **Portable template packs**: Import and export validated, versioned `.openfunnels.json` community templates.
-- **Responsive preview**: Desktop, tablet, and mobile preview modes for editor layouts.
-- **Publishing**: Public funnel rendering, preview routes, publish/unpublish controls, and slug-based sharing.
-- **Custom domains**: Application-layer custom domain mapping with DNS verification for published funnels.
-- **Lead capture**: Configurable form fields collect contact details and custom answers, create or update contacts, and increment funnel conversions.
-- **Conversion forms**: Multi-step flows, conditional fields, automatic UTM/referrer attribution, and safe message, redirect, or download actions.
-- **CRM-lite contacts**: Contact index and detail pages with source funnel, submissions, metadata, notes, and lifecycle status.
-- **Lead notifications**: Email notification on new leads, plus optional webhook delivery.
-- **Analytics and experiments**: Privacy-conscious event trends, source attribution, drop-off events, stable variant assignment, and per-variant results.
-- **Resilient editing**: Debounced autosave, optimistic concurrency, offline recovery, and downloadable conflict copies.
-- **Optional AI drafts**: Provider-neutral generation contract with a Responses-compatible driver and canonical content validation.
-- **Guest sandbox**: Expiring, isolated demo accounts with outbound and administrative actions disabled.
-- **Export modules**: Exporter structure for HTML, Laravel, React, Vue, WordPress, Shopify, and WooCommerce targets.
+The stack includes the web application, queue worker, scheduler, compiled frontend, and a persistent SQLite volume. It is intended for local evaluation—not production—and does not configure TLS, a reverse proxy, or custom-domain infrastructure.
 
-## Tech Stack
+```bash
+# Follow service logs
+docker compose logs -f
 
-### Backend
+# Stop without deleting local data
+docker compose down
 
-- Laravel 13
-- PHP 8.3+
-- Inertia.js 2
-- Eloquent ORM
-- SQLite for local development
-- Pest for tests
+# Remove the stack and its local data
+docker compose down --volumes
+```
 
-### Frontend
+See the [Docker evaluation guide](docs/docker-evaluation.md) for more details.
 
-- React 19
-- TypeScript
-- Vite
-- Tailwind CSS 4
-- Radix UI and local shadcn-style primitives
-- lucide-react icons
-- Zustand + Immer editor state
+## What You Can Build
 
-## Prerequisites
+- **Funnels:** Create pages with a drag-and-drop section, column, and block editor; undo and redo changes; autosave; and preview responsive layouts.
+- **Templates:** Start from 15 categorized layouts or import and export versioned `.openfunnels.json` template packs.
+- **Forms and contacts:** Capture configurable and conditional fields, preserve every submission, collect UTM and referrer attribution, and manage lead statuses and notes.
+- **Publishing:** Publish to slug-based URLs or verified custom domains, preview drafts, and unpublish without deleting content.
+- **Analytics and experiments:** Track privacy-conscious events, conversion trends, traffic sources, drop-off, and stable A/B variant assignments.
+- **Operations:** Send new-lead email notifications or webhooks, recover offline editor changes, and export to several web and commerce targets.
+- **AI-assisted drafts:** Optionally generate funnel drafts through a provider-neutral, Responses-compatible backend driver.
+- **Guest evaluation:** Run isolated, expiring demo accounts with outbound and administrative actions restricted.
 
-- PHP 8.3 or higher
-- Composer
-- Node.js 18 or higher
-- pnpm
+## Local Development
 
-## Installation
+### Requirements
 
-1. Clone the repository:
+- PHP 8.3 or later, with the extensions required by Laravel
+- Composer 2
+- Node.js 22 (the version used in CI and the Docker build)
+- pnpm 10.13.1
+- SQLite
 
-    ```bash
-    git clone https://github.com/aialvi/openfunnels.git
-    cd openfunnels
-    ```
+### Setup
 
-2. Install dependencies:
+```bash
+git clone https://github.com/aialvi/openfunnels.git
+cd openfunnels
 
-    ```bash
-    composer install
-    pnpm install
-    ```
+composer install
+corepack enable
+pnpm install
 
-3. Configure the app:
+cp .env.example .env
+php artisan key:generate
+touch database/database.sqlite
+php artisan migrate --seed
+```
 
-    ```bash
-    cp .env.example .env
-    php artisan key:generate
-    ```
+For local URL generation, set `APP_NAME=OpenFunnels` and `APP_URL=http://localhost:8000` in `.env`.
 
-4. Create and migrate the local database:
-
-    ```bash
-    touch database/database.sqlite
-    php artisan migrate
-    php artisan db:seed
-    ```
-
-5. Optional environment settings:
-
-    ```env
-    # Custom domain DNS checks
-    DOMAIN_MAPPING_CNAME_TARGET=cname.openfunnels.com
-    DOMAIN_MAPPING_A_RECORD_IP=
-    FUNNEL_CUSTOM_DOMAIN_SCHEME=https
-
-    # Lead capture operations
-    LEAD_CAPTURE_NOTIFICATION_EMAIL=
-    LEAD_CAPTURE_WEBHOOK_URL=
-
-    # Optional sandbox
-    DEMO_MODE=false
-
-    # Optional AI generation
-    FUNNEL_AI_DRIVER=disabled
-    FUNNEL_AI_API_KEY=
-    FUNNEL_AI_MODEL=gpt-5.6-luna
-    ```
-
-## Development
-
-Start the full local stack:
+Start Laravel, the queue listener, log tailing, and Vite together:
 
 ```bash
 composer run dev
 ```
 
-That command starts Laravel, the queue listener, log tailing, and Vite. The app is available at `http://localhost:8000`.
+Then visit [http://localhost:8000](http://localhost:8000). The seeded development account is:
 
-You can also run Laravel and Vite separately:
+```text
+Email: test@example.com
+Password: password
+```
+
+The seed account is for local development only. You can skip `--seed` and register your own account instead; with the default log mailer, email verification links are written to `storage/logs/laravel.log`.
+
+To run the application and frontend separately:
 
 ```bash
 php artisan serve
 pnpm run dev
 ```
 
-Build frontend assets:
+## Configuration
 
-```bash
-pnpm run build
-```
+The default `.env.example` uses SQLite, database-backed queues, sessions and cache, and the log mailer. These optional variables enable additional features:
 
-## Self-hosting
+| Variable                          | Default                 | Purpose                                          |
+| --------------------------------- | ----------------------- | ------------------------------------------------ |
+| `DOMAIN_MAPPING_CNAME_TARGET`     | `cname.openfunnels.com` | Expected CNAME target during domain verification |
+| `DOMAIN_MAPPING_A_RECORD_IP`      | empty                   | Optional accepted A-record address               |
+| `FUNNEL_CUSTOM_DOMAIN_SCHEME`     | `https`                 | Scheme used for verified custom-domain URLs      |
+| `LEAD_CAPTURE_NOTIFICATION_EMAIL` | empty                   | Overrides the funnel owner's new-lead recipient  |
+| `LEAD_CAPTURE_WEBHOOK_URL`        | empty                   | Receives new-lead webhook payloads               |
+| `FUNNEL_AI_DRIVER`                | `disabled`              | Enables a configured funnel-generation driver    |
+| `FUNNEL_AI_ENDPOINT`              | OpenAI Responses API    | Responses-compatible generation endpoint         |
+| `FUNNEL_AI_API_KEY`               | empty                   | Server-side generation credential                |
+| `FUNNEL_AI_MODEL`                 | `gpt-5.6-luna`          | Model sent to the configured endpoint            |
+| `FUNNEL_AI_TIMEOUT`               | `45`                    | Generation request timeout in seconds            |
+| `DEMO_MODE`                       | `false`                 | Enables the isolated guest sandbox               |
+| `DEMO_LIFETIME_HOURS`             | `24`                    | Lifetime of guest sandbox accounts               |
 
-For a production VPS installation, including required services, deployment steps, workers, health checks, backups, and custom-domain responsibilities, see [Self-hosting OpenFunnels](docs/self-hosting.md).
+Do not commit `.env` or expose AI, mail, database, or webhook credentials to the browser.
 
-## Testing And Quality
+## Development Commands
 
-```bash
-# PHP tests
-composer test
-# or
-php artisan test
+| Command                          | Purpose                                           |
+| -------------------------------- | ------------------------------------------------- |
+| `composer run dev`               | Start Laravel, the queue listener, Pail, and Vite |
+| `composer test`                  | Clear cached config and run the PHP test suite    |
+| `php artisan test --filter=Name` | Run a focused PHP test                            |
+| `vendor/bin/pint --test`         | Check PHP formatting without changing files       |
+| `vendor/bin/pint`                | Format PHP files                                  |
+| `pnpm run dev`                   | Start only the Vite development server            |
+| `pnpm run build`                 | Build production frontend assets                  |
+| `pnpm run build:ssr`             | Build browser and SSR assets                      |
+| `pnpm run test`                  | Run frontend unit tests with Vitest               |
+| `pnpm run types`                 | Type-check TypeScript                             |
+| `pnpm run lint`                  | Check frontend lint rules                         |
+| `pnpm run lint:fix`              | Fix frontend lint violations where possible       |
+| `pnpm run format:check`          | Check frontend formatting                         |
+| `pnpm run format`                | Format files under `resources/`                   |
 
-# PHP formatting
-./vendor/bin/pint
+Generated Vite assets in `public/build` should not be committed.
 
-# Frontend formatting and checks
-pnpm run format
-pnpm run format:check
-pnpm run lint
-pnpm run types
-```
-
-Note: `pnpm run lint` runs ESLint with `--fix`, so it may edit files.
-
-## Project Structure
+## Architecture At A Glance
 
 ```text
-app/
-├── Http/Controllers/
-│   ├── ContactController.php        # Contacts, detail, status, and notes
-│   ├── FunnelController.php         # Funnel CRUD, preview, publish, public rendering
-│   └── LeadCaptureController.php    # Public funnel form submissions
-├── Mail/
-│   └── NewLeadCaptured.php          # New lead email notification
-├── Models/
-│   ├── Contact.php
-│   ├── ContactSubmission.php
-│   └── Funnel.php
-└── Policies/
+React editor ──> canonical sections/columns/blocks JSON ──> draft preview
+                                                    └─────> published funnel
 
-resources/
-├── js/
-│   ├── components/                  # Reusable UI and editor components
-│   ├── pages/                       # Inertia pages
-│   ├── stores/funnelStore.ts        # Editor state, history, actions
-│   └── types/editor.ts              # Canonical editor types
-└── css/app.css                      # Tailwind 4 and theme tokens
+Public form ───> contact ──> submission timeline ──> notification/webhook
+Public events ─> attribution and conversion data ──> dashboard/experiments
+```
 
-database/
-├── migrations/
-└── seeders/
+Key locations:
 
-docs/
-├── ai-instructions/
-└── prds/
+```text
+app/Http/Controllers/              HTTP behavior for funnels, contacts, leads, and analytics
+app/Models/                        Eloquent models and funnel publishing helpers
+app/Policies/FunnelPolicy.php      Authorization for user-owned funnels
+resources/js/pages/                Inertia pages, including the primary editor
+resources/js/components/editor/    Drag-and-drop editor UI
+resources/js/stores/funnelStore.ts Zustand + Immer editor state and history
+resources/js/types/editor.ts       Canonical funnel editor types
+resources/js/lib/exporters/        Funnel export implementations
+routes/web.php                     Public, authenticated, and custom-domain routes
+tests/                             Pest feature/unit tests and Vitest frontend tests
 ```
 
 ## Documentation
 
-- `AGENTS.md`: contributor and AI-agent working guide.
-- `DESIGN.md`: product UI and design direction.
-- `Roadmap.md`: current foundation, near-term priorities, and longer feature tracks.
-- `docs/prds/mvp-funnel-crm.md`: MVP funnel builder and CRM-lite requirements.
-- `docs/prds/domain-mapping.md`: custom domain mapping requirements.
-- `docs/ai-instructions/domain-mapping-agent-rules.md`: implementation rules for domain mapping.
-- `docs/template-format.md`: portable community template format and contribution guide.
-- `docs/docker-evaluation.md`: one-command local evaluation stack.
+- [Contributing](CONTRIBUTING.md): setup, architecture boundaries, pull-request expectations, and verification.
+- [Self-hosting](docs/self-hosting.md): production services, deployment, workers, health checks, backups, and custom domains.
+- [Template format](docs/template-format.md): portable community template schema and contribution workflow.
+- [Product roadmap](Roadmap.md): completed foundation, current priorities, and longer-term tracks.
+- [Design direction](DESIGN.md): UI principles and visual language.
+- [MVP funnel and CRM PRD](docs/prds/mvp-funnel-crm.md): core funnel, form, and contact behavior.
+- [Domain mapping PRD](docs/prds/domain-mapping.md): custom-domain requirements and boundaries.
+- [Agent guide](AGENTS.md): repository conventions for AI-assisted contributions.
 
-## Current Roadmap
+## Contributing And Support
 
-Completed foundation:
+Contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) and keep changes focused, tested, and documented.
 
-- Laravel + Inertia application shell with authentication and settings.
-- Funnel CRUD, aggregate dashboard stats, drag-and-drop editing, undo/redo, and responsive device previews.
-- Fifteen categorized starter templates with visual thumbnails and practical lead-capture forms.
-- Draft previews, published public rendering, publish/unpublish controls, and cross-browser sharing.
-- Canonical public URL resolution for app URLs and verified custom domains.
-- Globally unique self-hosted funnel slugs with automatic collision repair.
-- Custom domain mapping with DNS verification and verified-domain-only public rendering.
-- Lead capture forms that create or update contacts, preserve every submission, and track conversions.
-- Configurable form blocks with reorderable text, email, phone, number, URL, textarea, dropdown, checkbox, and hidden fields.
-- CRM-lite contact profiles with submission timelines, metadata, notes, and lifecycle statuses.
-- Funnel-specific response dashboards with totals, unique-lead counts, pagination, and submitted field details.
-- Response filtering by lead name, email, phone, lifecycle status, form, and date range.
-- New-lead email notifications and optional webhook delivery.
-- Exporter modules for HTML, Laravel, React, Vue, WordPress, Shopify, and WooCommerce.
-- MIT licensing and production VPS self-hosting documentation covering workers, backups, health checks, and domains.
+- Report bugs through [GitHub Issues](https://github.com/aialvi/openfunnels/issues).
+- Ask questions and discuss ideas in [GitHub Discussions](https://github.com/aialvi/openfunnels/discussions).
+- Report security vulnerabilities privately through [GitHub Security Advisories](https://github.com/aialvi/openfunnels/security/advisories/new) and review [SECURITY.md](SECURITY.md).
 
-Near-term priorities:
+OpenFunnels is released under the [MIT License](LICENSE).
 
-- Expand conditional form operators and reusable form-step presets.
-- Add contact-wide CRM search and filters, CSV import/export, and duplicate management.
-- Add UI-managed lead notification settings.
-- Move starter template definitions into a scalable template library module.
-- Add cohort retention, revenue attribution, and statistical guidance for experiments.
-- Expand focused exporter, accessibility, and browser test coverage.
-
-Longer-term tracks include automation workflows, SMS and email campaigns, calendar booking, agency sub-accounts, payments, and deeper analytics.
-
-## Contributing
-
-Read [CONTRIBUTING.md](CONTRIBUTING.md) for setup, architecture boundaries, pull-request expectations, and test commands. Bug reports, feature proposals, documentation improvements, and community templates are welcome.
-
-## Support
-
-- Issues: [GitHub Issues](https://github.com/aialvi/openfunnels/issues)
-- Discussions: [GitHub Discussions](https://github.com/aialvi/openfunnels/discussions)
-
-## License
-
-This project is open source and available under the [MIT License](LICENSE).
-
-<p align="center">
-  <a href="https://www.buymeacoffee.com/aialvi" target="_blank">
-    <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me a Coffee" height="60">
-  </a>
-</p>
+If OpenFunnels is useful to you, you can [support its continued development](https://www.buymeacoffee.com/aialvi).
