@@ -13,9 +13,21 @@ It combines a visual page editor with lead-capture forms, a lightweight CRM, dur
 
 ## Screenshots
 
-| Homepage                                                                                                                             | Funnel editor                                                                                                                      |
-| ------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
-| <img width="760" alt="OpenFunnels homepage" src="https://github.com/user-attachments/assets/312f379f-c452-428a-b930-8aa41410e4cb" /> | <img width="760" alt="OpenFunnels editor" src="https://github.com/user-attachments/assets/8306072d-9686-48ec-acc8-d4c7ea0326a2" /> |
+| Dashboard analytics | Visual funnel editor |
+| --- | --- |
+| <img width="760" height="429" alt="OpenFunnels dashboard showing funnel, conversion, contact, and traffic analytics" src="public/ss/dashboard-analytics.webp" /> | <img width="760" height="429" alt="OpenFunnels visual editor with layout controls, form settings, and draggable content blocks" src="public/ss/visual-funnel-editor.webp" /> |
+
+| Funnel starter options | Responsive funnel preview |
+| --- | --- |
+| <img width="760" height="429" alt="OpenFunnels new funnel dialog with blank canvas and template options" src="public/ss/funnel-starter-options.webp" /> | <img width="760" height="429" alt="Desktop preview of a webinar registration funnel in OpenFunnels" src="public/ss/responsive-funnel-preview.webp" /> |
+
+| Form responses | Automation workflow builder |
+| --- | --- |
+| <img width="760" height="429" alt="OpenFunnels form response dashboard with lead details and filters" src="public/ss/form-responses.webp" /> | <img width="760" height="429" alt="OpenFunnels automation workflow builder with email, wait, and notification steps" src="public/ss/automation-workflow-builder.webp" /> |
+
+| Opportunities pipeline | Multi-platform funnel export |
+| --- | --- |
+| <img width="760" height="429" alt="OpenFunnels opportunities pipeline with configurable sales stages and forecast metrics" src="public/ss/opportunities-pipeline.webp" /> | <img width="760" height="429" alt="OpenFunnels export dialog generating funnel code for HTML, React, Vue, WordPress, Laravel, Shopify, and WooCommerce" src="public/ss/multi-platform-funnel-export.webp" /> |
 
 ## Quick Start With Docker
 
