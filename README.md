@@ -11,6 +11,11 @@ OpenFunnels is a self-hosted, open-source funnel builder for creating, publishin
 
 It combines a visual page editor with lead-capture forms, a lightweight CRM, durable workflow automation, attribution analytics, A/B experiments, custom domains, portable templates, and optional AI-assisted drafts. The application is built on Laravel, Inertia, React, and TypeScript.
 
+## Demo
+
+https://github.com/user-attachments/assets/0f58d31d-6eed-4a5a-9fda-6adbba6317e2
+
+
 ## Screenshots
 
 | Dashboard analytics | Visual funnel editor |
