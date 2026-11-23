@@ -1539,15 +1539,16 @@ export default function EnhancedFunnelEditor({
             <div className="flex h-screen flex-col bg-background">
                 <DemoBanner />
                 {/* Top Toolbar */}
-                <div className="border-b border-border bg-card px-6 py-4">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-4">
+                <div className="overflow-x-auto border-b border-border bg-card px-4 py-3">
+                    <div className="flex items-center justify-between gap-4 text-sm whitespace-nowrap">
+                        <div className="flex min-w-0 items-center gap-2">
                             <Link
                                 href={route('funnels.index')}
-                                className="flex items-center space-x-2 text-muted-foreground transition-colors hover:text-foreground"
+                                className="flex shrink-0 items-center space-x-2 rounded p-1 text-muted-foreground transition-colors hover:text-foreground"
+                                title="Back to Funnels"
                             >
                                 <ArrowLeft className="h-4 w-4" />
-                                <span>Back to Funnels</span>
+                                <span className="sr-only 2xl:not-sr-only">Back to Funnels</span>
                             </Link>
 
                             {isEditingName ? (
@@ -1562,16 +1563,16 @@ export default function EnhancedFunnelEditor({
                                 />
                             ) : (
                                 <div
-                                    className="cursor-pointer rounded px-2 py-1 text-lg font-semibold text-foreground transition-colors hover:bg-muted"
+                                    className="max-w-56 min-w-24 cursor-pointer truncate rounded px-2 py-1 text-lg font-semibold text-foreground transition-colors hover:bg-muted"
                                     onClick={handleNameEdit}
-                                    title="Click to edit funnel name"
+                                    title={`${funnel.name} (click to rename)`}
                                 >
                                     {funnel.name}
                                 </div>
                             )}
                         </div>
 
-                        <div className="flex items-center space-x-4">
+                        <div className="flex shrink-0 items-center gap-3">
                             {/* Editor Mode Tabs */}
                             <div className="flex items-center rounded-lg bg-muted p-1">
                                 <button
@@ -1595,7 +1596,7 @@ export default function EnhancedFunnelEditor({
                             </div>
 
                             {/* Action Buttons */}
-                            <div className="flex items-center space-x-2">
+                            <div className="flex items-center space-x-1.5">
                                 <button
                                     onClick={() => setIsAiModalOpen(true)}
                                     className="flex items-center space-x-2 rounded-lg bg-primary/10 px-3 py-2 text-primary transition-colors hover:bg-primary/20"
@@ -1631,7 +1632,7 @@ export default function EnhancedFunnelEditor({
                                         }
                                     }}
                                     disabled={!initialFunnel?.id}
-                                    className={`flex items-center space-x-2 rounded-lg bg-muted px-4 py-2 text-foreground transition-colors ${
+                                    className={`flex items-center space-x-2 rounded-lg bg-muted px-3 py-2 text-foreground transition-colors ${
                                         !initialFunnel?.id ? 'cursor-not-allowed opacity-50' : 'hover:bg-muted/80'
                                     }`}
                                     title={initialFunnel?.id ? 'Preview funnel' : 'Save the funnel first to preview'}
@@ -1641,7 +1642,7 @@ export default function EnhancedFunnelEditor({
                                 </button>
                                 <button
                                     onClick={() => setIsExportModalOpen(true)}
-                                    className="flex items-center space-x-2 rounded-lg bg-muted px-4 py-2 text-foreground hover:bg-muted/80"
+                                    className="flex items-center space-x-2 rounded-lg bg-muted px-3 py-2 text-foreground hover:bg-muted/80"
                                     title="Export funnel code"
                                 >
                                     <Download className="h-4 w-4" />
@@ -1653,7 +1654,7 @@ export default function EnhancedFunnelEditor({
                                             setStarterStep('choice');
                                             setIsStarterOpen(true);
                                         }}
-                                        className="flex items-center space-x-2 rounded-lg bg-muted px-4 py-2 text-foreground hover:bg-muted/80"
+                                        className="flex items-center space-x-2 rounded-lg bg-muted px-3 py-2 text-foreground hover:bg-muted/80"
                                         title="Choose a starter layout"
                                     >
                                         <Sparkles className="h-4 w-4" />
@@ -1663,16 +1664,17 @@ export default function EnhancedFunnelEditor({
                                 <button
                                     onClick={() => setIsSettingsModalOpen(true)}
                                     disabled={!initialFunnel?.id}
-                                    className="flex items-center space-x-2 rounded-lg bg-muted px-4 py-2 text-foreground hover:bg-muted/80"
-                                    title={initialFunnel?.id ? 'Domain Settings' : 'Save the funnel first to map a domain'}
+                                    className="flex items-center space-x-2 rounded-lg bg-muted px-3 py-2 text-foreground hover:bg-muted/80"
+                                    aria-label="Domain settings"
+                                    title={initialFunnel?.id ? 'Domain settings' : 'Save the funnel first to map a domain'}
                                 >
                                     <Globe className="h-4 w-4" />
-                                    <span>Domain Settings</span>
+                                    <span>Domain</span>
                                 </button>
                                 <button
                                     onClick={() => setIsCrmModalOpen(true)}
                                     disabled={!initialFunnel?.id}
-                                    className="flex items-center space-x-2 rounded-lg bg-muted px-4 py-2 text-foreground hover:bg-muted/80 disabled:cursor-not-allowed disabled:opacity-50"
+                                    className="flex items-center space-x-2 rounded-lg bg-muted px-3 py-2 text-foreground hover:bg-muted/80 disabled:cursor-not-allowed disabled:opacity-50"
                                     title={initialFunnel?.id ? 'Configure CRM automation' : 'Save the funnel first to configure CRM automation'}
                                 >
                                     <BriefcaseBusiness className="h-4 w-4" />
@@ -1690,7 +1692,7 @@ export default function EnhancedFunnelEditor({
                                 <button
                                     onClick={() => void saveFunnel()}
                                     disabled={isSaving}
-                                    className={`flex items-center space-x-2 rounded-lg px-4 py-2 transition-colors ${
+                                    className={`flex items-center space-x-2 rounded-lg px-3 py-2 transition-colors ${
                                         isSaving
                                             ? 'cursor-not-allowed bg-muted text-muted-foreground'
                                             : isDirty
@@ -1723,7 +1725,7 @@ export default function EnhancedFunnelEditor({
 
                                 {/* Save Status */}
                                 {lastSaved && saveStatus === 'saved' && (
-                                    <div className="text-xs text-muted-foreground">Last saved: {lastSaved.toLocaleTimeString()}</div>
+                                    <div className="hidden text-xs text-muted-foreground 2xl:block">Last saved: {lastSaved.toLocaleTimeString()}</div>
                                 )}
                             </div>
                         </div>

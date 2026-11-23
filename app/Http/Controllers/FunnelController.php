@@ -40,7 +40,10 @@ class FunnelController extends Controller
             'total_funnels' => $funnels->count(),
             'total_views' => $funnels->sum('views'),
             'total_conversions' => $funnels->sum('conversions'),
-            'avg_conversion_rate' => $funnels->avg('conversion_rate') ?? 0,
+            // Weighted by traffic so unlaunched funnels don't drag the average down.
+            'avg_conversion_rate' => $funnels->sum('views') > 0
+                ? round($funnels->sum('conversions') / $funnels->sum('views') * 100, 2)
+                : 0,
         ];
 
         $funnelData = $funnels->map(function ($funnel) {
@@ -122,7 +125,9 @@ class FunnelController extends Controller
 
         $assignment = $this->variantResolver->resolve($funnel, $request);
 
-        Cookie::queue(cookie($assignment['cookie'], $assignment['value'], 60 * 24 * 30, '/', null, false, false, false, 'lax'));
+        if ($assignment['value'] !== null) {
+            Cookie::queue(cookie($assignment['cookie'], $assignment['value'], 60 * 24 * 30, '/', null, false, false, false, 'lax'));
+        }
 
         return Inertia::render('funnel-preview', [
             'funnel' => $this->serializeFunnel($funnel, $assignment['variant']),

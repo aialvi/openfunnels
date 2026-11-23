@@ -275,10 +275,10 @@ export default function AutomationsIndex({ workflows, recipes, filters }: Props)
                                         </button>
                                     </div>
                                 </div>
-                                <div className="mt-5 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
-                                    <div className="rounded-lg bg-muted/50 p-3">
+                                <div className="mt-5 grid grid-cols-3 gap-3 text-sm">
+                                    <div className="col-span-3 flex items-center justify-between gap-3 rounded-lg bg-muted/50 px-3 py-2">
                                         <p className="text-xs text-muted-foreground">Trigger</p>
-                                        <p className="mt-1 truncate font-medium">{humanize(workflow.trigger_type)}</p>
+                                        <p className="font-medium">{humanize(workflow.trigger_type)}</p>
                                     </div>
                                     <div className="rounded-lg bg-muted/50 p-3">
                                         <p className="text-xs text-muted-foreground">7-day runs</p>

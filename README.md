@@ -1,4 +1,4 @@
-# OpenFunnels
+# OpenFunnels: open-source, self-hosted funnel builder
 
 [![Tests](https://github.com/aialvi/openfunnels/actions/workflows/tests.yml/badge.svg)](https://github.com/aialvi/openfunnels/actions/workflows/tests.yml)
 [![Quality](https://github.com/aialvi/openfunnels/actions/workflows/lint.yml/badge.svg)](https://github.com/aialvi/openfunnels/actions/workflows/lint.yml)
@@ -7,32 +7,73 @@
 [![React 19](https://img.shields.io/badge/React-19-61DAFB.svg)](package.json)
 [![Docker](https://img.shields.io/badge/Docker-ready-2496ED.svg)](docs/docker-evaluation.md)
 
-OpenFunnels is a self-hosted, open-source funnel builder for creating, publishing, and improving conversion journeys while keeping customer data under your control.
+OpenFunnels is an open-source funnel builder for creating, publishing, and improving conversion journeys while keeping customer data under your control. It combines a visual page editor with lead capture, a lightweight CRM, workflow automation, analytics, and A/B experiments, built on Laravel, Inertia, React, and TypeScript.
 
-It combines a visual page editor with lead-capture forms, a lightweight CRM, durable workflow automation, attribution analytics, A/B experiments, custom domains, portable templates, and optional AI-assisted drafts. The application is built on Laravel, Inertia, React, and TypeScript.
+![OpenFunnels: visual editor on desktop with a published funnel on mobile](public/ss/hero.webp)
 
-## Demo
+## Watch the demo
 
-https://github.com/user-attachments/assets/0f58d31d-6eed-4a5a-9fda-6adbba6317e2
+[![OpenFunnels demo: building a funnel, capturing a lead, moving a deal, and running an automation](public/video/openfunnels-demo-preview.webp)](public/video/openfunnels-demo.mp4)
 
+[Watch the full 48-second video with narration](public/video/openfunnels-demo.mp4), or run it yourself with the [Docker quick start](#quick-start-with-docker).
 
-## Screenshots
+## Product tour
 
-| Dashboard analytics | Visual funnel editor |
-| --- | --- |
-| <img width="760" height="429" alt="OpenFunnels dashboard showing funnel, conversion, contact, and traffic analytics" src="public/ss/dashboard-analytics.webp" /> | <img width="760" height="429" alt="OpenFunnels visual editor with layout controls, form settings, and draggable content blocks" src="public/ss/visual-funnel-editor.webp" /> |
+The interface in every image and in the video is captured from the running application with fictional showcase data. Backdrops, frames, headlines, and enlarged panels are added when the images are composed.
 
-| Funnel starter options | Responsive funnel preview |
-| --- | --- |
-| <img width="760" height="429" alt="OpenFunnels new funnel dialog with blank canvas and template options" src="public/ss/funnel-starter-options.webp" /> | <img width="760" height="429" alt="Desktop preview of a webinar registration funnel in OpenFunnels" src="public/ss/responsive-funnel-preview.webp" /> |
+### Visual editor
 
-| Form responses | Automation workflow builder |
-| --- | --- |
-| <img width="760" height="429" alt="OpenFunnels form response dashboard with lead details and filters" src="public/ss/form-responses.webp" /> | <img width="760" height="429" alt="OpenFunnels automation workflow builder with email, wait, and notification steps" src="public/ss/automation-workflow-builder.webp" /> |
+Drag sections, columns, and blocks onto a live canvas with undo, autosave, and offline recovery.
 
-| Opportunities pipeline | Multi-platform funnel export |
-| --- | --- |
-| <img width="760" height="429" alt="OpenFunnels opportunities pipeline with configurable sales stages and forecast metrics" src="public/ss/opportunities-pipeline.webp" /> | <img width="760" height="429" alt="OpenFunnels export dialog generating funnel code for HTML, React, Vue, WordPress, Laravel, Shopify, and WooCommerce" src="public/ss/multi-platform-funnel-export.webp" /> |
+![Visual editor with a countdown block just dropped onto the page](public/ss/visual-funnel-editor.webp)
+
+### Templates
+
+Start from 15 categorized layouts, a blank canvas, or an imported `.openfunnels.json` pack.
+
+![Template browser with categorized starter layouts](public/ss/funnel-starter-options.webp)
+
+### Publishing
+
+Preview every device, then publish to a slug or a verified custom domain.
+
+![Published funnel on desktop and mobile after a successful form submission](public/ss/responsive-funnel-preview.webp)
+
+### Lead capture
+
+Keep every submission with its fields, attribution, and contact timeline.
+
+![Form responses with lead details and filters](public/ss/form-responses.webp)
+
+### Opportunities CRM
+
+Drag deals through configurable stages and track a weighted forecast.
+
+![Opportunities pipeline with a deal being dragged to the Proposal stage](public/ss/opportunities-pipeline.webp)
+
+### Automation Studio
+
+Build emails, waits, branches, and webhooks, and dry-run them before publishing.
+
+![Automation workflow with plain-language dry-run results](public/ss/automation-workflow-builder.webp)
+
+### Analytics
+
+See views, conversions, and sources without third-party trackers.
+
+![Dashboard with fourteen days of views and conversions](public/ss/dashboard-analytics.webp)
+
+### A/B experiments
+
+Snapshot a variant, split traffic, and compare conversions with assignments that stay put per visitor.
+
+![Experiments panel with a variant's traffic share and conversion rate](public/ss/ab-experiments.webp)
+
+### Export
+
+Generate HTML, React, Vue, WordPress, Laravel, Shopify, or WooCommerce code from any funnel.
+
+![Export dialog showing generated React code](public/ss/multi-platform-funnel-export.webp)
 
 ## Quick Start With Docker
 
@@ -207,6 +248,7 @@ tests/                             Pest feature/unit tests and Vitest frontend t
 - [MVP funnel and CRM PRD](docs/prds/mvp-funnel-crm.md): core funnel, form, and contact behavior.
 - [Domain mapping PRD](docs/prds/domain-mapping.md): custom-domain requirements and boundaries.
 - [Agent guide](AGENTS.md): repository conventions for AI-assisted contributions.
+- [Slides and demo video](video/README.md): regenerate the README images and Remotion video.
 
 ## Contributing And Support
 

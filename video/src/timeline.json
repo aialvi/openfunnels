@@ -1,0 +1,12 @@
+[
+    { "scene": "Intro", "frames": 84, "voice": "Build funnels. Own the data." },
+    { "scene": "Templates", "frames": 102, "voice": "Start from fifteen ready-made layouts." },
+    { "scene": "Editor", "frames": 190, "voice": "Drag a block onto the page, drop it in place, and your funnel takes shape." },
+    { "scene": "Capture", "frames": 178, "voice": "Publish it, and start capturing leads on every screen." },
+    { "scene": "Pipeline", "frames": 196, "voice": "Turn those leads into deals. Move one forward, and your forecast updates." },
+    { "scene": "Automation", "frames": 170, "voice": "Follow up automatically, and test every step before anything is sent." },
+    { "scene": "Analytics", "frames": 144, "voice": "See what's converting, without third-party trackers." },
+    { "scene": "Experiments", "frames": 118, "voice": "Test new ideas with built-in A B experiments.", "caption": "Test new ideas with built-in A/B experiments." },
+    { "scene": "ExportScene", "frames": 112, "voice": "And take your code with you, anywhere." },
+    { "scene": "Outro", "frames": 146, "voice": "Open Funnels. Open source, self-hosted, and yours to run.", "caption": "OpenFunnels. Open source, self-hosted, and yours to run." }
+]

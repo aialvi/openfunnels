@@ -2,6 +2,7 @@
 
 use App\Models\Funnel;
 use App\Models\User;
+use App\Services\FunnelVariantResolver;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -85,4 +86,40 @@ test('public assignment renders the selected variant and attributes submissions'
 
     $this->assertDatabaseHas('contact_submissions', ['funnel_id' => $funnel->id, 'variant_id' => $variant->id]);
     $this->assertDatabaseHas('funnel_events', ['funnel_id' => $funnel->id, 'variant_id' => $variant->id, 'event_type' => 'conversion']);
+});
+
+test('visitors assigned to the control stay in the control', function () {
+    $funnel = experimentFunnel(User::factory()->create());
+    // A 100% variant would win every re-roll, so staying in the control proves the cookie is honoured.
+    $funnel->variants()->create(['name' => 'Variant B', 'content' => ['sections' => []], 'settings' => [], 'weight' => 100, 'is_active' => true]);
+
+    $this->withoutVite();
+    $this->withCookie("of_variant_{$funnel->id}", FunnelVariantResolver::CONTROL)
+        ->get(route('funnels.show', $funnel->slug))
+        ->assertCookie("of_variant_{$funnel->id}", FunnelVariantResolver::CONTROL)
+        ->assertInertia(fn (Assert $page) => $page->where('funnel.variant_id', null));
+});
+
+test('visitors keep their assigned variant', function () {
+    $funnel = experimentFunnel(User::factory()->create());
+    $funnel->variants()->create(['name' => 'Variant B', 'content' => ['sections' => []], 'settings' => [], 'weight' => 99, 'is_active' => true]);
+    $assigned = $funnel->variants()->create(['name' => 'Variant C', 'content' => ['sections' => []], 'settings' => [], 'weight' => 1, 'is_active' => true]);
+
+    $this->withoutVite();
+    $this->withCookie("of_variant_{$funnel->id}", (string) $assigned->id)
+        ->get(route('funnels.show', $funnel->slug))
+        ->assertInertia(fn (Assert $page) => $page->where('funnel.variant_id', $assigned->id));
+});
+
+test('visits before an experiment do not decide later assignments', function () {
+    $funnel = experimentFunnel(User::factory()->create());
+
+    $this->withoutVite();
+    $this->get(route('funnels.show', $funnel->slug))->assertCookieMissing("of_variant_{$funnel->id}");
+
+    $variant = $funnel->variants()->create(['name' => 'Variant B', 'content' => ['sections' => []], 'settings' => [], 'weight' => 100, 'is_active' => true]);
+
+    $this->withCookie("of_variant_{$funnel->id}", 'control')
+        ->get(route('funnels.show', $funnel->slug))
+        ->assertInertia(fn (Assert $page) => $page->where('funnel.variant_id', $variant->id));
 });

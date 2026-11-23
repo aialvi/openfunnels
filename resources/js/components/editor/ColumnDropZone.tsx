@@ -115,9 +115,15 @@ export default function ColumnDropZone({ column, onBlockAdd, onBlockDelete, isSe
     return (
         <div
             ref={dropRef}
-            className={`relative min-h-[100px] p-2 transition-colors ${isSelected ? 'border-primary bg-primary/5' : ''} ${
-                isOver && canDrop ? 'border-chart-2 bg-chart-2/10' : isOver && !canDrop ? 'border-destructive bg-destructive/10' : 'border-border'
-            } border-2 border-dashed`}
+            className={`relative min-h-[100px] p-2 transition-colors ${isSelected ? 'bg-primary/5' : ''} ${
+                isOver && canDrop
+                    ? 'border-chart-2 bg-chart-2/10'
+                    : isOver && !canDrop
+                      ? 'border-destructive bg-destructive/10'
+                      : isSelected
+                        ? 'border-primary'
+                        : 'border-gray-400/40 hover:border-gray-400'
+            } border border-dashed`}
             onClick={onSelect}
         >
             {/* Validation error message */}

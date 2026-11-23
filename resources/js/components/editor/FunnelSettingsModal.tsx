@@ -1,3 +1,4 @@
+import { useEscapeKey } from '@/hooks/use-escape-key';
 import { router } from '@inertiajs/react';
 import { AlertCircle, Check, Clipboard, Globe, Loader2, Trash2, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
@@ -77,6 +78,8 @@ export default function FunnelSettingsModal({ isOpen, onClose, funnel, domainMap
     const normalizedDomain = normalizeDomain(domainInput);
     const activeDomain = selectedDomain?.domain || normalizedDomain;
     const dnsRecord = useMemo(() => getDnsRecord(activeDomain, domainMapping), [activeDomain, domainMapping]);
+
+    useEscapeKey(isOpen, onClose);
 
     if (!isOpen) return null;
 

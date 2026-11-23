@@ -1,5 +1,6 @@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import AppLayout from '@/layouts/app-layout';
+import { durationLabel, simulationSummary } from '@/lib/simulation';
 import { useAutomationStore } from '@/stores/automationStore';
 import type { BreadcrumbItem } from '@/types';
 import type {
@@ -126,7 +127,7 @@ function humanize(value: string): string {
 
 function nodeSummary(node: AutomationNode): string {
     if (node.type === 'send_email') return node.config.subject || 'Configure email';
-    if (node.type === 'wait') return `${node.config.amount} ${node.config.unit}`;
+    if (node.type === 'wait') return durationLabel(node.config.amount, node.config.unit);
     if (node.type === 'condition') return `${humanize(node.config.field)} ${humanize(node.config.operator)}`;
     if (node.type === 'update_contact') return node.config.status ? `Set status to ${node.config.status}` : 'Update tags';
     if (node.type === 'create_opportunity') return 'Create a CRM deal';
@@ -1224,7 +1225,7 @@ export default function AutomationEditor({ workflow, options }: Props) {
                                             <p className="font-medium">
                                                 {index + 1}. {humanize(step.node_type)}
                                             </p>
-                                            <p className="mt-1 truncate text-muted-foreground">{JSON.stringify(step.output)}</p>
+                                            <p className="mt-1 break-words text-muted-foreground">{simulationSummary(step.output)}</p>
                                         </li>
                                     ))}
                                 </ol>

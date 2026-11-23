@@ -1,3 +1,4 @@
+import { useEscapeKey } from '@/hooks/use-escape-key';
 import type { Funnel } from '@/types/editor';
 import { Loader2, Sparkles, X } from 'lucide-react';
 import { useState } from 'react';
@@ -18,6 +19,8 @@ export default function AiFunnelModal({ isOpen, onClose, onApply }: AiFunnelModa
     const [generated, setGenerated] = useState<GeneratedFunnel | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
+
+    useEscapeKey(isOpen, onClose);
 
     if (!isOpen) return null;
 

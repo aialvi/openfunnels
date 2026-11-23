@@ -1,3 +1,4 @@
+import { useEscapeKey } from '@/hooks/use-escape-key';
 import { funnelExporter, type ExportFormat } from '@/lib/exporters';
 import { downloadTemplateManifest } from '@/lib/templates';
 import type { Funnel } from '@/types/editor';
@@ -69,6 +70,8 @@ export default function ExportModal({ isOpen, onClose, funnel }: ExportModalProp
         URL.revokeObjectURL(url);
     };
 
+    useEscapeKey(isOpen, onClose);
+
     if (!isOpen) return null;
 
     return (
@@ -79,7 +82,7 @@ export default function ExportModal({ isOpen, onClose, funnel }: ExportModalProp
                         <Code className="h-5 w-5 text-primary" />
                         Export Funnel
                     </h2>
-                    <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
+                    <button onClick={onClose} aria-label="Close" className="text-muted-foreground hover:text-foreground">
                         ✕
                     </button>
                 </div>
@@ -98,11 +101,13 @@ export default function ExportModal({ isOpen, onClose, funnel }: ExportModalProp
                                             format === f ? 'bg-primary font-medium text-primary-foreground' : 'text-foreground hover:bg-muted'
                                         }`}
                                     >
-                                        {f === 'woocommerce'
-                                            ? 'WooCommerce'
-                                            : f === 'wordpress'
-                                              ? 'WordPress'
-                                              : f.charAt(0).toUpperCase() + f.slice(1)}
+                                        {f === 'html'
+                                            ? 'HTML'
+                                            : f === 'woocommerce'
+                                              ? 'WooCommerce'
+                                              : f === 'wordpress'
+                                                ? 'WordPress'
+                                                : f.charAt(0).toUpperCase() + f.slice(1)}
                                     </button>
                                 ))}
                             </div>

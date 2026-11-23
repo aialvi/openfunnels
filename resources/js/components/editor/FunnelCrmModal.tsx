@@ -1,3 +1,4 @@
+import { useEscapeKey } from '@/hooks/use-escape-key';
 import { Link, router } from '@inertiajs/react';
 import { BriefcaseBusiness, X } from 'lucide-react';
 import { type FormEvent, useMemo, useState } from 'react';
@@ -38,6 +39,8 @@ export default function FunnelCrmModal({ isOpen, onClose, funnelId, settings, pi
     const [processing, setProcessing] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const selectedPipeline = useMemo(() => pipelines.find((pipeline) => pipeline.id === Number(pipelineId)) || null, [pipelineId, pipelines]);
+
+    useEscapeKey(isOpen, onClose);
 
     if (!isOpen) return null;
 

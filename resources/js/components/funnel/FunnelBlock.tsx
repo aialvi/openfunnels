@@ -66,9 +66,9 @@ function CountdownBlock({ block }: { block: Block }) {
                 {units
                     .filter((unit) => unit.show)
                     .map((unit) => (
-                        <div key={unit.key} className="rounded-lg bg-gray-900 px-3 py-4 text-white">
+                        <div key={unit.key} className="min-w-0 rounded-lg bg-gray-900 px-1 py-4 text-white">
                             <div className="text-2xl font-bold tabular-nums">{String(parts[unit.key]).padStart(2, '0')}</div>
-                            <div className="text-xs tracking-wide text-gray-300 uppercase">{unit.label}</div>
+                            <div className="truncate text-[11px] text-gray-300">{unit.label}</div>
                         </div>
                     ))}
             </div>

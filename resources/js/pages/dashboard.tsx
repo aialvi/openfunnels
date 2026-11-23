@@ -44,6 +44,10 @@ function formatNumber(value: number): string {
     return value.toString();
 }
 
+function formatDay(date: string): string {
+    return new Date(`${date}T00:00:00`).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+}
+
 export default function Dashboard({ stats, recentContacts, analytics }: DashboardProps) {
     const conversionRate = stats.total_views > 0 ? (stats.total_conversions / stats.total_views) * 100 : 0;
     const maxDailyViews = Math.max(1, ...analytics.daily.map((day) => day.views));
@@ -208,7 +212,14 @@ export default function Dashboard({ stats, recentContacts, analytics }: Dashboar
                         <div className="mb-6 flex items-center justify-between">
                             <div>
                                 <h3 className="text-lg font-semibold text-foreground">Last 14 days</h3>
-                                <p className="text-sm text-muted-foreground">Views and attributed conversions</p>
+                                <div className="mt-1 flex items-center gap-4 text-sm text-muted-foreground">
+                                    <span className="flex items-center gap-1.5">
+                                        <span aria-hidden className="size-2.5 rounded-sm bg-chart-2" /> Views
+                                    </span>
+                                    <span className="flex items-center gap-1.5">
+                                        <span aria-hidden className="size-2.5 rounded-sm bg-primary" /> Conversions
+                                    </span>
+                                </div>
                             </div>
                             <span className="rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
                                 {conversionRate.toFixed(1)}% overall
@@ -219,7 +230,7 @@ export default function Dashboard({ stats, recentContacts, analytics }: Dashboar
                                 <div
                                     key={day.date}
                                     className="group flex h-full min-w-0 flex-1 items-end gap-0.5"
-                                    title={`${day.date}: ${day.views} views, ${day.conversions} conversions`}
+                                    title={`${formatDay(day.date)}: ${day.views} views, ${day.conversions} conversions`}
                                 >
                                     <div
                                         className="min-h-1 flex-1 rounded-t bg-chart-2/70 transition-colors group-hover:bg-chart-2"
@@ -230,6 +241,13 @@ export default function Dashboard({ stats, recentContacts, analytics }: Dashboar
                                         style={{ height: `${Math.max(2, (day.conversions / maxDailyViews) * 100)}%` }}
                                     />
                                 </div>
+                            ))}
+                        </div>
+                        <div aria-hidden className="mt-2 flex gap-2 text-xs text-muted-foreground">
+                            {analytics.daily.map((day, index) => (
+                                <span key={day.date} className="min-w-0 flex-1 text-center whitespace-nowrap">
+                                    {index % 3 === 1 ? formatDay(day.date) : ''}
+                                </span>
                             ))}
                         </div>
                     </div>

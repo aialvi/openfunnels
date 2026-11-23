@@ -6,8 +6,40 @@ import { useEffect, useRef } from 'react';
 
 gsap.registerPlugin(ScrollTrigger);
 
+const repository = 'https://github.com/aialvi/openfunnels';
+
+const footerLinks = [
+    {
+        title: 'Product',
+        links: [
+            { label: 'Features', href: '#features' },
+            { label: 'Demo video', href: '#demo-video' },
+            { label: 'Roadmap', href: `${repository}/blob/main/Roadmap.md` },
+            { label: 'Changelog', href: `${repository}/blob/main/CHANGELOG.md` },
+        ],
+    },
+    {
+        title: 'Resources',
+        links: [
+            { label: 'Documentation', href: `${repository}#readme` },
+            { label: 'Self-hosting', href: `${repository}/blob/main/docs/self-hosting.md` },
+            { label: 'Template format', href: `${repository}/blob/main/docs/template-format.md` },
+            { label: 'Support', href: `${repository}/issues` },
+        ],
+    },
+    {
+        title: 'Project',
+        links: [
+            { label: 'GitHub', href: repository },
+            { label: 'Contributing', href: `${repository}/blob/main/CONTRIBUTING.md` },
+            { label: 'Security', href: `${repository}/blob/main/SECURITY.md` },
+            { label: 'License', href: `${repository}/blob/main/LICENSE` },
+        ],
+    },
+];
+
 export default function Welcome() {
-    const { auth } = usePage<SharedData>().props;
+    const { auth, demo } = usePage<SharedData>().props;
     const heroRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -137,9 +169,12 @@ export default function Welcome() {
                                         Start Building Free
                                     </Link>
                                 )}
-                                <button className="rounded-lg border border-border bg-secondary px-8 py-4 text-lg font-semibold text-secondary-foreground shadow-lg transition-all hover:scale-105 hover:bg-secondary/80">
+                                <a
+                                    href="#demo-video"
+                                    className="rounded-lg border border-border bg-secondary px-8 py-4 text-lg font-semibold text-secondary-foreground shadow-lg transition-all hover:scale-105 hover:bg-secondary/80"
+                                >
                                     Watch Demo
-                                </button>
+                                </a>
                             </div>
                             <p className="mb-16 text-sm text-muted-foreground">Free forever • No credit card required • Open source</p>
                         </div>
@@ -207,17 +242,19 @@ export default function Welcome() {
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="mt-6 text-center">
-                                            <Link
-                                                href={route('demo')}
-                                                className="inline-flex rounded-lg bg-primary px-6 py-2 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-                                            >
-                                                Launch Demo
-                                            </Link>
-                                            <p className="mt-2 text-xs text-muted-foreground">
-                                                Open an isolated, editable sandbox. No signup required.
-                                            </p>
-                                        </div>
+                                        {demo.enabled && (
+                                            <div className="mt-6 text-center">
+                                                <Link
+                                                    href={route('demo')}
+                                                    className="inline-flex rounded-lg bg-primary px-6 py-2 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                                                >
+                                                    Launch Demo
+                                                </Link>
+                                                <p className="mt-2 text-xs text-muted-foreground">
+                                                    Open an isolated, editable sandbox. No signup required.
+                                                </p>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -226,26 +263,26 @@ export default function Welcome() {
                 </section>
 
                 {/* Demo Video Section */}
-                <section className="border-y border-border bg-card px-4 py-16 sm:px-6 lg:px-8">
-                    <div className="mx-auto max-w-7xl text-center">
+                <section id="demo-video" className="scroll-mt-16 border-y border-border bg-card px-4 py-16 sm:px-6 lg:px-8">
+                    <div className="mx-auto max-w-5xl text-center">
                         <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">See OpenFunnels in Action</h2>
-                        <p className="mb-8 text-xl text-muted-foreground">
-                            Watch how easy it is to build professional funnels with our drag-and-drop editor
-                        </p>
-                        <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-3">
-                            <button className="rounded-lg bg-primary px-4 py-2 font-medium text-primary-foreground">Desktop</button>
-                            <button className="rounded-lg border border-border bg-secondary px-4 py-2 font-medium text-secondary-foreground">
-                                Tablet
-                            </button>
-                            <button className="rounded-lg border border-border bg-secondary px-4 py-2 font-medium text-secondary-foreground">
-                                Mobile
-                            </button>
-                        </div>
+                        <p className="mb-8 text-xl text-muted-foreground">From first block to booked deal in under a minute</p>
+                        <video
+                            className="aspect-video w-full rounded-2xl border border-border bg-background shadow-2xl"
+                            src="/video/openfunnels-demo.mp4"
+                            poster="/video/openfunnels-demo-poster.webp"
+                            controls
+                            playsInline
+                            preload="none"
+                            aria-label="OpenFunnels product tour"
+                        >
+                            <track kind="captions" src="/video/openfunnels-demo.vtt" srcLang="en" label="English" />
+                        </video>
                     </div>
                 </section>
 
                 {/* Features Section */}
-                <section className="bg-background px-4 py-16 sm:px-6 lg:px-8">
+                <section id="features" className="scroll-mt-16 bg-background px-4 py-16 sm:px-6 lg:px-8">
                     <div className="mx-auto max-w-7xl">
                         <div className="mb-16 text-center">
                             <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">Everything You Need to Build Funnels</h2>
@@ -422,7 +459,7 @@ export default function Welcome() {
                                 </Link>
                             )}
                             <a
-                                href="https://github.com/openfunnels/openfunnels"
+                                href={repository}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="rounded-lg border-2 border-primary-foreground bg-transparent px-8 py-4 text-lg font-semibold text-primary-foreground transition-all hover:scale-105 hover:bg-primary-foreground hover:text-primary"
@@ -455,84 +492,23 @@ export default function Welcome() {
                                     The open-source funnel builder that helps you create high-converting marketing funnels without coding.
                                 </p>
                             </div>
-                            <div>
-                                <h4 className="mb-4 font-semibold">Product</h4>
-                                <ul className="space-y-2 text-muted-foreground">
-                                    <li>
-                                        <a href="#" className="transition-colors hover:text-primary">
-                                            Features
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="#" className="transition-colors hover:text-primary">
-                                            Templates
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="#" className="transition-colors hover:text-primary">
-                                            Pricing
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="#" className="transition-colors hover:text-primary">
-                                            Changelog
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div>
-                                <h4 className="mb-4 font-semibold">Resources</h4>
-                                <ul className="space-y-2 text-muted-foreground">
-                                    <li>
-                                        <a href="#" className="transition-colors hover:text-primary">
-                                            Documentation
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="#" className="transition-colors hover:text-primary">
-                                            Blog
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="#" className="transition-colors hover:text-primary">
-                                            Community
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="#" className="transition-colors hover:text-primary">
-                                            Support
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div>
-                                <h4 className="mb-4 font-semibold">Company</h4>
-                                <ul className="space-y-2 text-muted-foreground">
-                                    <li>
-                                        <a href="#" className="transition-colors hover:text-primary">
-                                            About
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="#" className="transition-colors hover:text-primary">
-                                            Careers
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="#" className="transition-colors hover:text-primary">
-                                            Privacy
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="#" className="transition-colors hover:text-primary">
-                                            Terms
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
+                            {footerLinks.map((group) => (
+                                <div key={group.title}>
+                                    <h4 className="mb-4 font-semibold">{group.title}</h4>
+                                    <ul className="space-y-2 text-muted-foreground">
+                                        {group.links.map((link) => (
+                                            <li key={link.label}>
+                                                <a href={link.href} className="transition-colors hover:text-primary">
+                                                    {link.label}
+                                                </a>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            ))}
                         </div>
                         <div className="mt-12 border-t border-border pt-8 text-center text-muted-foreground">
-                            <p>© 2025 OpenFunnels. All rights reserved. Built with ❤️ by the OpenFunnels community.</p>
+                            <p>© {new Date().getFullYear()} OpenFunnels. All rights reserved. Built with ❤️ by the OpenFunnels community.</p>
                         </div>
                     </div>
                 </footer>

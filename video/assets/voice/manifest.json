@@ -1,0 +1,92 @@
+[
+    {
+        "file": "01.mp3",
+        "text": "Build funnels. Own the data.",
+        "caption": "Build funnels. Own the data.",
+        "voiceId": "EXAVITQu4vr4xnSDxMaL",
+        "speed": 1,
+        "start": 0.3,
+        "seconds": 1.95
+    },
+    {
+        "file": "02.mp3",
+        "text": "Start from fifteen ready-made layouts.",
+        "caption": "Start from fifteen ready-made layouts.",
+        "voiceId": "EXAVITQu4vr4xnSDxMaL",
+        "speed": 1,
+        "start": 3.1,
+        "seconds": 2.276
+    },
+    {
+        "file": "03.mp3",
+        "text": "Drag a block onto the page, drop it in place, and your funnel takes shape.",
+        "caption": "Drag a block onto the page, drop it in place, and your funnel takes shape.",
+        "voiceId": "EXAVITQu4vr4xnSDxMaL",
+        "speed": 1,
+        "start": 6.5,
+        "seconds": 4.505
+    },
+    {
+        "file": "04.mp3",
+        "text": "Publish it, and start capturing leads on every screen.",
+        "caption": "Publish it, and start capturing leads on every screen.",
+        "voiceId": "EXAVITQu4vr4xnSDxMaL",
+        "speed": 1,
+        "start": 12.833,
+        "seconds": 3.297
+    },
+    {
+        "file": "05.mp3",
+        "text": "Turn those leads into deals. Move one forward, and your forecast updates.",
+        "caption": "Turn those leads into deals. Move one forward, and your forecast updates.",
+        "voiceId": "EXAVITQu4vr4xnSDxMaL",
+        "speed": 1,
+        "start": 18.767,
+        "seconds": 5.248
+    },
+    {
+        "file": "06.mp3",
+        "text": "Follow up automatically, and test every step before anything is sent.",
+        "caption": "Follow up automatically, and test every step before anything is sent.",
+        "voiceId": "EXAVITQu4vr4xnSDxMaL",
+        "speed": 1,
+        "start": 25.3,
+        "seconds": 4.365
+    },
+    {
+        "file": "07.mp3",
+        "text": "See what's converting, without third-party trackers.",
+        "caption": "See what's converting, without third-party trackers.",
+        "voiceId": "EXAVITQu4vr4xnSDxMaL",
+        "speed": 1,
+        "start": 30.967,
+        "seconds": 3.019
+    },
+    {
+        "file": "08.mp3",
+        "text": "Test new ideas with built-in A B experiments.",
+        "caption": "Test new ideas with built-in A/B experiments.",
+        "voiceId": "EXAVITQu4vr4xnSDxMaL",
+        "speed": 1.05,
+        "start": 35.767,
+        "seconds": 3.483
+    },
+    {
+        "file": "09.mp3",
+        "text": "And take your code with you, anywhere.",
+        "caption": "And take your code with you, anywhere.",
+        "voiceId": "EXAVITQu4vr4xnSDxMaL",
+        "speed": 1,
+        "start": 39.7,
+        "seconds": 2.415
+    },
+    {
+        "file": "10.mp3",
+        "text": "Open Funnels. Open source, self-hosted, and yours to run.",
+        "caption": "OpenFunnels. Open source, self-hosted, and yours to run.",
+        "voiceId": "EXAVITQu4vr4xnSDxMaL",
+        "speed": 1.05,
+        "start": 43.433,
+        "seconds": 4.226
+    }
+]

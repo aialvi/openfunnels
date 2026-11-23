@@ -1,7 +1,17 @@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { closestCorners, DndContext, type DragEndEvent, PointerSensor, useDraggable, useDroppable, useSensor, useSensors } from '@dnd-kit/core';
-import { CSS } from '@dnd-kit/utilities';
+import {
+    closestCorners,
+    DndContext,
+    type DragEndEvent,
+    DragOverlay,
+    KeyboardSensor,
+    PointerSensor,
+    useDraggable,
+    useDroppable,
+    useSensor,
+    useSensors,
+} from '@dnd-kit/core';
 import { Head, Link, router } from '@inertiajs/react';
 import {
     ArrowDown,
@@ -110,11 +120,17 @@ function formatMoney(cents: number, currency: string): string {
         return new Intl.NumberFormat(undefined, {
             style: 'currency',
             currency,
+            minimumFractionDigits: cents % 100 === 0 ? 0 : 2,
             maximumFractionDigits: 2,
         }).format(cents / 100);
     } catch {
         return `${currency} ${(cents / 100).toFixed(2)}`;
     }
+}
+
+/** Formats a Y-m-d date without shifting it across timezones. */
+function formatDate(value: string): string {
+    return new Date(`${value}T00:00:00`).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 function activityLabel(activity: OpportunityActivity): string {
@@ -132,21 +148,26 @@ function OpportunityCard({
     opportunity,
     currency,
     onEdit,
+    overlay = false,
 }: {
     opportunity: Opportunity;
     currency: string;
     onEdit: (opportunity: Opportunity) => void;
+    /** The copy that follows the pointer, outside the scrolling columns. */
+    overlay?: boolean;
 }) {
-    const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-        id: `opportunity-${opportunity.id}`,
+    const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+        id: overlay ? `overlay-${opportunity.id}` : `opportunity-${opportunity.id}`,
+        disabled: overlay,
         data: { opportunityId: opportunity.id },
     });
 
     return (
         <article
-            ref={setNodeRef}
-            style={{ transform: CSS.Translate.toString(transform) }}
-            className={`rounded-lg border border-border bg-card p-3 shadow-sm transition-opacity ${isDragging ? 'z-50 opacity-60' : ''}`}
+            ref={overlay ? undefined : setNodeRef}
+            className={`rounded-lg border bg-card p-3 transition-opacity ${
+                overlay ? 'rotate-1 cursor-grabbing border-primary shadow-2xl' : 'border-border shadow-sm hover:border-muted-foreground/40'
+            } ${isDragging ? 'opacity-30' : ''}`}
         >
             <div className="mb-2 flex items-start justify-between gap-2">
                 <button
@@ -188,7 +209,7 @@ function OpportunityCard({
             {opportunity.expected_close_date && (
                 <div className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
                     <CalendarDays className="h-3.5 w-3.5" />
-                    Close by {opportunity.expected_close_date}
+                    Close by {formatDate(opportunity.expected_close_date)}
                 </div>
             )}
             {opportunity.funnel && <div className="mt-2 truncate text-xs text-muted-foreground">From {opportunity.funnel.name}</div>}
@@ -213,7 +234,7 @@ function StageColumn({
     return (
         <section
             ref={setNodeRef}
-            className={`flex max-h-[calc(100vh-310px)] min-h-80 w-80 shrink-0 flex-col rounded-xl border bg-muted/30 transition-colors ${
+            className={`flex max-h-[calc(100vh-310px)] min-h-80 min-w-64 flex-1 flex-col rounded-xl border bg-muted/30 transition-colors xl:max-w-96 ${
                 isOver ? 'border-primary bg-primary/5' : 'border-border'
             }`}
         >
@@ -821,13 +842,15 @@ function OpportunityModal({
 
 export default function Opportunities({ pipelines, selectedPipelineId, opportunities, stats, filters, preselectedContact }: OpportunitiesProps) {
     const [boardOpportunities, setBoardOpportunities] = useState(opportunities);
+    const [draggingId, setDraggingId] = useState<number | null>(null);
+    const dragging = boardOpportunities.find((item) => item.id === draggingId);
     const [search, setSearch] = useState(filters.search);
     const [showCreatePipeline, setShowCreatePipeline] = useState(pipelines.length === 0);
     const [showManagePipeline, setShowManagePipeline] = useState(false);
     const [editingOpportunity, setEditingOpportunity] = useState<Opportunity | null>(null);
     const [showOpportunityModal, setShowOpportunityModal] = useState(Boolean(preselectedContact));
     const selectedPipeline = pipelines.find((pipeline) => pipeline.id === selectedPipelineId) || null;
-    const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
+    const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }), useSensor(KeyboardSensor));
 
     useEffect(() => setBoardOpportunities(opportunities), [opportunities]);
 
@@ -854,6 +877,7 @@ export default function Opportunities({ pipelines, selectedPipelineId, opportuni
     };
 
     const handleDragEnd = (event: DragEndEvent) => {
+        setDraggingId(null);
         const opportunityId = Number(String(event.active.id).replace('opportunity-', ''));
         const stageId = event.over ? Number(String(event.over.id).replace('stage-', '')) : null;
         const opportunity = boardOpportunities.find((item) => item.id === opportunityId);
@@ -989,7 +1013,13 @@ export default function Opportunities({ pipelines, selectedPipelineId, opportuni
                             </form>
                         </div>
 
-                        <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
+                        <DndContext
+                            sensors={sensors}
+                            collisionDetection={closestCorners}
+                            onDragStart={(event) => setDraggingId(Number(String(event.active.id).replace('opportunity-', '')))}
+                            onDragCancel={() => setDraggingId(null)}
+                            onDragEnd={handleDragEnd}
+                        >
                             <div className="flex min-h-0 flex-1 gap-4 overflow-x-auto pb-3">
                                 {selectedPipeline.stages.map((stage) => (
                                     <StageColumn
@@ -1004,6 +1034,11 @@ export default function Opportunities({ pipelines, selectedPipelineId, opportuni
                                     />
                                 ))}
                             </div>
+                            <DragOverlay dropAnimation={null}>
+                                {dragging && (
+                                    <OpportunityCard overlay opportunity={dragging} currency={selectedPipeline.currency} onEdit={() => undefined} />
+                                )}
+                            </DragOverlay>
                         </DndContext>
                     </>
                 ) : (

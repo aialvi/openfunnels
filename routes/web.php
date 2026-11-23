@@ -177,9 +177,11 @@ Route::fallback(function (Request $request) {
 
     $assignment = app(FunnelVariantResolver::class)->resolve($domain->funnel, $request);
     $variant = $assignment['variant'];
-    Cookie::queue(
-        cookie($assignment['cookie'], $assignment['value'], 60 * 24 * 30, '/', null, false, false, false, 'lax'),
-    );
+    if ($assignment['value'] !== null) {
+        Cookie::queue(
+            cookie($assignment['cookie'], $assignment['value'], 60 * 24 * 30, '/', null, false, false, false, 'lax'),
+        );
+    }
 
     return Inertia::render('funnel-preview', [
         'funnel' => [

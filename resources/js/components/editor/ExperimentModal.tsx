@@ -1,3 +1,4 @@
+import { useEscapeKey } from '@/hooks/use-escape-key';
 import type { Funnel } from '@/types/editor';
 import { router } from '@inertiajs/react';
 import { Beaker, RefreshCw, Trash2, X } from 'lucide-react';
@@ -25,6 +26,8 @@ export default function ExperimentModal({ isOpen, onClose, funnelId, funnel, var
     const [weight, setWeight] = useState(50);
     const [busy, setBusy] = useState(false);
     const activeWeight = variants.filter((variant) => variant.is_active).reduce((sum, variant) => sum + variant.weight, 0);
+
+    useEscapeKey(isOpen, onClose);
 
     if (!isOpen) return null;
 
